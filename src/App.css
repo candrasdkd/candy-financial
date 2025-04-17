@@ -1,38 +1,153 @@
-.App {
-  text-align: center;
+/* Reset dan Normalisasi CSS */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
+body {
   min-height: 100vh;
+  scroll-behavior: smooth;
+  line-height: 1.5;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
 }
 
-.App-link {
-  color: #61dafb;
+/* Variabel CSS */
+:root {
+  --primary-color: #4a6fa5;
+  --primary-dark: #3a5a8a;
+  --primary-light: #6b8cae;
+  --income-color: #2e7d32;
+  --expense-color: #c62828;
+  --danger-color: #c62828;
+  --error-color: #c62828;
+  --light-gray: #f5f5f5;
+  --medium-gray: #e0e0e0;
+  --dark-gray: #616161;
+  --white: #ffffff;
+  --black: #212121;
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+  --font-size-base: 16px;
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --border-radius: 0.25rem;
+  --border-radius-lg: 0.5rem;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+  --transition: all 0.3s ease;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+input,
+select,
+textarea,
+button {
+  -webkit-appearance: none;
+  border-radius: 0;
+}
+
+/* Fix for date input in Safari */
+input[type="date"] {
+  min-height: 44px;
+  /* Better touch target */
+  position: relative;
+}
+
+input[type="date"]::-webkit-inner-spin-button,
+input[type="date"]::-webkit-calendar-picker-indicator {
+  position: absolute;
+  right: 10px;
+  height: 100%;
+  opacity: 0;
+  width: 100%;
+}
+
+/* Base Styles */
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  color: var(--black);
+  background-color: var(--light-gray);
+  line-height: 1.6;
+}
+
+h1 {
+  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  font-weight: bold;
+}
+
+h2 {
+  margin: 0;
+  color: var(--primary-color);
+  font-size: 1.8rem;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  padding: var(--space-md);
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  order: 1;
+  /* Konten utama di atas untuk mobile */
+}
+
+.delete-btn {
+  background-color: var(--expense-color);
+  color: var(--white);
+  border: none;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.delete-btn:hover {
+  background-color: #b71c1c;
+}
+
+/* Color Classes */
+.income {
+  color: var(--income-color);
+  font-weight: 500;
+}
+
+.expense {
+  color: var(--expense-color);
+  font-weight: 500;
+}
+
+/* Responsive Adjustments - Tablet dan Desktop */
+@media (min-width: 768px) {
+  .app {
+    flex-direction: column;
   }
-  to {
-    transform: rotate(360deg);
+
+  .main-content {
+    order: 2;
+    /* Konten utama kembali ke urutan normal */
+    padding: var(--space-lg) var(--space-md);
+  }
+
+  .submit-btn {
+    width: auto;
   }
 }

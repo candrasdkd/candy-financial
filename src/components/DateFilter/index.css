@@ -1,0 +1,93 @@
+/* Date Filter Styles */
+.date-filter-container {
+    margin-bottom: var(--space-lg);
+    position: relative;
+}
+
+.date-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-lg);
+    padding: var(--space-md);
+    background-color: var(--white);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--light-gray);
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.filter-label {
+    display: block;
+    margin-bottom: var(--space-xs);
+    font-weight: 500;
+    color: var(--dark-gray);
+    font-size: 0.9rem;
+}
+
+.date-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.date-input {
+    width: 100%;
+    padding: var(--space-sm) var(--space-md);
+    padding-right: 40px;
+    border: 1px solid var(--medium-gray);
+    border-radius: var(--border-radius);
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    background-color: var(--white);
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    height: 42px;
+}
+
+.date-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 111, 165, 0.2);
+}
+
+.date-icon {
+    position: absolute;
+    right: var(--space-md);
+    color: var(--medium-gray);
+    pointer-events: none;
+}
+
+/* Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+    .date-input {
+        min-height: 44px;
+    }
+    
+    .date-input-wrapper::after {
+        content: '📅';
+        position: absolute;
+        right: 12px;
+        pointer-events: none;
+    }
+    
+    .date-icon {
+        display: none;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .date-filter {
+        flex-direction: column;
+        gap: var(--space-md);
+    }
+    
+    .filter-group {
+        min-width: 100%;
+    }
+}

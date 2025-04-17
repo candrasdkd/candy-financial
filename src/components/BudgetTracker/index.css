@@ -1,0 +1,198 @@
+/* Budget Tracker Styles */
+.budget-tracker-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: var(--space-md);
+}
+
+.budget-tracker-card {
+    background-color: var(--white);
+    border-radius: var(--border-radius-lg);
+    padding: var(--space-lg);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+}
+
+.budget-tracker-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.budget-title {
+    color: var(--primary-color);
+    margin-bottom: var(--space-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.budget-title i {
+    font-size: 1.2rem;
+}
+
+.budget-display {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    align-items: center;
+}
+
+.current-budget {
+    text-align: center;
+}
+
+.current-budget h3 {
+    color: var(--dark-gray);
+    margin-bottom: var(--space-xs);
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.budget-amount {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin: 0;
+}
+
+.edit-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    transition: all 0.2s ease;
+}
+
+.edit-btn:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+.budget-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.form-group label {
+    color: var(--dark-gray);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.input-with-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.currency-icon {
+    position: absolute;
+    left: var(--space-md);
+    color: var(--medium-gray);
+    font-weight: 500;
+}
+
+.budget-input {
+    width: 100%;
+    padding: var(--space-md);
+    padding-left: calc(var(--space-md) * 2 + 10px);
+    border: 1px solid var(--medium-gray);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+.budget-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 111, 165, 0.2);
+}
+
+.form-actions {
+    display: flex;
+    gap: var(--space-sm);
+    justify-content: flex-end;
+}
+
+.submit-btn {
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.submit-btn.primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.submit-btn.primary:hover {
+    background-color: var(--primary-dark);
+}
+
+.submit-btn.secondary {
+    background-color: var(--light-gray);
+    color: var(--dark-gray);
+}
+
+.submit-btn.secondary:hover {
+    background-color: var(--medium-gray);
+}
+
+.error-message {
+    color: var(--error-color);
+    font-size: 0.8rem;
+    margin-top: var(--space-xxs);
+}
+
+.success-message {
+    background-color: var(--success-bg);
+    color: var(--success-color);
+    padding: var(--space-sm);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--space-md);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.success-message i {
+    font-size: 1.2rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 576px) {
+    .budget-tracker-card {
+        padding: var(--space-md);
+    }
+    
+    .budget-amount {
+        font-size: 1.5rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .submit-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
