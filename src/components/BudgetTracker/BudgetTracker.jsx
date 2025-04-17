@@ -8,6 +8,11 @@ const BudgetTracker = ({ monthlyBudget, setMonthlyBudget }) => {
     const [successMessage, setSuccessMessage] = useState('');
 
     useEffect(() => {
+        // Reset scroll to top when component mounts
+        window.scrollTo(0, 0);
+    }, []);
+
+    useEffect(() => {
         setBudgetInput(monthlyBudget.toString());
     }, [monthlyBudget]);
 

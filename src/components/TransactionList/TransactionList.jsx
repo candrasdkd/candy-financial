@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import DateFilter from '../DateFilter/DateFilter';
 import './index.css';
 
@@ -58,7 +58,10 @@ const TransactionList = ({ transactions, deleteTransaction }) => {
         setShowModal(false);
         setTransactionToDelete(null);
     };
-
+    useEffect(() => {
+        // Reset scroll to top when component mounts
+        window.scrollTo(0, 0);
+    }, []);
     return (
         <div className="transaction-list">
             <h2>Daftar Transaksi</h2>

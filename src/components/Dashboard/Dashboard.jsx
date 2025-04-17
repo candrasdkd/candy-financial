@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import DateFilter from '../DateFilter/DateFilter';
 import './index.css';
 
@@ -87,7 +87,10 @@ const Dashboard = ({ transactions, monthlyBudget }) => {
             minimumFractionDigits: 0
         }).format(amount);
     };
-
+    useEffect(() => {
+        // Reset scroll to top when component mounts
+        window.scrollTo(0, 0);
+    }, []);
     return (
         <div className="dashboard-container">
             <div className="dashboard-header">

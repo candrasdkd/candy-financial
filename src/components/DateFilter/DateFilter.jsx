@@ -4,6 +4,14 @@ import './index.css';
 const DateFilter = ({ startDate, endDate, onDateChange }) => {
     const today = new Date().toISOString().split('T')[0];
     
+    const handleDateChange = (type, value) => {
+        if (type === 'end' && value > today) {
+            alert('Tidak bisa memilih tanggal yang lebih dari hari ini');
+            value = today;
+        }
+        onDateChange(type, value);
+    };
+    
     return (
         <div className="date-filter-container">
             <div className="date-filter">
@@ -16,7 +24,7 @@ const DateFilter = ({ startDate, endDate, onDateChange }) => {
                             id="start-date"
                             type="date"
                             value={startDate}
-                            onChange={(e) => onDateChange('start', e.target.value)}
+                            onChange={(e) => handleDateChange('start', e.target.value)}
                             max={endDate || today}
                             className="date-input"
                             aria-label="Pilih tanggal mulai"
@@ -36,7 +44,7 @@ const DateFilter = ({ startDate, endDate, onDateChange }) => {
                             id="end-date"
                             type="date"
                             value={endDate}
-                            onChange={(e) => onDateChange('end', e.target.value)}
+                            onChange={(e) => handleDateChange('end', e.target.value)}
                             min={startDate}
                             max={today}
                             className="date-input"

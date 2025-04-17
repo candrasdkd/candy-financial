@@ -143,6 +143,8 @@ const TransactionForm = ({ addTransaction }) => {
     const closeModal = () => setShowSuccessModal(false);
 
     useEffect(() => {
+        // Reset scroll to top when component mounts
+        window.scrollTo(0, 0);
         downloadDataCategory()
     }, [])
 

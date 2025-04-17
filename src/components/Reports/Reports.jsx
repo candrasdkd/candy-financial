@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import DateFilter from '../DateFilter/DateFilter';
 import './index.css';
@@ -111,8 +111,9 @@ const Reports = ({ transactions }) => {
         const categories = Object.entries(categoryData)
             .sort((a, b) => b[1] - a[1]);
 
-        const topCategories = categories.slice(0, 5);
-        const others = categories.slice(5).reduce((sum, [, amount]) => sum + amount, 0);
+        const topCategories = categories.slice(0, 11);
+        const others = categories.slice(11).reduce((sum, [, amount]) => sum + amount, 0);
+        console.log(topCategories);
 
         if (others > 0) {
             topCategories.push(['Lainnya', others]);
@@ -179,14 +180,18 @@ const Reports = ({ transactions }) => {
         datasets: [{
             data: Object.values(topExpenseCategories),
             backgroundColor: [
-                'rgba(63, 81, 181, 0.7)',
-                'rgba(33, 150, 243, 0.7)',
-                'rgba(0, 188, 212, 0.7)',
-                'rgba(76, 175, 80, 0.7)',
-                'rgba(255, 193, 7, 0.7)',
-                'rgba(255, 152, 0, 0.7)',
-                'rgba(244, 67, 54, 0.7)',
-                'rgba(156, 39, 176, 0.7)'
+                'rgba(63, 81, 181, 0.7)',    // Indigo
+                'rgba(33, 150, 243, 0.7)',   // Blue
+                'rgba(0, 188, 212, 0.7)',    // Cyan
+                'rgba(76, 175, 80, 0.7)',    // Green
+                'rgba(255, 193, 7, 0.7)',    // Amber
+                'rgba(255, 152, 0, 0.7)',    // Orange
+                'rgba(244, 67, 54, 0.7)',    // Red
+                'rgba(156, 39, 176, 0.7)',   // Purple
+                'rgba(233, 30, 99, 0.7)',    // Pink
+                'rgba(121, 85, 72, 0.7)',    // Brown
+                'rgba(96, 125, 139, 0.7)',   // Blue Grey
+                'rgba(0, 150, 136, 0.7)'     // Teal
             ],
             borderWidth: 0
         }]
@@ -194,7 +199,10 @@ const Reports = ({ transactions }) => {
 
     const totalIncome = Object.values(monthlyTotals).reduce((sum, t) => sum + t.income, 0);
     const totalExpense = Object.values(monthlyTotals).reduce((sum, t) => sum + t.expense, 0);
-
+    useEffect(() => {
+        // Reset scroll to top when component mounts
+        window.scrollTo(0, 0);
+    }, []);
     return (
         <div className="reports-container">
             <div className="reports-header">
