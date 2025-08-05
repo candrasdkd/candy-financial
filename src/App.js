@@ -71,8 +71,8 @@ function App() {
         return <TransactionForm addTransaction={downloadDataTransaction} />;
       case 'transactions':
         return <TransactionList transactions={transactions} deleteTransaction={deleteTransaction} />;
-      case 'budget':
-        return <BudgetTracker monthlyBudget={monthlyBudget} setMonthlyBudget={setMonthlyBudget} />;
+      // case 'budget':
+      //   return <BudgetTracker monthlyBudget={monthlyBudget} setMonthlyBudget={setMonthlyBudget} />;
       case 'reports':
         return <Reports transactions={transactions} />;
       default:
