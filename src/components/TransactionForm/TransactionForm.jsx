@@ -24,6 +24,7 @@ const TransactionForm = ({ addTransaction }) => {
             let { data, error } = await supabase
                 .from('transaction_category')
                 .select('*')
+            console.log(data);
 
             if (error) throw error;
             if (data) {

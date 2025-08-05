@@ -124,7 +124,7 @@ const TransactionList = ({ transactions, deleteTransaction }) => {
                                     </td>
                                     <td>
                                         {transaction.person === 'both' ? 'Bersama' :
-                                            transaction.person === 'person1' ? 'Candra' : 'Diny'}
+                                            transaction.person}
                                     </td>
                                     <td>{transaction.description || '-'}</td>
                                     <td>
