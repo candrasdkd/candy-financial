@@ -32,13 +32,13 @@ const Navbar = ({ activeTab, setActiveTab, user }) => {
                     <i className="fas fa-list"></i>
                     <span>Transaksi</span>
                 </button>
-                <button
+                {/* <button
                     className={activeTab === 'budget' ? 'active' : ''}
                     onClick={() => setActiveTab('budget')}
                 >
                     <i className="fas fa-wallet"></i>
                     <span>Anggaran</span>
-                </button>
+                </button> */}
                 <button
                     className={activeTab === 'reports' ? 'active' : ''}
                     onClick={() => setActiveTab('reports')}
