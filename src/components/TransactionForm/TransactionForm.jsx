@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import './index.css';
 import { supabase } from '../../lib/supabaseClient';
-import DatePicker from "react-datepicker";
-import { id } from "date-fns/locale";
 const TransactionForm = ({ addTransaction }) => {
     const [formData, setFormData] = useState({
         type: 'expense', // hanya pengeluaran
@@ -163,14 +161,15 @@ const TransactionForm = ({ addTransaction }) => {
                         <label htmlFor="date">
                             <i className="fas fa-calendar-alt"></i> Tanggal
                         </label>
-                        <DatePicker
+                        <input
                             id="date"
-                            selected={formData.created_at}
-                            onChange={(date) => setFormData(prev => ({ ...prev, created_at: date }))}
-                            dateFormat="d MMMM yyyy"
-                            locale={id} // untuk format lokal Indonesia
-                            maxDate={new Date()}
+                            type="date"
+                            name="created_at"
+                            value={formData.created_at}
+                            onChange={handleChange}
+                            max={new Date().toISOString().split('T')[0]}
                             className="form-input"
+                            required
                         />
                         {errors.created_at && <span className="error-message">{errors.created_at}</span>}
                     </div>
