@@ -1,20 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import './index.css';
 import { supabase } from '../../lib/supabaseClient';
-
+import DatePicker from "react-datepicker";
+import { id } from "date-fns/locale";
 const TransactionForm = ({ addTransaction }) => {
     const [formData, setFormData] = useState({
-        type: 'expense',
+        type: 'expense', // hanya pengeluaran
         amount: '',
         category: '',
         description: '',
         person: 'both',
         created_at: new Date()
     });
-    const [categories, setCategories] = useState({
-        income: [],
-        expense: []
-    })
+
+    const [categories, setCategories] = useState([]);
     const [errors, setErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -24,28 +23,17 @@ const TransactionForm = ({ addTransaction }) => {
             let { data, error } = await supabase
                 .from('transaction_category')
                 .select('*')
-            console.log(data);
+                .eq('type', 'expense'); // hanya ambil expense
 
             if (error) throw error;
             if (data) {
-                const incomeCategories = data
-                    .filter(category => category.type === 'income')
-                    .map(category => category.name);
-
-
-                const expenseCategories = data
-                    .filter(category => category.type === 'expense')
-                    .map(category => category.name);
-
-                setCategories({
-                    income: incomeCategories,
-                    expense: expenseCategories
-                });
+                const expenseCategories = data.map(category => category.name);
+                setCategories(expenseCategories);
             }
         } catch (error) {
-            alert(error.message.toString())
+            alert(error.message.toString());
         }
-    }
+    };
 
     const validateForm = () => {
         const newErrors = {};
@@ -117,7 +105,8 @@ const TransactionForm = ({ addTransaction }) => {
                         amount: formData.amount.replace(/\./g, ''),
                     }
                 ])
-                .select('*')
+                .select('*');
+
             if (error) throw error;
             if (data) {
                 addTransaction();
@@ -126,9 +115,8 @@ const TransactionForm = ({ addTransaction }) => {
             }
 
         } catch (error) {
-            alert(error.message.toString())
+            alert(error.message.toString());
         } finally {
-            // Reset form
             setFormData({
                 type: 'expense',
                 amount: '',
@@ -144,14 +132,12 @@ const TransactionForm = ({ addTransaction }) => {
     const closeModal = () => setShowSuccessModal(false);
 
     useEffect(() => {
-        // Reset scroll to top when component mounts
         window.scrollTo(0, 0);
-        downloadDataCategory()
-    }, [])
+        downloadDataCategory();
+    }, []);
 
     return (
         <div className="transaction-form-container">
-            {/* Success Modal */}
             {showSuccessModal && (
                 <div className="modal-overlay">
                     <div className="success-modal">
@@ -169,7 +155,7 @@ const TransactionForm = ({ addTransaction }) => {
 
             <div className="transaction-form-card">
                 <h2 className="form-title">
-                    <i className="fas fa-plus-circle"></i> Tambah Transaksi
+                    <i className="fas fa-plus-circle"></i> Tambah Pengeluaran
                 </h2>
 
                 <form onSubmit={handleSubmit} noValidate>
@@ -177,50 +163,18 @@ const TransactionForm = ({ addTransaction }) => {
                         <label htmlFor="date">
                             <i className="fas fa-calendar-alt"></i> Tanggal
                         </label>
-                        <input
+                        <DatePicker
                             id="date"
-                            type="date"
-                            name="created_at"
-                            value={formData.created_at}
-                            onChange={handleChange}
-                            max={new Date().toISOString().split('T')[0]}
+                            selected={formData.created_at}
+                            onChange={(date) => setFormData(prev => ({ ...prev, created_at: date }))}
+                            dateFormat="d MMMM yyyy"
+                            locale={id} // untuk format lokal Indonesia
+                            maxDate={new Date()}
                             className="form-input"
-                            required
                         />
                         {errors.created_at && <span className="error-message">{errors.created_at}</span>}
                     </div>
 
-                    <div className="form-group">
-                        <label>
-                            <i className="fas fa-exchange-alt"></i> Jenis Transaksi
-                        </label>
-                        <div className="radio-group">
-                            <label className="radio-label">
-                                <input
-                                    type="radio"
-                                    name="type"
-                                    value="income"
-                                    checked={formData.type === 'income'}
-                                    onChange={handleChange}
-                                    className="radio-input"
-                                />
-                                <span className="radio-custom"></span>
-                                <span className="radio-text">Pemasukan</span>
-                            </label>
-                            <label className="radio-label">
-                                <input
-                                    type="radio"
-                                    name="type"
-                                    value="expense"
-                                    checked={formData.type === 'expense'}
-                                    onChange={handleChange}
-                                    className="radio-input"
-                                />
-                                <span className="radio-custom"></span>
-                                <span className="radio-text">Pengeluaran</span>
-                            </label>
-                        </div>
-                    </div>
 
                     <div className={`form-group ${errors.amount ? 'has-error' : ''}`}>
                         <label htmlFor="amount">
@@ -255,7 +209,7 @@ const TransactionForm = ({ addTransaction }) => {
                             required
                         >
                             <option value="">Pilih Kategori</option>
-                            {categories[formData.type].map(category => (
+                            {categories.map(category => (
                                 <option key={category} value={category}>{category}</option>
                             ))}
                         </select>
@@ -305,7 +259,7 @@ const TransactionForm = ({ addTransaction }) => {
                             </>
                         ) : (
                             <>
-                                <i className="fas fa-save"></i> Simpan Transaksi
+                                <i className="fas fa-save"></i> Simpan Pengeluaran
                             </>
                         )}
                     </button>

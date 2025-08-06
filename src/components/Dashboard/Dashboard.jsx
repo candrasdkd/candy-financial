@@ -1,8 +1,10 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import DateFilter from '../DateFilter/DateFilter';
 import './index.css';
+import { supabase } from '../../lib/supabaseClient';
 
-const Dashboard = ({ transactions, monthlyBudget }) => {
+const Dashboard = ({ transactions }) => {
+    const [monthlyBudget, setMonthlyBudget] = useState(null);
     // Get current date in local timezone
     const currentDate = new Date();
 
@@ -35,22 +37,17 @@ const Dashboard = ({ transactions, monthlyBudget }) => {
     }, [transactions, dateRange]);
 
     // Calculate totals with useMemo for optimization
-    const { totalIncome, totalExpense, balance, remainingBudget } = useMemo(() => {
-        const income = filteredTransactions
-            .filter(t => t.type === 'income')
-            .reduce((sum, t) => sum + parseFloat(t.amount), 0);
-
+    const { totalExpense } = useMemo(() => {
         const expense = filteredTransactions
             .filter(t => t.type === 'expense')
             .reduce((sum, t) => sum + parseFloat(t.amount), 0);
 
         return {
-            totalIncome: income,
             totalExpense: expense,
-            balance: income - expense,
-            remainingBudget: monthlyBudget - expense
+            // balance: income - expense,
+            // remainingBudget: monthlyBudget - expense
         };
-    }, [filteredTransactions, monthlyBudget]);
+    }, [filteredTransactions]);
 
     // Recent transactions
     const recentTransactions = useMemo(() =>
@@ -87,10 +84,23 @@ const Dashboard = ({ transactions, monthlyBudget }) => {
             minimumFractionDigits: 0
         }).format(amount);
     };
+    const fetchBudget = async () => {
+        const { data, error } = await supabase
+            .from('budget_tracker')
+            .select('*')
+            .single();
+        if (error) {
+            console.error('Error fetching budget:', error.message);
+        } else {
+            setMonthlyBudget(data);
+        }
+    };
     useEffect(() => {
         // Reset scroll to top when component mounts
         window.scrollTo(0, 0);
+        fetchBudget();
     }, []);
+
     return (
         <div className="dashboard-container">
             <div className="dashboard-header">
@@ -108,8 +118,8 @@ const Dashboard = ({ transactions, monthlyBudget }) => {
                         <i className="fas fa-wallet"></i>
                     </div>
                     <div className="card-content">
-                        <h3>Total Pemasukan</h3>
-                        <p>{formatCurrency(totalIncome)}</p>
+                        <h3>Tabungan Candy</h3>
+                        <p>{formatCurrency(monthlyBudget?.nominal ?? 0)}</p>
                     </div>
                 </div>
 
@@ -123,7 +133,7 @@ const Dashboard = ({ transactions, monthlyBudget }) => {
                     </div>
                 </div>
 
-                <div className="summary-card balance-card">
+                {/* <div className="summary-card balance-card">
                     <div className="card-icon">
                         <i className="fas fa-balance-scale"></i>
                     </div>
@@ -159,7 +169,7 @@ const Dashboard = ({ transactions, monthlyBudget }) => {
                             </small>
                         </div>
                     </div>
-                )}
+                )} */}
             </div>
 
             <div className="dashboard-content">

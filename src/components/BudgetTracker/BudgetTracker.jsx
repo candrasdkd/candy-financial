@@ -1,22 +1,46 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import "./index.css";
+import { supabase } from '../../lib/supabaseClient';
 
-const BudgetTracker = ({ monthlyBudget, setMonthlyBudget }) => {
-    const [budgetInput, setBudgetInput] = useState(monthlyBudget > 0 ? monthlyBudget.toString() : '');
+const BudgetTracker = () => {
+    const [monthlyBudget, setMonthlyBudget] = useState(null);
+    const [budgetInput, setBudgetInput] = useState('');
     const [isEditing, setIsEditing] = useState(false);
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
+    const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        // Reset scroll to top when component mounts
-        window.scrollTo(0, 0);
+    const fetchBudget = useCallback(async () => {
+        const { data, error } = await supabase
+            .from('budget_tracker')
+            .select('*')
+            .single();
+
+        if (error) {
+            console.error('Error fetching budget:', error.message);
+        } else {
+            setMonthlyBudget(data);
+            setBudgetInput(formatCurrencyInput(data?.nominal ?? 0));
+        }
+        setLoading(false);
     }, []);
+    const updateBudget = async (newBudget) => {
+        const { error } = await supabase
+            .from('budget_tracker')
+            .update({ nominal: newBudget })
+            .eq('id', monthlyBudget.id);
 
-    useEffect(() => {
-        setBudgetInput(monthlyBudget.toString());
-    }, [monthlyBudget]);
+        if (error) {
+            setError('Gagal menyimpan anggaran: ' + error.message);
+            return false;
+        }
 
-    const handleBudgetSubmit = (e) => {
+        // Update state lokal
+        setMonthlyBudget((prev) => ({ ...prev, nominal: newBudget }));
+        return true;
+    };
+
+    const handleBudgetSubmit = async (e) => {
         e.preventDefault();
         const newBudget = parseFloat(budgetInput.replace(/\./g, ''));
 
@@ -30,21 +54,18 @@ const BudgetTracker = ({ monthlyBudget, setMonthlyBudget }) => {
             return;
         }
 
-        setMonthlyBudget(newBudget);
-        setError('');
-        setSuccessMessage('Anggaran berhasil diperbarui!');
-        setIsEditing(false);
+        const success = await updateBudget(newBudget);
 
-        setTimeout(() => {
-            setSuccessMessage('');
-        }, 3000);
+        if (success) {
+            setError('');
+            setSuccessMessage('Anggaran berhasil diperbarui!');
+            setIsEditing(false);
+            setTimeout(() => setSuccessMessage(''), 1000);
+        }
     };
 
     const formatCurrencyInput = (value) => {
-        // Remove non-numeric characters
-        const numericValue = value.replace(/[^0-9]/g, '');
-
-        // Format with thousand separators
+        const numericValue = value.toString().replace(/[^0-9]/g, '');
         return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     };
 
@@ -55,9 +76,18 @@ const BudgetTracker = ({ monthlyBudget, setMonthlyBudget }) => {
     };
 
     const toggleEdit = () => {
+        if (isEditing) {
+            setBudgetInput(formatCurrencyInput(monthlyBudget?.nominal ?? 0));
+        }
         setIsEditing(!isEditing);
         setError('');
     };
+    useEffect(() => {
+        window.scrollTo(0, 0);
+        fetchBudget();
+    }, [fetchBudget]);
+
+    if (loading) return <div>Loading...</div>;
 
     return (
         <div className="budget-tracker-container">
@@ -67,22 +97,22 @@ const BudgetTracker = ({ monthlyBudget, setMonthlyBudget }) => {
                 </h2>
 
                 {successMessage && (
-                    <div className="success-message">
-                        <i className="fas fa-check-circle"></i> {successMessage}
+                    <div className="modal-overlay">
+                        <div className="modal-success">
+                            <i className="fas fa-check-circle icon-success"></i>
+                            <h3>{successMessage}</h3>
+                        </div>
                     </div>
                 )}
+
 
                 {!isEditing ? (
                     <div className="budget-display">
                         <div className="current-budget">
                             <h3>Anggaran Bulan Ini:</h3>
-                            <p className="budget-amount">Rp {monthlyBudget.toLocaleString('id-ID')}</p>
+                            <p className="budget-amount">Rp {formatCurrencyInput(monthlyBudget?.nominal ?? 0)}</p>
                         </div>
-                        <button
-                            onClick={toggleEdit}
-                            className="edit-btn"
-                            aria-label="Edit budget"
-                        >
+                        <button onClick={toggleEdit} className="edit-btn">
                             <i className="fas fa-edit"></i> Ubah Anggaran
                         </button>
                     </div>
@@ -106,17 +136,10 @@ const BudgetTracker = ({ monthlyBudget, setMonthlyBudget }) => {
                         </div>
 
                         <div className="form-actions">
-                            <button
-                                type="submit"
-                                className="submit-btn primary"
-                            >
+                            <button type="submit" className="submit-btn primary">
                                 <i className="fas fa-save"></i> Simpan
                             </button>
-                            <button
-                                type="button"
-                                onClick={toggleEdit}
-                                className="submit-btn secondary"
-                            >
+                            <button type="button" onClick={toggleEdit} className="submit-btn secondary">
                                 <i className="fas fa-times"></i> Batal
                             </button>
                         </div>

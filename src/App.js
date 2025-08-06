@@ -3,7 +3,7 @@ import Navbar from './components/Navbar/Navbar';
 import Dashboard from './components/Dashboard/Dashboard';
 import TransactionForm from './components/TransactionForm/TransactionForm';
 import TransactionList from './components/TransactionList/TransactionList';
-// import BudgetTracker from './components/BudgetTracker/BudgetTracker';
+import BudgetTracker from './components/BudgetTracker/BudgetTracker';
 import Reports from './components/Reports/Reports';
 import './App.css';
 import { supabase } from './lib/supabaseClient';
@@ -27,6 +27,20 @@ function App() {
     }
   }
 
+  const downloadBudgetTracker = async () => {
+    try {
+      let { data, error } = await supabase
+        .from('budget_tracker')
+        .select('*')
+      if (error) throw error;
+      if (data) {
+        setMonthlyBudget(data[0] || []);
+      }
+    } catch (error) {
+      alert(error.message.toString())
+    }
+  }
+
   // Load data from localStorage on initial render
   useEffect(() => {
     downloadDataTransaction()
@@ -43,8 +57,8 @@ function App() {
   }, [transactions]);
 
   useEffect(() => {
-    localStorage.setItem('pasutri-budget', monthlyBudget.toString());
-  }, [monthlyBudget]);
+    downloadBudgetTracker();
+  }, []);
 
   const deleteTransaction = async (id) => {
     try {
@@ -71,8 +85,8 @@ function App() {
         return <TransactionForm addTransaction={downloadDataTransaction} />;
       case 'transactions':
         return <TransactionList transactions={transactions} deleteTransaction={deleteTransaction} />;
-      // case 'budget':
-      //   return <BudgetTracker monthlyBudget={monthlyBudget} setMonthlyBudget={setMonthlyBudget} />;
+      case 'budget':
+        return <BudgetTracker />;
       case 'reports':
         return <Reports transactions={transactions} />;
       default:
