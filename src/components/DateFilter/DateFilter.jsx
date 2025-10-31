@@ -1,17 +1,20 @@
 import React from 'react';
+import PropTypes from 'prop-types'; // Impor PropTypes untuk validasi prop
 import './index.css';
 
 const DateFilter = ({ startDate, endDate, onDateChange }) => {
-    const today = new Date().toISOString().split('T')[0];
-    
-    const handleDateChange = (type, value) => {
-        if (type === 'end' && value > today) {
-            alert('Tidak bisa memilih tanggal yang lebih dari hari ini');
-            value = today;
-        }
-        onDateChange(type, value);
+    // Dapatkan tanggal hari ini, di-cache dengan useMemo agar tidak dihitung ulang setiap render
+    const today = React.useMemo(() => new Date().toISOString().split('T')[0], []);
+
+    // Pisahkan handler agar lebih jelas
+    const handleStartDateChange = (e) => {
+        onDateChange('start', e.target.value);
     };
-    
+
+    const handleEndDateChange = (e) => {
+        onDateChange('end', e.target.value);
+    };
+
     return (
         <div className="date-filter-container">
             <div className="date-filter">
@@ -24,17 +27,18 @@ const DateFilter = ({ startDate, endDate, onDateChange }) => {
                             id="start-date"
                             type="date"
                             value={startDate}
-                            onChange={(e) => handleDateChange('start', e.target.value)}
+                            onChange={handleStartDateChange}
+                            // Mencegah tanggal mulai > tanggal akhir ATAU > hari ini
                             max={endDate || today}
                             className="date-input"
                             aria-label="Pilih tanggal mulai"
                         />
-                        <span className="date-icon">
-                            <i className="fas fa-calendar-alt"></i>
-                        </span>
+                        {/* Ikon kustom dihapus dari JSX. 
+                          Kita akan mengandalkan UI date picker bawaan browser.
+                        */}
                     </div>
                 </div>
-                
+
                 <div className="filter-group">
                     <label htmlFor="end-date" className="filter-label">
                         Sampai Tanggal:
@@ -44,21 +48,26 @@ const DateFilter = ({ startDate, endDate, onDateChange }) => {
                             id="end-date"
                             type="date"
                             value={endDate}
-                            onChange={(e) => handleDateChange('end', e.target.value)}
+                            onChange={handleEndDateChange}
+                            // Mencegah tanggal akhir < tanggal mulai
                             min={startDate}
+                            // Mencegah tanggal akhir > hari ini
                             max={today}
                             className="date-input"
                             aria-label="Pilih tanggal akhir"
                         />
-                        <span className="date-icon">
-                            <i className="fas fa-calendar-alt"></i>
-                        </span>
                     </div>
                 </div>
-                
             </div>
         </div>
     );
+};
+
+// Tambahkan PropTypes untuk debugging dan dokumentasi
+DateFilter.propTypes = {
+    startDate: PropTypes.string.isRequired,
+    endDate: PropTypes.string.isRequired,
+    onDateChange: PropTypes.func.isRequired,
 };
 
 export default DateFilter;

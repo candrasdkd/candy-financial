@@ -24,7 +24,6 @@ body {
 
 /* Variabel CSS */
 :root {
-  --primary-color: #4a6fa5;
   --primary-dark: #3a5a8a;
   --primary-light: #6b8cae;
   --income-color: #2e7d32;
@@ -43,11 +42,26 @@ body {
   --space-md: 1rem;
   --space-lg: 1.5rem;
   --space-xl: 2rem;
-  --border-radius: 0.25rem;
-  --border-radius-lg: 0.5rem;
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
   --transition: all 0.3s ease;
+
+  --primary-color: #4A90E2;
+  --success-color: #50E3C2;
+  --danger-color: #E84A5F;
+  --warning-color: #F5A623;
+
+  --bg-color: #F8F9FA;
+  /* Main background */
+  --card-bg-color: #FFFFFF;
+  --text-color-primary: #212529;
+  --text-color-secondary: #6C757D;
+  --border-color: #E9ECEF;
+
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+
+  --transition-speed: 0.3s;
 }
 
 input,
@@ -83,17 +97,6 @@ body {
   line-height: 1.6;
 }
 
-h1 {
-  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-  font-weight: bold;
-}
-
-h2 {
-  margin: 0;
-  color: var(--primary-color);
-  font-size: 1.8rem;
-}
-
 .app {
   display: flex;
   flex-direction: column;
@@ -110,30 +113,7 @@ h2 {
   /* Konten utama di atas untuk mobile */
 }
 
-.delete-btn {
-  background-color: var(--expense-color);
-  color: var(--white);
-  border: none;
-  padding: var(--space-xs) var(--space-sm);
-  border-radius: var(--border-radius);
-  cursor: pointer;
-  transition: var(--transition);
-}
 
-.delete-btn:hover {
-  background-color: #b71c1c;
-}
-
-/* Color Classes */
-.income {
-  color: var(--income-color);
-  font-weight: 500;
-}
-
-.expense {
-  color: var(--expense-color);
-  font-weight: 500;
-}
 
 /* Responsive Adjustments - Tablet dan Desktop */
 @media (min-width: 768px) {

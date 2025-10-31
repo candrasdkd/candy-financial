@@ -37,17 +37,22 @@
 .date-input {
     width: 100%;
     padding: var(--space-sm) var(--space-md);
-    padding-right: 40px;
     border: 1px solid var(--medium-gray);
     border-radius: var(--border-radius);
     font-size: 0.95rem;
     transition: all 0.2s ease;
     background-color: var(--white);
     color: var(--dark-gray);
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    height: 42px;
+
+    /* DIHAPUS: 
+      - padding-right: 40px;
+      - -webkit-appearance: none;
+      - -moz-appearance: none;
+      - appearance: none;
+      - height: 42px;
+      
+      Ini mengembalikan kontrol ke browser untuk menampilkan UI kalender bawaan.
+    */
 }
 
 .date-input:focus {
@@ -56,38 +61,21 @@
     box-shadow: 0 0 0 2px rgba(74, 111, 165, 0.2);
 }
 
-.date-icon {
-    position: absolute;
-    right: var(--space-md);
-    color: var(--medium-gray);
-    pointer-events: none;
-}
+/* DIHAPUS: 
+  - .date-icon 
+  - @supports (-webkit-touch-callout: none) { ... }
+  
+  Tidak lagi diperlukan karena kita menggunakan UI bawaan.
+*/
 
-/* Safari specific fixes */
-@supports (-webkit-touch-callout: none) {
-    .date-input {
-        min-height: 44px;
-    }
-    
-    .date-input-wrapper::after {
-        content: '📅';
-        position: absolute;
-        right: 12px;
-        pointer-events: none;
-    }
-    
-    .date-icon {
-        display: none;
-    }
-}
 
-/* Responsive adjustments */
+/* Responsive adjustments (Tidak berubah, sudah bagus) */
 @media (max-width: 576px) {
     .date-filter {
         flex-direction: column;
         gap: var(--space-md);
     }
-    
+
     .filter-group {
         min-width: 100%;
     }

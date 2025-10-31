@@ -1,130 +1,256 @@
-/* Reports Container */
+/* === Reports Container === */
 .reports-container {
-    padding: var(--space-md);
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
-}
-
-.reports-header {
-    margin-bottom: var(--space-lg);
+    padding: 2rem;
     display: flex;
     flex-direction: column;
-    gap: var(--space-md);
+    gap: 1.5rem;
+    /* Jarak antar bagian */
 }
 
-/* Charts Grid */
-.charts-grid {
+/* === Menggunakan style .card dan .section-header global === */
+/* Pastikan ini ada di CSS global Anda, jika tidak, tambahkan */
+.card {
+    background-color: var(--card-bg-color, #FFFFFF);
+    border-radius: var(--border-radius-lg, 12px);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05));
+    border: 1px solid var(--border-color, #E9ECEF);
+}
+
+.section-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color, #E9ECEF);
+    gap: 1rem;
+}
+
+/* Modifier untuk header tanpa border */
+.section-header.no-border {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.section-header h2,
+.section-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-color-primary, #212529);
+}
+
+.section-header h2 i,
+.section-header h3 i {
+    color: var(--primary-color, #4A90E2);
+}
+
+/* === BARU: KPI Grid === */
+.kpi-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: var(--space-lg);
-    margin-bottom: var(--space-lg);
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
 }
 
-.chart-card {
-    background-color: var(--white);
-    padding: var(--space-md);
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-sm);
+.kpi-card h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-color-secondary, #6C757D);
 }
 
+.kpi-card p {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.kpi-card.income p {
+    color: var(--success-color, #50E3C2);
+}
+
+.kpi-card.expense p {
+    color: var(--danger-color, #E84A5F);
+}
+
+.kpi-card.balance p.positive {
+    color: var(--success-color, #50E3C2);
+}
+
+.kpi-card.balance p.negative {
+    color: var(--danger-color, #E84A5F);
+}
+
+/* === BARU: Grid Layout Utama === */
+.reports-main-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    /* 66% Kiri, 33% Kanan */
+    gap: 1.5rem;
+    align-items: flex-start;
+    /* Jaga agar kolom tidak meregang */
+}
+
+.reports-col-main {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.reports-col-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    /* Membuat sidebar menempel saat scroll (opsional) */
+    position: sticky;
+    top: 1.5rem;
+}
+
+/* === Chart Styling === */
 .chart-card h3 {
-    margin-top: 0;
-    margin-bottom: var(--space-md);
-    color: var(--primary-color);
-    font-size: 1.1rem;
+    margin: 0 0 1.5rem 0;
+    padding: 0;
+    border: none;
+    font-size: 1.25rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.chart-card h3 i {
+    color: var(--primary-color, #4A90E2);
 }
 
 .chart-wrapper {
     position: relative;
-    min-height: 300px;
+    height: 350px;
     width: 100%;
 }
 
-/* Monthly Table */
-.monthly-table-container {
-    margin-bottom: var(--space-lg);
+/* === Monthly List Styling (dari kode sblmnya) === */
+.monthly-list-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
-.monthly-table-container h3 {
-    margin-bottom: var(--space-md);
-    color: var(--primary-color);
+.monthly-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 1rem 1.25rem;
+    border-radius: var(--border-radius-md, 8px);
+    transition: background-color 0.2s ease;
 }
 
-.table-responsive {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    background-color: var(--white);
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-sm);
-    padding: var(--space-sm);
+.monthly-list-item:hover {
+    background-color: var(--bg-color, #F8F9FA);
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 600px;
+.month-label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color-primary, #212529);
 }
 
-th,
-td {
-    padding: var(--space-sm) var(--space-md);
-    text-align: left;
-    border-bottom: 1px solid var(--light-gray);
+.month-totals {
+    display: flex;
+    gap: 1.5rem;
+    font-weight: 600;
 }
 
-th {
-    background-color: var(--primary-color);
-    color: var(--white);
-    position: sticky;
-    top: 0;
-    font-weight: 500;
+.total-income {
+    color: var(--success-color, #50E3C2);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-tr:nth-child(even) {
-    background-color: rgba(0, 0, 0, 0.02);
+.total-expense {
+    color: var(--danger-color, #E84A5F);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-.income {
-    color: #4CAF50;
-    font-weight: 500;
+/* Empty Message */
+.empty-message {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-color-secondary, #6C757D);
 }
 
-.expense {
-    color: #F44336;
-    font-weight: 500;
+.empty-message i {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
 }
 
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-    .reports-header {
-        flex-direction: column;
-    }
-
-    .summary-cards {
+/* === Responsive === */
+@media (max-width: 1024px) {
+    .reports-main-grid {
         grid-template-columns: 1fr;
+        /* Stack kolom utama dan sidebar */
     }
 
-    .chart-card {
-        padding: var(--space-sm);
-    }
-
-    .chart-wrapper {
-        min-height: 250px;
+    .reports-col-sidebar {
+        position: static;
+        /* Hapus sticky di mobile */
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
     .reports-container {
-        padding: var(--space-sm);
+        padding: 1rem;
+        gap: 1rem;
+    }
+
+    .card {
+        padding: 1rem;
+    }
+
+    .kpi-grid {
+        grid-template-columns: 1fr;
+        /* Stack KPI di mobile */
+        gap: 1rem;
+    }
+
+    .kpi-card p {
+        font-size: 1.75rem;
+    }
+
+    .section-header h2,
+    .section-header h3 {
+        font-size: 1.25rem;
     }
 
     .chart-card h3 {
-        font-size: 1rem;
+        font-size: 1.1rem;
     }
 
-    th,
-    td {
-        padding: var(--space-xs) var(--space-sm);
-        font-size: 0.9rem;
+    .chart-wrapper {
+        height: 300px;
+    }
+
+    .monthly-list-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        padding: 1rem;
+    }
+
+    .month-totals {
+        width: 100%;
+        justify-content: space-between;
     }
 }

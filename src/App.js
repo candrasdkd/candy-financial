@@ -3,7 +3,6 @@ import Navbar from './components/Navbar/Navbar';
 import Dashboard from './components/Dashboard/Dashboard';
 import TransactionForm from './components/TransactionForm/TransactionForm';
 import TransactionList from './components/TransactionList/TransactionList';
-import BudgetTracker from './components/BudgetTracker/BudgetTracker';
 import Reports from './components/Reports/Reports';
 import './App.css';
 import { supabase } from './lib/supabaseClient';
@@ -85,8 +84,6 @@ function App() {
         return <TransactionForm addTransaction={downloadDataTransaction} />;
       case 'transactions':
         return <TransactionList transactions={transactions} deleteTransaction={deleteTransaction} />;
-      case 'budget':
-        return <BudgetTracker />;
       case 'reports':
         return <Reports transactions={transactions} />;
       default:

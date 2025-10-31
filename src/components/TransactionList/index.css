@@ -1,103 +1,425 @@
-.table-responsive {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    background-color: var(--white);
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-sm);
-    padding: var(--space-sm);
+/* === Transaction List Container === */
+.transaction-list-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
 }
 
-table {
+/* Menggunakan style .card global */
+.transaction-list-card {
+    background-color: var(--card-bg-color, #FFFFFF);
+    border-radius: var(--border-radius-lg, 12px);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05));
+    border: 1px solid var(--border-color, #E9ECEF);
+}
+
+/* Menggunakan style .section-header global */
+.section-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color, #E9ECEF);
+    gap: 1rem;
+}
+
+.section-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-color-primary, #212529);
+}
+
+.section-header h3 i {
+    color: var(--primary-color, #4A90E2);
+}
+
+.list-wrapper {
     width: 100%;
-    border-collapse: collapse;
-    min-width: 600px;
 }
 
-th,
-td {
-    padding: var(--space-sm) var(--space-md);
-    text-align: left;
-    border-bottom: 1px solid var(--light-gray);
+/* === List Header (Desktop Only) === */
+.transaction-list-header {
+    display: none;
+    /* Sembunyi di mobile */
+    padding: 0 1rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-color-secondary, #6C757D);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-th {
-    background-color: var(--primary-color);
-    color: var(--white);
-    position: sticky;
-    top: 0;
-    font-weight: 500;
+.transaction-list-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
 }
 
-tr:nth-child(even) {
-    background-color: rgba(0, 0, 0, 0.02);
+/* === Transaction List Item (Mobile First) === */
+.transaction-list-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    /* Icon | Details | Amount/Actions */
+    grid-template-rows: auto auto;
+    grid-template-areas:
+        "icon details amount"
+        "icon person actions";
+    align-items: center;
+    gap: 0.25rem 1rem;
+    padding: 1rem;
+    background-color: var(--card-bg-color, #FFFFFF);
+    border-radius: var(--border-radius-md, 8px);
+    border: 1px solid var(--border-color, #E9ECEF);
+    transition: all 0.2s ease;
 }
 
-/* Modal Styles */
+.transaction-list-item:hover {
+    background-color: var(--bg-color, #F8F9FA);
+    border-color: var(--primary-color, #4A90E2);
+    box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05));
+    transform: translateY(-2px);
+}
+
+.item-icon {
+    grid-area: icon;
+}
+
+.item-details {
+    grid-area: details;
+}
+
+.item-amount {
+    grid-area: amount;
+    text-align: right;
+}
+
+.item-person {
+    grid-area: person;
+}
+
+.item-actions {
+    grid-area: actions;
+    text-align: right;
+}
+
+.item-date {
+    display: none;
+}
+
+/* Sembunyi di mobile */
+
+/* Icon Styling */
+.icon-wrapper {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.icon-wrapper.income {
+    background-color: rgba(80, 227, 194, 0.15);
+    color: var(--success-color, #50E3C2);
+}
+
+.icon-wrapper.expense {
+    background-color: rgba(232, 74, 95, 0.15);
+    color: var(--danger-color, #E84A5F);
+}
+
+/* Details Styling */
+.item-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.item-category {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-color-primary, #212529);
+}
+
+.item-description {
+    font-size: 0.85rem;
+    color: var(--text-color-secondary, #6C757D);
+}
+
+/* --- FIX: Style Tanggal Mobile --- */
+.item-date-mobile {
+    display: block;
+    /* Tampilkan di mobile */
+    font-size: 0.85rem;
+    color: var(--text-color-secondary, #6C757D);
+    margin-top: 4px;
+}
+
+/* --- End Fix --- */
+
+.item-person {
+    font-size: 0.85rem;
+    color: var(--text-color-secondary, #6C757D);
+}
+
+.item-amount {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.item-amount.income {
+    color: var(--success-color, #50E3C2);
+}
+
+.item-amount.expense {
+    color: var(--danger-color, #E84A5F);
+}
+
+.delete-btn {
+    background: none;
+    border: none;
+    color: var(--text-color-secondary, #6C757D);
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.delete-btn:hover {
+    color: var(--danger-color, #E84A5F);
+    background-color: rgba(232, 74, 95, 0.1);
+}
+
+/* === Empty Message === */
+.empty-message {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-color-secondary, #6C757D);
+}
+
+.empty-message i {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+/* === Desktop Layout (responsive table) === */
+@media (min-width: 768px) {
+
+
+    .transaction-list-header {
+        display: grid;
+        /* Kolom: Main | Jumlah | Tanggal | Untuk | Aksi */
+        grid-template-columns: 3fr 1.5fr 1.5fr 1fr auto;
+        padding: 0 1.5rem;
+        gap: 1rem;
+    }
+
+    .header-col-action {
+        text-align: right;
+    }
+
+    .transaction-list-item {
+        /* Kolom: Icon | Main | Jumlah | Tanggal | Untuk | Aksi */
+        grid-template-columns: auto 3fr 1.5fr 1.5fr 1fr auto;
+        grid-template-rows: 1fr;
+        /* Hanya 1 baris */
+        grid-template-areas: "icon details amount date person actions";
+        padding: 1rem 1.5rem;
+        gap: 1rem;
+    }
+
+    /* --- FIX: Sembunyikan tgl mobile, tampilkan tgl desktop --- */
+    .item-date-mobile {
+        display: none;
+    }
+
+    .item-date {
+        display: block;
+        /* Tampilkan tgl desktop */
+        font-size: 0.9rem;
+        color: var(--text-color-secondary, #6C757D);
+        white-space: pre-wrap;
+    }
+
+    /* --- End Fix --- */
+
+    .item-person {
+        font-size: 0.9rem;
+    }
+
+    .item-amount {
+        text-align: left;
+    }
+
+    .item-actions {
+        text-align: right;
+    }
+}
+
+/* === Modal Styling (Konsisten dengan Form) === */
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.6);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    animation: fadeIn 0.3s ease;
+    backdrop-filter: blur(5px);
 }
 
 .modal-content {
-    background-color: var(--white);
-    padding: var(--space-lg);
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-md);
+    background-color: var(--card-bg-color, #FFFFFF);
+    padding: 2.5rem;
+    border-radius: var(--border-radius-lg, 12px);
+    text-align: center;
     max-width: 400px;
     width: 90%;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    animation: slideUp 0.4s ease;
+}
+
+.modal-content.warning .modal-icon {
+    font-size: 4rem;
+    color: var(--danger-color, #E84A5F);
+    margin-bottom: 1.5rem;
+    animation: bounce 0.6s ease;
 }
 
 .modal-content h3 {
-    margin-top: 0;
-    color: var(--dark-gray);
+    margin: 0 0 0.75rem;
+    color: var(--text-color-primary, #212529);
+    font-size: 1.6rem;
+    font-weight: 600;
+}
+
+.modal-content p {
+    color: var(--text-color-secondary, #6C757D);
+    margin-bottom: 2rem;
+    font-size: 1rem;
+    line-height: 1.5;
 }
 
 .modal-actions {
     display: flex;
-    justify-content: flex-end;
-    gap: var(--space-md);
-    margin-top: var(--space-lg);
+    justify-content: center;
+    gap: 1rem;
 }
 
-.cancel-btn {
-    padding: var(--space-sm) var(--space-md);
-    background-color: var(--light-gray);
-    color: var(--dark-gray);
+.modal-btn {
     border: none;
-    border-radius: var(--border-radius);
+    padding: 12px 24px;
+    border-radius: var(--border-radius-md, 8px);
     cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
 }
 
-.cancel-btn:hover {
-    background-color: #e0e0e0;
+.modal-btn.secondary {
+    background-color: var(--bg-color, #F8F9FA);
+    color: var(--text-color-primary, #212529);
+    border: 1px solid var(--border-color, #E9ECEF);
 }
 
-.confirm-btn {
-    padding: var(--space-sm) var(--space-md);
-    background-color: var(--danger-color);
-    color: var(--white);
-    border: none;
-    border-radius: var(--border-radius);
-    cursor: pointer;
+.modal-btn.secondary:hover {
+    background-color: var(--border-color, #E9ECEF);
 }
 
-.confirm-btn:hover {
-    background-color: #d32f2f;
+.modal-btn.danger {
+    background-color: var(--danger-color, #E84A5F);
+    color: white;
 }
 
-@media (max-width: 480px) {
+.modal-btn.danger:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(232, 74, 95, 0.3);
+}
 
-    th,
-    td {
-        padding: var(--space-xs) var(--space-sm);
+/* Animasi */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounce {
+
+    0%,
+    20%,
+    50%,
+    80%,
+    100% {
+        transform: translateY(0);
+    }
+
+    40% {
+        transform: translateY(-10px);
+    }
+
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .date-filter-container {
+        width: 100%;
+    }
+
+    .transaction-list-container {
+        padding: 1rem;
+    }
+
+    .transaction-list-card {
+        padding: 1rem;
+    }
+
+    .section-header {
+        padding-bottom: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .section-header h3 {
+        font-size: 1.25rem;
+    }
+
+    .transaction-list-item {
+        padding: 0.75rem;
+    }
+
+    .item-category {
         font-size: 0.9rem;
     }
 }

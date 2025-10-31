@@ -1,149 +1,199 @@
-import { useEffect, useState } from 'react';
-import './index.css';
+import { useEffect, useState, useCallback } from 'react';
+import './index.css'; // Kita akan perbarui CSS ini
 import { supabase } from '../../lib/supabaseClient';
+
+// Idealnya, ini adalah prop dari komponen App
+const USER_NAMES = ['Candra', 'Diny'];
+
 const TransactionForm = ({ addTransaction }) => {
+    // State baru untuk Pemasukan/Pengeluaran
+    const [transactionType, setTransactionType] = useState('expense'); // 'expense' or 'income'
+
     const [formData, setFormData] = useState({
-        type: 'expense', // hanya pengeluaran
         amount: '',
         category: '',
         description: '',
         person: 'both',
-        created_at: new Date()
+        created_at: new Date().toISOString().split('T')[0]
     });
 
     const [categories, setCategories] = useState([]);
     const [errors, setErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [recentTransactions, setRecentTransactions] = useState([]);
 
-    const downloadDataCategory = async () => {
+    // --- Fungsi Data Dinamis ---
+    const downloadDataCategory = useCallback(async (type) => {
         try {
             let { data, error } = await supabase
                 .from('transaction_category')
-                .select('*')
-                .eq('type', 'expense'); // hanya ambil expense
+                .select('name')
+                .eq('type', type) // Dinamis berdasarkan 'type'
+                .order('name');
 
             if (error) throw error;
             if (data) {
-                const expenseCategories = data.map(category => category.name);
-                setCategories(expenseCategories);
+                setCategories(data.map(cat => cat.name));
             }
         } catch (error) {
-            alert(error.message.toString());
+            console.error('Error fetching categories:', error);
+            alert('Gagal memuat kategori: ' + error.message);
         }
-    };
+    }, []);
 
+    const fetchRecentTransactions = useCallback(async (type) => {
+        try {
+            let { data, error } = await supabase
+                .from('transaction_list')
+                .select('description, category, amount, person')
+                .eq('type', type) // Dinamis berdasarkan 'type'
+                .order('created_at', { ascending: false })
+                .limit(5);
+
+            if (error) throw error;
+            if (data) {
+                setRecentTransactions(data);
+            }
+        } catch (error) {
+            console.error('Error fetching recent transactions:', error);
+        }
+    }, []);
+
+    // --- Efek untuk memuat data saat 'type' berubah ---
+    useEffect(() => {
+        window.scrollTo(0, 0);
+        downloadDataCategory(transactionType);
+        fetchRecentTransactions(transactionType);
+    }, [transactionType, downloadDataCategory, fetchRecentTransactions]);
+
+    // --- Validasi & Handler ---
     const validateForm = () => {
+        // (Logika validasi Anda sudah bagus, tidak perlu diubah)
         const newErrors = {};
-        const amountValue = parseFloat(formData.amount.replace(/\./g, ''));
-
-        if (!formData.amount || isNaN(amountValue) || amountValue <= 0) {
-            newErrors.amount = 'Jumlah harus lebih dari 0';
+        const numericAmount = parseFloat(formData.amount.replace(/\./g, ''));
+        if (!formData.amount.trim()) newErrors.amount = 'Jumlah tidak boleh kosong';
+        else if (isNaN(numericAmount) || numericAmount <= 0) newErrors.amount = 'Jumlah harus lebih dari 0';
+        else if (numericAmount > 1000000000) newErrors.amount = 'Jumlah terlalu besar';
+        if (!formData.category) newErrors.category = 'Pilih kategori';
+        if (!formData.created_at) newErrors.created_at = 'Tanggal tidak valid';
+        else {
+            const selectedDate = new Date(formData.created_at);
+            const today = new Date();
+            today.setHours(23, 59, 59, 999);
+            if (selectedDate > today) newErrors.created_at = 'Tanggal tidak boleh melebihi hari ini';
         }
-
-        if (!formData.category) {
-            newErrors.category = 'Kategori tidak boleh kosong';
-        }
-
-        if (!formData.created_at) {
-            newErrors.created_at = 'Tanggal tidak valid';
-        }
-
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-
-        if (errors[name]) {
-            setErrors(prev => ({
-                ...prev,
-                [name]: null
-            }));
-        }
+        setFormData(prev => ({ ...prev, [name]: value }));
+        if (errors[name]) setErrors(prev => ({ ...prev, [name]: null }));
     };
 
-    const formatCurrencyInput = (value) => {
-        const numericValue = value.replace(/[^0-9]/g, '');
-        return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    };
+    const formatCurrencyInput = (value) => value.replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 
     const handleAmountChange = (e) => {
-        const formattedValue = formatCurrencyInput(e.target.value);
-        handleChange({
-            target: {
-                name: 'amount',
-                value: formattedValue
-            }
-        });
+        handleChange({ target: { name: 'amount', value: formatCurrencyInput(e.target.value) } });
+    };
+
+    // Handler baru untuk 'type'
+    const handleTypeChange = (type) => {
+        setTransactionType(type);
+        setFormData(prev => ({
+            ...prev,
+            category: '', // Reset kategori saat 'type' berubah
+            description: ''
+        }));
+        setErrors({});
+        setRecentTransactions([]); // Kosongkan saran
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!validateForm()) return;
+        if (!validateForm()) {
+            const firstErrorField = document.querySelector('.has-error');
+            if (firstErrorField) firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+
         setIsSubmitting(true);
-
-        const currentDate = new Date(formData.created_at);
-        currentDate.setHours(new Date().getHours());
-        currentDate.setMinutes(new Date().getMinutes());
-        currentDate.setSeconds(new Date().getSeconds());
-
         try {
-            let { data, error } = await supabase
+            const numericAmount = parseFloat(formData.amount.replace(/\./g, ''));
+            const transactionDate = new Date(formData.created_at);
+            transactionDate.setHours(new Date().getHours(), new Date().getMinutes(), new Date().getSeconds());
+
+            const { data, error } = await supabase
                 .from('transaction_list')
-                .insert([
-                    {
-                        ...formData,
-                        created_at: currentDate,
-                        amount: formData.amount.replace(/\./g, ''),
-                    }
-                ])
+                .insert([{
+                    ...formData,
+                    type: transactionType, // Pastikan 'type' yang benar disimpan
+                    created_at: transactionDate.toISOString(),
+                    amount: numericAmount,
+                }])
                 .select('*');
 
             if (error) throw error;
             if (data) {
                 addTransaction();
                 setShowSuccessModal(true);
-                setTimeout(() => setShowSuccessModal(false), 3000);
+                resetForm();
+                fetchRecentTransactions(transactionType); // Refresh saran
             }
-
         } catch (error) {
-            alert(error.message.toString());
+            console.error('Error saving transaction:', error);
+            alert('Gagal menyimpan transaksi: ' + error.message);
         } finally {
-            setFormData({
-                type: 'expense',
-                amount: '',
-                category: '',
-                description: '',
-                person: 'both',
-                created_at: new Date()
-            });
             setIsSubmitting(false);
         }
     };
 
+    const resetForm = () => {
+        setFormData({
+            amount: '',
+            category: '',
+            description: '',
+            person: 'both',
+            created_at: new Date().toISOString().split('T')[0]
+        });
+        setErrors({});
+    };
+
     const closeModal = () => setShowSuccessModal(false);
 
+    const quickAmounts = [10000, 25000, 50000, 100000];
+    const setQuickAmount = (amount) => {
+        handleChange({ target: { name: 'amount', value: formatCurrencyInput(amount.toString()) } });
+    };
+
+    const applySuggestion = (suggestion) => {
+        setFormData(prev => ({
+            ...prev,
+            category: suggestion.category,
+            description: suggestion.description,
+            person: suggestion.person
+        }));
+    };
+
     useEffect(() => {
-        window.scrollTo(0, 0);
-        downloadDataCategory();
-    }, []);
+        let timeoutId;
+        if (showSuccessModal) timeoutId = setTimeout(closeModal, 3000);
+        return () => clearTimeout(timeoutId);
+    }, [showSuccessModal]);
 
     return (
         <div className="transaction-form-container">
+            {/* --- Success Modal --- */}
             {showSuccessModal && (
-                <div className="modal-overlay">
-                    <div className="success-modal">
+                <div className="modal-overlay" onClick={closeModal}>
+                    <div className="success-modal" onClick={e => e.stopPropagation()}>
                         <div className="modal-icon">
                             <i className="fas fa-check-circle"></i>
                         </div>
                         <h3>Transaksi Berhasil!</h3>
-                        <p>Data transaksi telah berhasil disimpan.</p>
+                        <p>Data {transactionType === 'expense' ? 'pengeluaran' : 'pemasukan'} telah disimpan.</p>
                         <button onClick={closeModal} className="modal-close-btn">
                             Tutup
                         </button>
@@ -151,60 +201,95 @@ const TransactionForm = ({ addTransaction }) => {
                 </div>
             )}
 
+            {/* --- Form Card --- */}
             <div className="transaction-form-card">
-                <h2 className="form-title">
-                    <i className="fas fa-plus-circle"></i> Tambah Pengeluaran
-                </h2>
+                <header className="form-header">
+                    <h1 className="form-title">
+                        Catat Transaksi
+                    </h1>
+                    <p className="form-subtitle">
+                        Pilih jenis transaksi dan isi detailnya di bawah ini.
+                    </p>
+                </header>
 
                 <form onSubmit={handleSubmit} noValidate>
+                    {/* --- Type Toggle (BARU) --- */}
+                    <div className="form-group">
+                        <div className="type-toggle">
+                            <button
+                                type="button"
+                                className={`toggle-btn expense ${transactionType === 'expense' ? 'active' : ''}`}
+                                onClick={() => handleTypeChange('expense')}
+                            >
+                                <i className="fas fa-arrow-up"></i> Pengeluaran
+                            </button>
+                            <button
+                                type="button"
+                                className={`toggle-btn income ${transactionType === 'income' ? 'active' : ''}`}
+                                onClick={() => handleTypeChange('income')}
+                            >
+                                <i className="fas fa-arrow-down"></i> Pemasukan
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Tanggal */}
                     <div className={`form-group ${errors.created_at ? 'has-error' : ''}`}>
-                        <label htmlFor="date">
-                            <i className="fas fa-calendar-alt"></i> Tanggal
-                        </label>
+                        <label htmlFor="date"><i className="fas fa-calendar-alt"></i> Tanggal</label>
                         <input
                             id="date"
                             type="date"
                             name="created_at"
                             value={formData.created_at}
                             onChange={handleChange}
-                            max={new Date().toISOString().split('T')[0]}
+                            // max={new Date().toISOString().split('T')[0]}
                             className="form-input"
                             required
                         />
-                        {errors.created_at && <span className="error-message">{errors.created_at}</span>}
+                        {errors.created_at && <span className="error-message"><i className="fas fa-exclamation-circle"></i> {errors.created_at}</span>}
                     </div>
 
-
+                    {/* Amount */}
                     <div className={`form-group ${errors.amount ? 'has-error' : ''}`}>
-                        <label htmlFor="amount">
-                            <i className="fas fa-money-bill-wave"></i> Jumlah (Rp)
-                        </label>
+                        <label htmlFor="amount"><i className="fas fa-money-bill-wave"></i> Jumlah</label>
                         <div className="amount-input-container">
                             <span className="currency-symbol">Rp</span>
                             <input
                                 id="amount"
-                                type="text"
+                                type="tel" // 'tel' lebih baik untuk input angka di mobile
                                 name="amount"
                                 value={formData.amount}
                                 onChange={handleAmountChange}
                                 className="form-input"
                                 placeholder="0"
                                 required
+                                inputMode="numeric" // Menampilkan keypad numerik di mobile
                             />
                         </div>
-                        {errors.amount && <span className="error-message">{errors.amount}</span>}
+                        <div className="quick-amounts">
+                            {quickAmounts.map(amount => (
+                                <button
+                                    key={amount}
+                                    type="button"
+                                    className="quick-amount-btn"
+                                    onClick={() => setQuickAmount(amount)}
+                                >
+                                    {amount.toLocaleString('id-ID')}
+                                </button>
+                            ))}
+                        </div>
+                        {errors.amount && <span className="error-message"><i className="fas fa-exclamation-circle"></i> {errors.amount}</span>}
                     </div>
 
+                    {/* Kategori */}
                     <div className={`form-group ${errors.category ? 'has-error' : ''}`}>
-                        <label htmlFor="category">
-                            <i className="fas fa-tag"></i> Kategori
-                        </label>
+                        <label htmlFor="category"><i className="fas fa-tag"></i> Kategori</label>
                         <select
                             id="category"
                             name="category"
                             value={formData.category}
                             onChange={handleChange}
-                            className="form-select"
+                            className="form-input" // Gunakan style yg sama dgn input
                             required
                         >
                             <option value="">Pilih Kategori</option>
@@ -212,30 +297,29 @@ const TransactionForm = ({ addTransaction }) => {
                                 <option key={category} value={category}>{category}</option>
                             ))}
                         </select>
-                        {errors.category && <span className="error-message">{errors.category}</span>}
+                        {errors.category && <span className="error-message"><i className="fas fa-exclamation-circle"></i> {errors.category}</span>}
                     </div>
 
+                    {/* Untuk Siapa (UI Dirombak) */}
                     <div className="form-group">
-                        <label htmlFor="person">
-                            <i className="fas fa-user"></i> Untuk
-                        </label>
-                        <select
-                            id="person"
-                            name="person"
-                            value={formData.person}
-                            onChange={handleChange}
-                            className="form-select"
-                        >
-                            <option value="both">Bersama</option>
-                            <option value="Candra">Candra</option>
-                            <option value="Diny">Diny</option>
-                        </select>
+                        <label><i className="fas fa-user"></i> Untuk</label>
+                        <div className="person-toggle">
+                            <div className="person-option">
+                                <input type="radio" id="person-both" name="person" value="both" checked={formData.person === 'both'} onChange={handleChange} />
+                                <label htmlFor="person-both">Bersama</label>
+                            </div>
+                            {USER_NAMES.map(name => (
+                                <div className="person-option" key={name}>
+                                    <input type="radio" id={`person-${name}`} name="person" value={name} checked={formData.person === name} onChange={handleChange} />
+                                    <label htmlFor={`person-${name}`}>{name}</label>
+                                </div>
+                            ))}
+                        </div>
                     </div>
 
+                    {/* Keterangan */}
                     <div className="form-group">
-                        <label htmlFor="description">
-                            <i className="fas fa-align-left"></i> Keterangan (Opsional)
-                        </label>
+                        <label htmlFor="description"><i className="fas fa-align-left"></i> Keterangan (Opsional)</label>
                         <input
                             id="description"
                             type="text"
@@ -243,23 +327,42 @@ const TransactionForm = ({ addTransaction }) => {
                             value={formData.description}
                             onChange={handleChange}
                             className="form-input"
-                            placeholder="Contoh: Makan siang di restoran"
+                            placeholder="Contoh: Makan siang di kantor"
+                            maxLength={100}
                         />
+                        <div className="char-counter">{formData.description.length}/100</div>
                     </div>
 
+                    {/* Suggestions */}
+                    {recentTransactions.length > 0 && (
+                        <div className="suggestions-section">
+                            <h4 className="suggestions-title"><i className="fas fa-history"></i> Transaksi Serupa</h4>
+                            <div className="suggestions-list">
+                                {recentTransactions.map((transaction, index) => (
+                                    <button
+                                        key={index}
+                                        type="button"
+                                        className="suggestion-item"
+                                        onClick={() => applySuggestion(transaction)}
+                                    >
+                                        <span className="suggestion-desc">{transaction.description || 'Tanpa keterangan'}</span>
+                                        <span className="suggestion-meta">{transaction.category} • Rp{transaction.amount.toLocaleString('id-ID')}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Submit Button */}
                     <button
                         type="submit"
-                        className="submit-btn"
+                        className={`submit-btn ${transactionType}`}
                         disabled={isSubmitting}
                     >
                         {isSubmitting ? (
-                            <>
-                                <i className="fas fa-spinner fa-spin"></i> Memproses...
-                            </>
+                            <><i className="fas fa-spinner fa-spin"></i> Menyimpan...</>
                         ) : (
-                            <>
-                                <i className="fas fa-save"></i> Simpan Pengeluaran
-                            </>
+                            <><i className="fas fa-save"></i> Simpan {transactionType === 'expense' ? 'Pengeluaran' : 'Pemasukan'}</>
                         )}
                     </button>
                 </form>
