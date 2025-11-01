@@ -305,7 +305,7 @@
 
 @media (max-width: 768px) {
     .dashboard-container {
-        padding: 1rem;
+        padding: 1rem 1rem 6% 1rem;
     }
 
     .dashboard-header {

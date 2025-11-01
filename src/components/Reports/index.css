@@ -2,7 +2,7 @@
 .reports-container {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 5rem 2rem 2rem 2rem;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
@@ -38,10 +38,10 @@
 }
 
 .section-header h2,
-.section-header h3 {
+.section-header h1 {
     margin: 0;
     font-size: 1.5rem;
-    font-weight: 600;
+    font-weight: 700;
     display: flex;
     align-items: center;
     gap: 0.75rem;
@@ -49,7 +49,7 @@
 }
 
 .section-header h2 i,
-.section-header h3 i {
+.section-header h1 i {
     color: var(--primary-color, #4A90E2);
 }
 
@@ -115,7 +115,7 @@
 }
 
 /* === Chart Styling === */
-.chart-card h3 {
+.chart-card h1 {
     margin: 0 0 1.5rem 0;
     padding: 0;
     border: none;
@@ -126,7 +126,7 @@
     gap: 0.75rem;
 }
 
-.chart-card h3 i {
+.chart-card h1 i {
     color: var(--primary-color, #4A90E2);
 }
 
@@ -211,7 +211,7 @@
 
 @media (max-width: 768px) {
     .reports-container {
-        padding: 1rem;
+        padding: 1rem 1rem 6rem 1rem;
         gap: 1rem;
     }
 
@@ -230,11 +230,11 @@
     }
 
     .section-header h2,
-    .section-header h3 {
-        font-size: 1.25rem;
+    .section-header h1 {
+        font-size: 1.5rem;
     }
 
-    .chart-card h3 {
+    .chart-card h1 {
         font-size: 1.1rem;
     }
 

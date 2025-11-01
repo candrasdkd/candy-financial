@@ -87,7 +87,7 @@ const TransactionList = ({ transactions, deleteTransaction }) => {
             {/* --- Konten Utama --- */}
             <div className="transaction-list-card card">
                 <header className="section-header">
-                    <h3><i className="fas fa-list-ul"></i> Daftar Transaksi</h3>
+                    <h1><i className="fas fa-list-ul"></i> Daftar Transaksi</h1>
                     <DateFilter
                         startDate={dateRange.start}
                         endDate={dateRange.end}

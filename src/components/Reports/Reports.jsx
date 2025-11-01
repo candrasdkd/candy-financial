@@ -263,7 +263,7 @@ const Reports = () => {
         <div className="reports-container">
             <div className="card">
                 <header className="section-header no-border">
-                    <h2><i className="fas fa-chart-line"></i> Laporan Keuangan</h2>
+                    <h1><i className="fas fa-chart-line"></i> Laporan Keuangan</h1>
                     <DateFilter
                         startDate={dateRange.start}
                         endDate={dateRange.end}

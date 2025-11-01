@@ -444,7 +444,7 @@
 /* Responsive */
 @media (max-width: 768px) {
     .transaction-form-container {
-        padding: 1rem 0rem 4rem 0rem;
+        padding: 1rem 1rem 6rem 1rem;
     }
 
     .transaction-form-card {
@@ -462,7 +462,7 @@
     }
 
     .form-title {
-        font-size: 1.3rem;
+        font-size: 1.5rem;
     }
 
     .person-toggle {
