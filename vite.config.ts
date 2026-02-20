@@ -9,6 +9,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'prompt',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
+      devOptions: {
+        enabled: true
+      },
       manifest: {
         name: 'DuaHati Finance',
         short_name: 'DuaHati',

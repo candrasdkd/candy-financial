@@ -45,8 +45,8 @@ export default function InstallPrompt() {
 
     if (isStandalone || !isVisible) return null;
 
-    // Don't show if it's not iOS and we don't have the prompt event yet
-    if (!isIOS && !deferredPrompt) return null;
+    // Show banner on Android even if we don't have the prompt event yet (e.g. user is on local HTTP)
+    // We just don't show the "Install" button in that case.
 
     const handleInstallClick = async () => {
         if (deferredPrompt) {
@@ -70,8 +70,10 @@ export default function InstallPrompt() {
                             <>
                                 Tap icon <Share className="inline w-3.5 h-3.5 mx-1" /> di browser bawah lalu pilih <strong>Add to Home Screen</strong>.
                             </>
-                        ) : (
+                        ) : deferredPrompt ? (
                             'Install DuaHati Finance di home screen agar lebih mudah dan cepat diakses.'
+                        ) : (
+                            'Install via menu browser (titik tiga) lalu pilih "Add to Home Screen" atau "Install app".'
                         )}
                     </p>
                 </div>
