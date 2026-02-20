@@ -10,7 +10,7 @@ Aplikasi manajemen keuangan untuk pasangan suami istri dengan Firebase, React Ty
 - 📊 **Dashboard** — Ringkasan keuangan bulan ini dengan grafik
 - 📋 **Riwayat** — Filter & cari transaksi, dikelompokkan per hari
 - 🏦 **Anggaran** — Set batas pengeluaran per kategori dengan indikator
-- 📱 **Responsif** — Mobile & desktop friendly
+- 📱 **Responsif & PWA** — Mobile & desktop friendly, bisa diinstall sebagai aplikasi natively (Progressive Web App) di Android maupun iOS
 
 ---
 
@@ -120,6 +120,7 @@ Buka [http://localhost:5173](http://localhost:5173)
 src/
 ├── components/
 │   ├── Layout.tsx          # Sidebar + layout wrapper
+│   ├── InstallPrompt.tsx   # Banner panduan instalasi PWA di mobile
 │   └── TransactionModal.tsx # Modal tambah transaksi
 ├── contexts/
 │   └── AuthContext.tsx     # Auth + user profile state
