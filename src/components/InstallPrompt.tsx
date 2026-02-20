@@ -61,8 +61,8 @@ export default function InstallPrompt() {
     };
 
     return (
-        <div className="fixed top-0 left-0 right-0 z-[100] md:hidden">
-            <div className="bg-sage-600 text-cream-50 px-4 py-3 pb-4 flex items-start gap-4 shadow-lg rounded-b-2xl">
+        <div className="fixed bottom-0 left-0 right-0 z-[100] md:hidden">
+            <div className="bg-sage-600 text-cream-50 px-4 py-4 pb-6 flex items-start gap-4 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.1)] rounded-t-2xl border-t border-sage-500">
                 <div className="flex-1">
                     <p className="font-display font-medium mb-1">
                         Install Aplikasi
