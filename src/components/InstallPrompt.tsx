@@ -24,9 +24,9 @@ export default function InstallPrompt() {
 
         if (isAppInstalled) return;
 
-        // Detect iOS
-        const userAgent = window.navigator.userAgent.toLowerCase();
-        const isIosDevice = /iphone|ipad|ipod/.test(userAgent);
+        // Detect iOS (case-insensitive)
+        const userAgent = window.navigator.userAgent || window.navigator.vendor || (window as any).opera;
+        const isIosDevice = /iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream;
         setIsIOS(isIosDevice);
 
         const handleBeforeInstallPrompt = (e: Event) => {
@@ -43,6 +43,8 @@ export default function InstallPrompt() {
         };
     }, []);
 
+    // If it's explicitly standalone, don't show.
+    // Otherwise, always show if isVisible is true.
     if (isStandalone || !isVisible) return null;
 
     // Show banner on Android even if we don't have the prompt event yet (e.g. user is on local HTTP)
