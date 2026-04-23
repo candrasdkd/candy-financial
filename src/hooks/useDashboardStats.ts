@@ -4,11 +4,11 @@ import { id } from 'date-fns/locale';
 import { Transaction, getCategoryInfo } from '../types';
 
 export function useDashboardStats(transactions: Transaction[], date: Date = new Date()) {
-  const monthStart = startOfMonth(date);
-  const monthEnd = endOfMonth(date);
 
   // 1. Filter transaksi bulan ini
   const thisMonthTx = useMemo(() => {
+    const monthStart = startOfMonth(date);
+    const monthEnd = endOfMonth(date);
     return transactions.filter(tx => {
       try {
         const txDate = parseISO(tx.date);
@@ -17,13 +17,13 @@ export function useDashboardStats(transactions: Transaction[], date: Date = new 
         return false;
       }
     });
-  }, [transactions, monthStart, monthEnd]);
+  }, [transactions, date]);
 
   // 2. Hitung total pemasukan, pengeluaran, saldo
   const { totalIncome, totalExpense, balance } = useMemo(() => {
     let income = 0;
     let expense = 0;
-    
+
     thisMonthTx.forEach(tx => {
       if (tx.type === 'income') income += tx.amount;
       else if (tx.type === 'expense') expense += tx.amount;
@@ -43,11 +43,11 @@ export function useDashboardStats(transactions: Transaction[], date: Date = new 
       const d = new Date();
       d.setDate(d.getDate() - i);
       const key = format(d, 'yyyy-MM-dd');
-      
+
       const dayTx = transactions.filter(t => t.date.startsWith(key));
       let pemasukan = 0;
       let pengeluaran = 0;
-      
+
       dayTx.forEach(t => {
         if (t.type === 'income') pemasukan += t.amount;
         else if (t.type === 'expense') pengeluaran += t.amount;
@@ -68,7 +68,7 @@ export function useDashboardStats(transactions: Transaction[], date: Date = new 
     thisMonthTx.filter(t => t.type === 'expense').forEach(t => {
       grouped[t.category] = (grouped[t.category] || 0) + t.amount;
     });
-    
+
     return Object.entries(grouped)
       // Sort descending based on value
       .sort(([, valA], [, valB]) => valB - valA)

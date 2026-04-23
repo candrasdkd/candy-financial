@@ -44,28 +44,42 @@ VITE_FIREBASE_APP_ID=1:123456789:web:abc123
 ```
 
 ### 4. Firestore Security Rules
-Di Firebase Console → Firestore → Rules, ganti dan simpan *rules* berikut agar data aman:
+Di Firebase Console → Firestore → Rules, ganti dan simpan *rules* berikut agar data aman dari kebocoran (*Data Privacy Protected*):
 ```javascript
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    
+    // Fungsi bantuan untuk mengambil coupleId dari user yang sedang request
+    function getUserCoupleId() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.coupleId;
+    }
+
     // Profil user
     match /users/{userId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth.uid == userId;
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Izin khusus untuk proses pairing pasangan
+      allow update: if request.auth != null
+        && resource.data.coupleId == null
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['coupleId', 'partnerEmail']);
     }
+
     // Pasangan (Couples)
     match /couples/{coupleId} {
-      allow read, write: if request.auth != null;
-    }
-    // Transaksi hanya untuk anggota pasangan tersebut
-    match /transactions/{txId} {
-      allow read, write: if request.auth != null && (resource == null || resource.data.coupleId != null);
+      allow read, update: if request.auth != null && request.auth.uid in resource.data.users;
       allow create: if request.auth != null;
     }
+
+    // Transaksi hanya untuk anggota pasangan tersebut
+    match /transactions/{txId} {
+      allow read, update, delete: if request.auth != null && resource.data.coupleId == getUserCoupleId();
+      allow create: if request.auth != null && request.resource.data.coupleId == getUserCoupleId();
+    }
+
     // Budgeting sama dengan transaksi
     match /budgets/{budgetId} {
-      allow read, write: if request.auth != null;
+      allow read, update, delete: if request.auth != null && resource.data.coupleId == getUserCoupleId();
+      allow create: if request.auth != null && request.resource.data.coupleId == getUserCoupleId();
     }
   }
 }
