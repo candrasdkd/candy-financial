@@ -16,65 +16,49 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { useTransactions } from '../hooks/useTransactions';
 import { formatRupiah, getCategoryInfo } from '../types';
+import { useDashboardStats } from '../hooks/useDashboardStats';
 import TransactionModal from '../components/TransactionModal';
 import { Link } from 'react-router-dom';
 
 const COLORS = ['#5a845d', '#7da180', '#a8c2aa', '#e14f6c', '#ec7a90', '#f4aab7', '#cda06a', '#dabb8c', '#e8d5b4'];
 
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white/90 backdrop-blur-md border border-cream-200 p-4 rounded-2xl shadow-xl shadow-sage-900/10">
+        <p className="text-sage-500 text-xs mb-3 font-medium">{label}</p>
+        <div className="space-y-2">
+          {payload.map((p: any, i: number) => (
+            <div key={i} className="flex items-center justify-between gap-6 text-sm font-medium">
+              <div className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 rounded-full" style={{ background: p.color || p.payload.fill }} />
+                <span className="text-sage-800">{p.name}</span>
+              </div>
+              <span className="font-mono text-sage-900">{formatRupiah(p.value)}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
 export default function Dashboard() {
   const { userProfile } = useAuth();
   const { transactions, loading } = useTransactions();
   const [showModal, setShowModal] = useState(false);
-
   const now = new Date();
-  const monthStart = startOfMonth(now);
-  const monthEnd = endOfMonth(now);
 
-  const thisMonthTx = useMemo(
-    () =>
-      transactions.filter(tx => {
-        try {
-          return isWithinInterval(parseISO(tx.date), { start: monthStart, end: monthEnd });
-        } catch { return false; }
-      }),
-    [transactions]
-  );
-
-  const totalIncome = thisMonthTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-  const totalExpense = thisMonthTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-  const balance = totalIncome - totalExpense;
-
-  // Chart data: last 7 days
-  const chartData = useMemo(() => {
-    const days: { date: string; pemasukan: number; pengeluaran: number }[] = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const key = format(d, 'yyyy-MM-dd');
-      const dayTx = transactions.filter(t => t.date.startsWith(key));
-      days.push({
-        date: format(d, 'dd MMM', { locale: id }),
-        pemasukan: dayTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0),
-        pengeluaran: dayTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0),
-      });
-    }
-    return days;
-  }, [transactions]);
-
-  // Pie chart: expense by category this month
-  const pieData = useMemo(() => {
-    const grouped: Record<string, number> = {};
-    thisMonthTx.filter(t => t.type === 'expense').forEach(t => {
-      grouped[t.category] = (grouped[t.category] || 0) + t.amount;
-    });
-    return Object.entries(grouped).map(([cat, val]) => ({
-      name: getCategoryInfo(cat as any).label,
-      value: val,
-      emoji: getCategoryInfo(cat as any).emoji,
-    }));
-  }, [thisMonthTx]);
-
-  const recentTx = transactions.slice(0, 5);
+  const {
+    totalIncome,
+    totalExpense,
+    balance,
+    chartData,
+    pieData,
+    recentTx,
+    thisMonthTx,
+  } = useDashboardStats(transactions, now);
 
   if (!userProfile?.coupleId) {
     return (
@@ -118,36 +102,37 @@ export default function Dashboard() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className={`p-5 rounded-3xl ${balance >= 0 ? 'bg-sage-700' : 'bg-rose-600'} text-white`}>
-          <div className="flex items-center gap-2 mb-3">
-            <Wallet className="w-4 h-4 opacity-70" />
-            <span className="text-sm opacity-70 font-body">Saldo Bulan Ini</span>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div className={`p-6 rounded-3xl text-white shadow-xl ${balance >= 0 ? 'bg-gradient-to-br from-sage-600 to-sage-800 shadow-sage-900/20' : 'bg-gradient-to-br from-rose-500 to-rose-700 shadow-rose-900/20'} relative overflow-hidden`}>
+          <div className="absolute -right-6 -top-6 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
+          <div className="flex items-center gap-2 mb-4 relative z-10">
+            <Wallet className="w-4 h-4 opacity-80" />
+            <span className="text-sm opacity-80 font-body">Saldo Bulan Ini</span>
           </div>
-          <div className="font-mono text-2xl font-semibold">{formatRupiah(balance)}</div>
-          <div className="text-xs opacity-60 mt-1">{format(now, 'MMMM yyyy', { locale: id })}</div>
+          <div className="font-mono text-3xl font-semibold relative z-10">{formatRupiah(balance)}</div>
+          <div className="text-xs opacity-70 mt-2 relative z-10">{format(now, 'MMMM yyyy', { locale: id })}</div>
         </div>
 
-        <div className="p-5 rounded-3xl bg-white border border-cream-200">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-7 h-7 bg-sage-100 rounded-full flex items-center justify-center">
+        <div className="p-6 rounded-3xl bg-white border border-cream-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-sage-900/5 transition-all duration-300">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 bg-sage-50 rounded-2xl flex items-center justify-center">
               <TrendingUp className="w-4 h-4 text-sage-600" />
             </div>
             <span className="text-sm text-sage-500 font-body">Pemasukan</span>
           </div>
-          <div className="font-mono text-xl font-semibold text-sage-800">{formatRupiah(totalIncome)}</div>
-          <div className="text-xs text-sage-400 mt-1">{thisMonthTx.filter(t => t.type === 'income').length} transaksi</div>
+          <div className="font-mono text-2xl font-semibold text-sage-800">{formatRupiah(totalIncome)}</div>
+          <div className="text-xs text-sage-400 mt-2">{thisMonthTx.filter(t => t.type === 'income').length} transaksi</div>
         </div>
 
-        <div className="p-5 rounded-3xl bg-white border border-cream-200">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-7 h-7 bg-rose-100 rounded-full flex items-center justify-center">
+        <div className="p-6 rounded-3xl bg-white border border-cream-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-rose-900/5 transition-all duration-300">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 bg-rose-50 rounded-2xl flex items-center justify-center">
               <TrendingDown className="w-4 h-4 text-rose-500" />
             </div>
             <span className="text-sm text-sage-500 font-body">Pengeluaran</span>
           </div>
-          <div className="font-mono text-xl font-semibold text-rose-700">{formatRupiah(totalExpense)}</div>
-          <div className="text-xs text-sage-400 mt-1">{thisMonthTx.filter(t => t.type === 'expense').length} transaksi</div>
+          <div className="font-mono text-2xl font-semibold text-rose-700">{formatRupiah(totalExpense)}</div>
+          <div className="text-xs text-sage-400 mt-2">{thisMonthTx.filter(t => t.type === 'expense').length} transaksi</div>
         </div>
       </div>
 
@@ -170,10 +155,7 @@ export default function Dashboard() {
               </defs>
               <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#7da180' }} axisLine={false} tickLine={false} />
               <YAxis hide />
-              <Tooltip
-                formatter={(v: number) => formatRupiah(v)}
-                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
-              />
+              <Tooltip content={<CustomTooltip />} />
               <Area type="monotone" dataKey="pemasukan" stroke="#5a845d" fill="url(#income)" strokeWidth={2} name="Pemasukan" />
               <Area type="monotone" dataKey="pengeluaran" stroke="#e14f6c" fill="url(#expense)" strokeWidth={2} name="Pengeluaran" />
             </AreaChart>
@@ -192,7 +174,7 @@ export default function Dashboard() {
                       <Cell key={i} fill={COLORS[i % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(v: number) => formatRupiah(v)} contentStyle={{ borderRadius: '12px', border: 'none' }} />
+                  <Tooltip content={<CustomTooltip />} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="space-y-1.5 mt-2">
@@ -238,20 +220,28 @@ export default function Dashboard() {
           <div className="space-y-2">
             {recentTx.map(tx => {
               const cat = getCategoryInfo(tx.category);
+              const isMine = tx.addedBy === userProfile.displayName;
+              
               return (
-                <div key={tx.id} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-cream-50 transition-colors">
-                  <div className="w-10 h-10 rounded-full bg-cream-100 flex items-center justify-center text-xl flex-shrink-0">
+                <div key={tx.id} className="group flex items-center gap-4 p-3.5 rounded-2xl hover:bg-cream-50/50 hover:shadow-sm transition-all border border-transparent hover:border-cream-100 cursor-pointer">
+                  <div className="w-12 h-12 rounded-2xl bg-white shadow-sm border border-cream-100 flex items-center justify-center text-2xl flex-shrink-0 group-hover:scale-105 transition-transform">
                     {cat.emoji}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-sage-800 text-sm truncate">
                       {tx.description || cat.label}
                     </div>
-                    <div className="text-xs text-sage-400">
-                      {format(parseISO(tx.date), 'dd MMM', { locale: id })} · {tx.addedBy}
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs text-sage-400 font-medium">
+                        {format(parseISO(tx.date), 'dd MMM', { locale: id })}
+                      </span>
+                      <div className="w-1 h-1 rounded-full bg-cream-200"></div>
+                      <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide uppercase ${isMine ? 'bg-sage-100 text-sage-600' : 'bg-rose-100 text-rose-600'}`}>
+                        {isMine ? 'Saya' : 'Pasangan'}
+                      </div>
                     </div>
                   </div>
-                  <div className={`font-mono font-semibold text-sm flex-shrink-0 ${tx.type === 'income' ? 'text-sage-600' : 'text-rose-600'}`}>
+                  <div className={`font-mono font-bold text-sm flex-shrink-0 ${tx.type === 'income' ? 'text-sage-600' : 'text-rose-600'}`}>
                     {tx.type === 'income' ? '+' : '-'}{formatRupiah(tx.amount)}
                   </div>
                 </div>

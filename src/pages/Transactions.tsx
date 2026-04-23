@@ -1,22 +1,30 @@
 import { useState, useMemo } from 'react';
-import { Plus, Search, Trash2, Filter, AlertTriangle } from 'lucide-react';
-import { format, parseISO } from 'date-fns';
+import { Plus, Search, Trash2, Filter, AlertTriangle, Calendar } from 'lucide-react';
+import { format, parseISO, startOfMonth, endOfMonth } from 'date-fns';
 import { id } from 'date-fns/locale';
+import { useAuth } from '../contexts/AuthContext';
+import ConfirmModal from '../components/ConfirmModal';
 import { useTransactions } from '../hooks/useTransactions';
 import { formatRupiah, getCategoryInfo, TransactionType, ALL_CATEGORIES } from '../types';
 import TransactionModal from '../components/TransactionModal';
 
 export default function Transactions() {
+  const { userProfile } = useAuth();
   const { transactions, loading, error, deleteTransaction } = useTransactions();
   const [showModal, setShowModal] = useState(false);
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState<TransactionType | 'all'>('all');
-  const [filterMonth, setFilterMonth] = useState(format(new Date(), 'yyyy-MM'));
+  const [startDate, setStartDate] = useState(format(startOfMonth(new Date()), 'yyyy-MM-dd'));
+  const [endDate, setEndDate] = useState(format(endOfMonth(new Date()), 'yyyy-MM-dd'));
+  const [txToDelete, setTxToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const filtered = useMemo(() => {
     return transactions.filter(tx => {
       if (filterType !== 'all' && tx.type !== filterType) return false;
-      if (filterMonth && !tx.date.startsWith(filterMonth)) return false;
+      if (startDate && tx.date < startDate) return false;
+      if (endDate && tx.date > endDate) return false;
+      
       if (search) {
         const cat = getCategoryInfo(tx.category);
         const q = search.toLowerCase();
@@ -28,7 +36,7 @@ export default function Transactions() {
       }
       return true;
     });
-  }, [transactions, filterType, filterMonth, search]);
+  }, [transactions, filterType, startDate, endDate, search]);
 
   const totalIncome = filtered.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
   const totalExpense = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
@@ -45,8 +53,18 @@ export default function Transactions() {
   }, [filtered]);
 
   async function handleDelete(id: string) {
-    if (!confirm('Hapus transaksi ini?')) return;
-    await deleteTransaction(id);
+    setTxToDelete(id);
+  }
+
+  async function confirmDelete() {
+    if (!txToDelete) return;
+    setIsDeleting(true);
+    try {
+      await deleteTransaction(txToDelete);
+      setTxToDelete(null);
+    } finally {
+      setIsDeleting(false);
+    }
   }
 
   return (
@@ -104,13 +122,27 @@ export default function Transactions() {
             ))}
           </div>
 
-          {/* Month filter */}
-          <input
-            type="month"
-            value={filterMonth}
-            onChange={e => setFilterMonth(e.target.value)}
-            className="px-3 py-1.5 border border-cream-200 rounded-xl text-sm text-sage-700 focus:outline-none focus:border-sage-400 bg-white"
-          />
+          {/* Date Range filter */}
+          <div className="flex items-center gap-2 bg-cream-50 p-1 rounded-xl border border-cream-200">
+            <div className="flex items-center pl-2 text-sage-400">
+              <Calendar className="w-4 h-4" />
+            </div>
+            <input
+              type="date"
+              value={startDate}
+              onChange={e => setStartDate(e.target.value)}
+              className="px-2 py-1.5 text-sm text-sage-700 focus:outline-none bg-transparent"
+              title="Dari Tanggal"
+            />
+            <span className="text-sage-300">-</span>
+            <input
+              type="date"
+              value={endDate}
+              onChange={e => setEndDate(e.target.value)}
+              className="px-2 py-1.5 text-sm text-sage-700 focus:outline-none bg-transparent"
+              title="Sampai Tanggal"
+            />
+          </div>
         </div>
       </div>
 
@@ -153,17 +185,23 @@ export default function Transactions() {
               <div className="bg-white rounded-3xl border border-cream-200 divide-y divide-cream-100 overflow-hidden">
                 {txs.map(tx => {
                   const cat = getCategoryInfo(tx.category);
+                  const isMine = tx.addedBy === userProfile?.displayName;
+                  
                   return (
-                    <div key={tx.id} className="flex items-center gap-4 p-4 hover:bg-cream-50 transition-colors group">
-                      <div className="w-11 h-11 rounded-full bg-cream-100 flex items-center justify-center text-xl flex-shrink-0">
+                    <div key={tx.id} className="group flex items-center gap-4 p-4 hover:bg-cream-50/50 transition-all border-b border-transparent hover:border-cream-100 cursor-pointer">
+                      <div className="w-12 h-12 rounded-2xl bg-white shadow-sm border border-cream-100 flex items-center justify-center text-2xl flex-shrink-0 group-hover:scale-105 transition-transform">
                         {cat.emoji}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sage-800 text-sm">
+                        <div className="font-medium text-sage-800 text-sm truncate">
                           {tx.description || cat.label}
                         </div>
-                        <div className="text-xs text-sage-400 mt-0.5">
-                          {cat.label} · {tx.addedBy}
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs text-sage-400 font-medium">{cat.label}</span>
+                          <div className="w-1 h-1 rounded-full bg-cream-200"></div>
+                          <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide uppercase ${isMine ? 'bg-sage-100 text-sage-600' : 'bg-rose-100 text-rose-600'}`}>
+                            {isMine ? 'Saya' : 'Pasangan'}
+                          </div>
                         </div>
                       </div>
                       <div className={`font-mono font-semibold flex-shrink-0 ${tx.type === 'income' ? 'text-sage-600' : 'text-rose-600'}`}>
@@ -171,7 +209,7 @@ export default function Transactions() {
                       </div>
                       <button
                         onClick={() => handleDelete(tx.id)}
-                        className="p-2 rounded-xl text-sage-300 hover:text-rose-500 hover:bg-rose-50 transition-all opacity-0 group-hover:opacity-100"
+                        className="p-2.5 rounded-xl text-sage-300 hover:text-rose-500 hover:bg-rose-100 transition-all opacity-0 group-hover:opacity-100"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -185,6 +223,15 @@ export default function Transactions() {
       )}
 
       {showModal && <TransactionModal onClose={() => setShowModal(false)} />}
+      
+      <ConfirmModal
+        isOpen={!!txToDelete}
+        title="Hapus Transaksi"
+        message="Apakah Anda yakin ingin menghapus transaksi ini? Saldo dan statistik akan otomatis diperbarui."
+        onConfirm={confirmDelete}
+        onCancel={() => setTxToDelete(null)}
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

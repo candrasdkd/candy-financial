@@ -1,44 +1,39 @@
-# 💑 DuaHati Finance — Manajemen Keuangan Pasutri
+# 🍬 Candy Financial (Pasutri Finance)
 
-Aplikasi manajemen keuangan untuk pasangan suami istri dengan Firebase, React TypeScript, dan Tailwind CSS.
+Aplikasi manajemen keuangan bergaya modern dan *premium* yang dirancang khusus untuk **pasangan suami istri (Pasutri)**. Dibangun dengan React (TypeScript), Vite, Tailwind CSS, dan Firebase.
 
-## ✨ Fitur
+## ✨ Fitur Utama
 
-- 🔐 **Autentikasi** — Daftar & login dengan email/password
-- 💑 **Sistem Pasangan** — Hubungkan akun dengan pasangan via kode undangan
-- 💰 **Catat Transaksi** — Pemasukan & pengeluaran dengan 14 kategori
-- 📊 **Dashboard** — Ringkasan keuangan bulan ini dengan grafik
-- 📋 **Riwayat** — Filter & cari transaksi, dikelompokkan per hari
-- 🏦 **Anggaran** — Set batas pengeluaran per kategori dengan indikator
-- 📱 **Responsif & PWA** — Mobile & desktop friendly, bisa diinstall sebagai aplikasi natively (Progressive Web App) di Android maupun iOS
+- 🔐 **Autentikasi & Akun** — Daftar & login aman dengan email/password.
+- 💑 **Sinkronisasi Pasangan** — Hubungkan akun dengan pasangan menggunakan *kode undangan*. Transaksi otomatis sinkron *real-time*.
+- 💰 **Pencatatan Transaksi** — Catat pemasukan dan pengeluaran dengan kategori ber-emoji. Dilengkapi identifikasi **"SAYA"** atau **"PASANGAN"** untuk melihat siapa yang mencatat.
+- 📊 **Dashboard Premium** — Tampilan kartu saldo modern ber-*gradient*, grafik Area Chart 7-hari interaktif, dan Pie Chart pengeluaran menggunakan Recharts dengan Custom Tooltips.
+- 📅 **Riwayat (Date Range Filter)** — Telusuri transaksi menggunakan rentang tanggal (*Date Range*) yang fleksibel dan fitur pencarian.
+- 🏦 **Anggaran (Budgeting)** — Atur batas pengeluaran bulanan per kategori. Terdapat *progress bar* yang berubah warna saat mendekati/melewati batas anggaran.
+- 📱 **Progressive Web App (PWA)** — Aplikasi *mobile-friendly* dan bisa langsung di-*install* ke layar utama (Home Screen) Android maupun iOS.
 
 ---
 
-## 🚀 Cara Setup
+## 🚀 Cara Setup (Local Development)
 
 ### 1. Install Dependencies
-
+Proyek ini menggunakan Yarn. Jalankan perintah:
 ```bash
-cd pasutri-finance
-npm install
+yarn install
 ```
 
 ### 2. Setup Firebase
-
 1. Buka [Firebase Console](https://console.firebase.google.com/)
-2. Buat project baru
-3. Aktifkan **Authentication** → Sign-in method → **Email/Password**
-4. Aktifkan **Firestore Database** (mode production atau test)
-5. Salin konfigurasi Firebase
+2. Buat proyek baru.
+3. Aktifkan **Authentication** → Sign-in method → **Email/Password**.
+4. Aktifkan **Firestore Database**.
 
 ### 3. Konfigurasi Environment
-
+Duplikat file konfigurasi *environment*:
 ```bash
 cp .env.example .env
 ```
-
-Isi file `.env` dengan konfigurasi Firebase kamu:
-
+Lalu lengkapi file `.env` dengan kredensial Firebase milikmu:
 ```env
 VITE_FIREBASE_API_KEY=AIzaSy...
 VITE_FIREBASE_AUTH_DOMAIN=project-name.firebaseapp.com
@@ -49,32 +44,26 @@ VITE_FIREBASE_APP_ID=1:123456789:web:abc123
 ```
 
 ### 4. Firestore Security Rules
-
-Di Firebase Console → Firestore → Rules, paste rules berikut:
-
-```
+Di Firebase Console → Firestore → Rules, ganti dan simpan *rules* berikut agar data aman:
+```javascript
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Users can read/write their own profile
+    // Profil user
     match /users/{userId} {
       allow read: if request.auth != null;
       allow write: if request.auth.uid == userId;
     }
-
-    // Couples readable/writable by members
+    // Pasangan (Couples)
     match /couples/{coupleId} {
       allow read, write: if request.auth != null;
     }
-
-    // Transactions: only couple members
+    // Transaksi hanya untuk anggota pasangan tersebut
     match /transactions/{txId} {
-      allow read, write: if request.auth != null &&
-        resource == null || resource.data.coupleId != null;
+      allow read, write: if request.auth != null && (resource == null || resource.data.coupleId != null);
       allow create: if request.auth != null;
     }
-
-    // Budgets: same as transactions
+    // Budgeting sama dengan transaksi
     match /budgets/{budgetId} {
       allow read, write: if request.auth != null;
     }
@@ -82,60 +71,45 @@ service cloud.firestore {
 }
 ```
 
-### 5. Jalankan
-
+### 5. Jalankan Aplikasi
 ```bash
-npm run dev
+yarn dev
 ```
-
-Buka [http://localhost:5173](http://localhost:5173)
-
----
-
-## 📱 Cara Penggunaan
-
-1. **Daftar** akun untuk kamu dan pasangan (akun terpisah)
-2. Salah satu buka **Pengaturan** → salin **Kode Undangan**
-3. Yang lain buka **Pengaturan** → masukkan kode tersebut → **Hubungkan**
-4. Sekarang kalian bisa mulai mencatat transaksi bersama! 🎉
+Buka aplikasi di browser pada [http://localhost:5173](http://localhost:5173).
 
 ---
 
-## 🛠️ Tech Stack
+## 📱 Alur Penggunaan (Pasutri)
 
-- **React 18** + TypeScript
-- **Vite** — build tool
-- **Tailwind CSS** — styling
-- **Firebase** — Auth + Firestore
-- **Recharts** — grafik
-- **React Router v6** — routing
-- **date-fns** — manipulasi tanggal
-- **Lucide React** — icons
+1. **Daftar**: Suami dan Istri masing-masing membuat akun di perangkat/HP masing-masing.
+2. **Koneksi**: Salah satu orang membuka **Pengaturan (Settings)** lalu menyalin **Kode Undangan**.
+3. **Hubungkan**: Orang yang satunya membuka menu **Pengaturan**, memasukkan kode tersebut, lalu klik **Hubungkan**.
+4. Selesai! Aplikasi langsung tersinkronisasi. Semua transaksi yang dimasukkan satu pihak akan otomatis muncul di HP pasangan.
 
 ---
 
-## 📁 Struktur Project
+## 🛠️ Tech Stack & Arsitektur
 
-```
+- **Frontend**: React 18, TypeScript, Vite
+- **Styling**: Tailwind CSS (Desain modern, glassmorphism, responsive)
+- **Backend & Database**: Firebase (Auth, Firestore *Realtime*)
+- **Grafik & Visualisasi**: Recharts
+- **Routing**: React Router DOM v6
+- **Date Handling**: date-fns
+- **Icons**: Lucide React
+
+## 📁 Struktur Proyek Utama
+
+```text
 src/
-├── components/
-│   ├── Layout.tsx          # Sidebar + layout wrapper
-│   ├── InstallPrompt.tsx   # Banner panduan instalasi PWA di mobile
-│   └── TransactionModal.tsx # Modal tambah transaksi
-├── contexts/
-│   └── AuthContext.tsx     # Auth + user profile state
-├── hooks/
-│   └── useTransactions.ts  # Transaksi & budget hooks
-├── pages/
-│   ├── Login.tsx
-│   ├── Register.tsx
-│   ├── Dashboard.tsx
-│   ├── Transactions.tsx
-│   ├── Budget.tsx
-│   └── Settings.tsx
-├── types/
-│   └── index.ts            # Type definitions + helpers
-├── firebase.ts             # Firebase init
-├── App.tsx                 # Routing
-└── main.tsx
+├── components/          # Komponen UI (ConfirmModal, TransactionModal, dll)
+├── contexts/            # Context API (AuthContext)
+├── hooks/               # Custom Hooks penyederhanaan logika:
+│   ├── useTransactions.ts
+│   ├── useDashboardStats.ts # Logika kalkulasi Dashboard
+│   └── useBudgetStats.ts    # Logika kalkulasi Budgeting
+├── pages/               # React Router Pages (Dashboard, Budget, dll)
+├── types/               # Type Definition (.d.ts) dan helper fungsi
+├── App.tsx              # Root Router
+└── index.css            # Setup Tailwind base
 ```

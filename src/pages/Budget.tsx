@@ -2,9 +2,11 @@ import { useState, useMemo } from 'react';
 import { format, parseISO, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { PiggyBank, Plus, Edit2, Trash2, AlertTriangle } from 'lucide-react';
+import ConfirmModal from '../components/ConfirmModal';
 import { useBudgets } from '../hooks/useTransactions';
 import { useTransactions } from '../hooks/useTransactions';
 import { EXPENSE_CATEGORIES, getCategoryInfo, formatRupiah, Category } from '../types';
+import { useBudgetStats } from '../hooks/useBudgetStats';
 
 export default function Budget() {
   const { budgets, loading: budgetsLoading, error, setBudget, deleteBudget } = useBudgets();
@@ -15,26 +17,11 @@ export default function Budget() {
   const [addingNew, setAddingNew] = useState(false);
   const [newCategory, setNewCategory] = useState<Category>('makan');
   const [loading, setLoading] = useState(false);
+  const [budgetToDelete, setBudgetToDelete] = useState<string | null>(null);
 
   const monthBudgets = budgets.filter(b => b.month === month);
 
-  const monthDate = new Date(month + '-01');
-  const monthStart = startOfMonth(monthDate);
-  const monthEnd = endOfMonth(monthDate);
-
-  const expenseByCategory = useMemo(() => {
-    const map: Record<string, number> = {};
-    transactions
-      .filter(tx => {
-        try {
-          return tx.type === 'expense' && isWithinInterval(parseISO(tx.date), { start: monthStart, end: monthEnd });
-        } catch { return false; }
-      })
-      .forEach(tx => {
-        map[tx.category] = (map[tx.category] || 0) + tx.amount;
-      });
-    return map;
-  }, [transactions, month]);
+  const { expenseByCategory } = useBudgetStats(transactions, month);
 
   async function handleSave(cat: Category) {
     const limit = parseInt(limitInput.replace(/\D/g, ''));
@@ -51,8 +38,18 @@ export default function Budget() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('Hapus anggaran ini?')) return;
-    await deleteBudget(id);
+    setBudgetToDelete(id);
+  }
+
+  async function confirmDelete() {
+    if (!budgetToDelete) return;
+    setLoading(true);
+    try {
+      await deleteBudget(budgetToDelete);
+      setBudgetToDelete(null);
+    } finally {
+      setLoading(false);
+    }
   }
 
   const availableCategories = EXPENSE_CATEGORIES.filter(
@@ -163,7 +160,7 @@ export default function Budget() {
             const isEditing = editing === budget.category;
 
             return (
-              <div key={budget.id} className={`bg-white rounded-3xl border-2 p-5 transition-all ${over ? 'border-rose-200' : nearLimit ? 'border-cream-400' : 'border-cream-200'}`}>
+              <div key={budget.id} className={`bg-white rounded-3xl border-2 p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${over ? 'border-rose-200 hover:shadow-rose-900/10' : nearLimit ? 'border-cream-400 hover:shadow-cream-900/10' : 'border-cream-200 hover:shadow-sage-900/10'}`}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">{cat.emoji}</span>
@@ -241,6 +238,16 @@ export default function Budget() {
           })}
         </div>
       )}
+      
+      {/* Confirm Delete Modal */}
+      <ConfirmModal
+        isOpen={!!budgetToDelete}
+        title="Hapus Anggaran"
+        message="Apakah Anda yakin ingin menghapus anggaran bulan ini? Data yang sudah dihapus tidak dapat dikembalikan."
+        onConfirm={confirmDelete}
+        onCancel={() => setBudgetToDelete(null)}
+        isLoading={loading}
+      />
     </div>
   );
 }
