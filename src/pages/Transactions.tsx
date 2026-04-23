@@ -99,7 +99,7 @@ export default function Transactions() {
       <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4">
         <div className="bg-sage-50 border border-sage-200 rounded-2xl p-4">
           <div className="text-xs text-sage-500 mb-1">Total Pemasukan</div>
-          <div className="font-mono font-semibold text-sage-700">{formatRupiah(totalIncome)}</div>
+          <div className="font-mono font-bold text-lg text-emerald-600">{formatRupiah(totalIncome)}</div>
         </div>
         <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4">
           <div className="text-xs text-sage-500 mb-1">Total Pengeluaran</div>
@@ -223,7 +223,7 @@ export default function Transactions() {
                           </div>
                         </div>
                       </div>
-                      <div className={`font-mono font-semibold flex-shrink-0 ${tx.type === 'income' ? 'text-sage-600' : 'text-rose-600'}`}>
+                      <div className={`font-mono font-semibold flex-shrink-0 ${tx.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}`}>
                         {tx.type === 'income' ? '+' : '-'}{formatRupiah(tx.amount)}
                       </div>
                       <button

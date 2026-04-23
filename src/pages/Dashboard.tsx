@@ -26,7 +26,16 @@ import { useDashboardStats } from '../hooks/useDashboardStats';
 import TransactionModal from '../components/TransactionModal';
 import { Link } from 'react-router-dom';
 
-const COLORS = ['#334155', '#475569', '#64748b', '#dc2626', '#ef4444', '#f87171', '#0ea5e9', '#38bdf8', '#7dd3fc'];
+const COLORS = [
+  '#4F6F52', // Sage Green
+  '#E6A4B4', // Rose Pink
+  '#7A9D54', // Olive
+  '#F3D7CA', // Peach
+  '#8EACCD', // Soft Blue
+  '#D2E0FB', // Sky
+  '#B4BDFF', // Lavender
+  '#F9F3CC', // Cream
+];
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -116,37 +125,41 @@ export default function Dashboard() {
       </motion.div>
 
       {/* Summary Cards */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        <div className={`p-6 rounded-3xl text-white shadow-xl ${balance >= 0 ? 'bg-gradient-to-br from-sage-600 to-sage-800 shadow-sage-900/20' : 'bg-gradient-to-br from-rose-500 to-rose-700 shadow-rose-900/20'} relative overflow-hidden`}>
-          <div className="absolute -right-6 -top-6 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
-          <div className="flex items-center gap-2 mb-4 relative z-10">
-            <Wallet className="w-4 h-4 opacity-80" />
-            <span className="text-sm opacity-80 font-body">Saldo Bulan Ini</span>
+      <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className={`p-8 rounded-[2rem] text-white shadow-2xl ${balance >= 0 ? 'bg-gradient-to-br from-sage-700 to-sage-900 shadow-sage-900/20' : 'bg-gradient-to-br from-rose-500 to-rose-700 shadow-rose-900/20'} relative overflow-hidden group transition-all duration-500 hover:scale-[1.02]`}>
+          <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
+          <div className="flex items-center gap-3 mb-6 relative z-10">
+            <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-md">
+              <Wallet className="w-5 h-5 text-cream-100" />
+            </div>
+            <span className="text-sm font-medium text-cream-100/80 font-body">Saldo Bulan Ini</span>
           </div>
-          <div className="font-mono text-3xl font-semibold relative z-10">{formatRupiah(balance)}</div>
-          <div className="text-xs opacity-70 mt-2 relative z-10">{format(now, 'MMMM yyyy', { locale: id })}</div>
+          <div className="font-mono text-3xl lg:text-4xl font-bold relative z-10 tracking-tight">{formatRupiah(balance)}</div>
+          <div className="text-xs font-medium opacity-60 mt-3 relative z-10">{format(now, 'MMMM yyyy', { locale: id })}</div>
         </div>
 
-        <div className="p-6 rounded-3xl bg-white border border-cream-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-sage-900/5 transition-all duration-300">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-sage-50 rounded-2xl flex items-center justify-center">
-              <TrendingUp className="w-4 h-4 text-sage-600" />
+        <div className="p-8 rounded-[2rem] bg-white border border-cream-200 hover:-translate-y-2 hover:shadow-2xl hover:shadow-emerald-900/10 transition-all duration-500 group relative overflow-hidden">
+          <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-50 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="flex items-center gap-3 mb-6 relative z-10">
+            <div className="w-10 h-10 bg-emerald-50 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <TrendingUp className="w-5 h-5 text-emerald-600" />
             </div>
-            <span className="text-sm text-sage-500 font-body">Pemasukan</span>
+            <span className="text-sm text-sage-500 font-medium font-body">Pemasukan</span>
           </div>
-          <div className="font-mono text-2xl font-semibold text-sage-800">{formatRupiah(totalIncome)}</div>
-          <div className="text-xs text-sage-400 mt-2">{thisMonthTx.filter(t => t.type === 'income').length} transaksi</div>
+          <div className="font-mono text-3xl font-bold text-emerald-600 relative z-10 tracking-tight">{formatRupiah(totalIncome)}</div>
+          <div className="text-xs text-sage-400 mt-3 relative z-10 font-medium">{thisMonthTx.filter(t => t.type === 'income').length} transaksi terdaftar</div>
         </div>
 
-        <div className="p-6 rounded-3xl bg-white border border-cream-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-rose-900/5 transition-all duration-300">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-rose-50 rounded-2xl flex items-center justify-center">
-              <TrendingDown className="w-4 h-4 text-rose-500" />
+        <div className="p-8 rounded-[2rem] bg-white border border-cream-200 hover:-translate-y-2 hover:shadow-2xl hover:shadow-rose-900/10 transition-all duration-500 group relative overflow-hidden">
+          <div className="absolute -right-4 -top-4 w-24 h-24 bg-rose-50 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="flex items-center gap-3 mb-6 relative z-10">
+            <div className="w-10 h-10 bg-rose-50 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <TrendingDown className="w-5 h-5 text-rose-500" />
             </div>
-            <span className="text-sm text-sage-500 font-body">Pengeluaran</span>
+            <span className="text-sm text-sage-500 font-medium font-body">Pengeluaran</span>
           </div>
-          <div className="font-mono text-2xl font-semibold text-rose-700">{formatRupiah(totalExpense)}</div>
-          <div className="text-xs text-sage-400 mt-2">{thisMonthTx.filter(t => t.type === 'expense').length} transaksi</div>
+          <div className="font-mono text-3xl font-bold text-rose-600 relative z-10 tracking-tight">{formatRupiah(totalExpense)}</div>
+          <div className="text-xs text-sage-400 mt-3 relative z-10 font-medium">{thisMonthTx.filter(t => t.type === 'expense').length} transaksi terdaftar</div>
         </div>
       </motion.div>
 
@@ -158,20 +171,34 @@ export default function Dashboard() {
           <ResponsiveContainer width="100%" height={200}>
             <AreaChart data={chartData}>
               <defs>
-                <linearGradient id="income" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#334155" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#334155" stopOpacity={0} />
+                <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                 </linearGradient>
-                <linearGradient id="expense" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#dc2626" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#dc2626" stopOpacity={0} />
+                <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#f43f5e" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
               <YAxis hide />
               <Tooltip content={<CustomTooltip />} />
-              <Area type="monotone" dataKey="pemasukan" stroke="#334155" fill="url(#income)" strokeWidth={2} name="Pemasukan" />
-              <Area type="monotone" dataKey="pengeluaran" stroke="#dc2626" fill="url(#expense)" strokeWidth={2} name="Pengeluaran" />
+              <Area
+                type="monotone"
+                dataKey="income"
+                stroke="#10b981"
+                fillOpacity={1}
+                fill="url(#colorIncome)"
+                strokeWidth={4}
+              />
+              <Area
+                type="monotone"
+                dataKey="expense"
+                stroke="#f43f5e"
+                fillOpacity={1}
+                fill="url(#colorExpense)"
+                strokeWidth={4}
+              />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -256,7 +283,7 @@ export default function Dashboard() {
                       </div>
                     </div>
                   </div>
-                  <div className={`font-mono font-bold text-sm flex-shrink-0 ${tx.type === 'income' ? 'text-sage-600' : 'text-rose-600'}`}>
+                  <div className={`font-mono font-bold text-sm flex-shrink-0 ${tx.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}`}>
                     {tx.type === 'income' ? '+' : '-'}{formatRupiah(tx.amount)}
                   </div>
                 </div>
