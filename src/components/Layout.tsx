@@ -53,7 +53,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             {userProfile?.partnerEmail && (
               <p className="text-sage-400 text-xs flex items-center gap-1">
                 <Heart className="w-3 h-3 fill-rose-400 text-rose-400" />
-                {userProfile.partnerEmail.split('@')[0]}
+                {userProfile.partnerName || userProfile.partnerEmail.split('@')[0]}
               </p>
             )}
           </div>
@@ -69,10 +69,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             end={to === '/'}
             onClick={() => setMobileOpen(false)}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-3 rounded-xl font-body text-sm transition-all duration-200 ${
+              `flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 ${
                 isActive
-                  ? 'bg-sage-600 text-cream-100 shadow-sm'
-                  : 'text-sage-300 hover:bg-sage-800 hover:text-cream-200'
+                  ? 'bg-sage-800 text-white shadow-sm'
+                  : 'text-sage-400 hover:bg-sage-800/50 hover:text-white'
               }`
             }
           >

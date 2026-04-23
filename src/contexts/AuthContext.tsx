@@ -73,6 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       displayName,
       coupleId: null,
       partnerEmail: null,
+      partnerName: null,
       inviteCode,
     };
     await setDoc(doc(db, 'users', user.uid), profile);
@@ -113,10 +114,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await updateDoc(doc(db, 'users', currentUser.uid), {
       coupleId: coupleRef.id,
       partnerEmail: partnerData.email,
+      partnerName: partnerData.displayName,
     });
     await updateDoc(doc(db, 'users', partnerData.uid), {
       coupleId: coupleRef.id,
       partnerEmail: currentUser.email,
+      partnerName: userProfile.displayName,
     });
 
     await refreshProfile();
@@ -128,6 +131,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (user) {
         const profile = await fetchProfile(user.uid);
         setUserProfile(profile);
+
+        // Auto-sync partnerName if missing
+        if (profile?.coupleId && !profile.partnerName && profile.partnerEmail) {
+          try {
+            const q = query(collection(db, 'users'), where('email', '==', profile.partnerEmail));
+            const snap = await getDocs(q);
+            if (!snap.empty) {
+              const partnerData = snap.docs[0].data() as UserProfile;
+              await updateDoc(doc(db, 'users', user.uid), {
+                partnerName: partnerData.displayName
+              });
+              setUserProfile(prev => prev ? { ...prev, partnerName: partnerData.displayName } : null);
+            }
+          } catch (e) {
+            console.error('Failed to sync partner name', e);
+          }
+        }
       } else {
         setUserProfile(null);
       }

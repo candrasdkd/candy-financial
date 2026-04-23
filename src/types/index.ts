@@ -1,4 +1,21 @@
 export type TransactionType = 'income' | 'expense';
+import {
+  Briefcase,
+  Laptop,
+  TrendingUp,
+  Store,
+  Coins,
+  Utensils,
+  Car,
+  ShoppingBag,
+  FileText,
+  Activity,
+  Film,
+  Book,
+  Landmark,
+  Banknote,
+  Tag
+} from 'lucide-react';
 
 export type Category =
   | 'gaji'
@@ -43,6 +60,7 @@ export interface UserProfile {
   displayName: string;
   coupleId: string | null;
   partnerEmail: string | null;
+  partnerName: string | null;
   inviteCode: string;
 }
 
@@ -52,30 +70,30 @@ export interface CoupleData {
   createdAt: string;
 }
 
-export const INCOME_CATEGORIES: { value: Category; label: string; emoji: string }[] = [
-  { value: 'gaji', label: 'Gaji', emoji: '💼' },
-  { value: 'freelance', label: 'Freelance', emoji: '💻' },
-  { value: 'investasi', label: 'Investasi', emoji: '📈' },
-  { value: 'bisnis', label: 'Bisnis', emoji: '🏪' },
-  { value: 'lainnya_pemasukan', label: 'Lainnya', emoji: '💰' },
+export const INCOME_CATEGORIES: { value: Category; label: string; icon: any }[] = [
+  { value: 'gaji', label: 'Gaji', icon: Briefcase },
+  { value: 'freelance', label: 'Freelance', icon: Laptop },
+  { value: 'investasi', label: 'Investasi', icon: TrendingUp },
+  { value: 'bisnis', label: 'Bisnis', icon: Store },
+  { value: 'lainnya_pemasukan', label: 'Lainnya', icon: Coins },
 ];
 
-export const EXPENSE_CATEGORIES: { value: Category; label: string; emoji: string }[] = [
-  { value: 'makan', label: 'Makan & Minum', emoji: '🍜' },
-  { value: 'transport', label: 'Transportasi', emoji: '🚗' },
-  { value: 'belanja', label: 'Belanja', emoji: '🛍️' },
-  { value: 'tagihan', label: 'Tagihan', emoji: '📄' },
-  { value: 'kesehatan', label: 'Kesehatan', emoji: '🏥' },
-  { value: 'hiburan', label: 'Hiburan', emoji: '🎬' },
-  { value: 'pendidikan', label: 'Pendidikan', emoji: '📚' },
-  { value: 'tabungan', label: 'Tabungan', emoji: '🏦' },
-  { value: 'lainnya_pengeluaran', label: 'Lainnya', emoji: '💸' },
+export const EXPENSE_CATEGORIES: { value: Category; label: string; icon: any }[] = [
+  { value: 'makan', label: 'Makan & Minum', icon: Utensils },
+  { value: 'transport', label: 'Transportasi', icon: Car },
+  { value: 'belanja', label: 'Belanja', icon: ShoppingBag },
+  { value: 'tagihan', label: 'Tagihan', icon: FileText },
+  { value: 'kesehatan', label: 'Kesehatan', icon: Activity },
+  { value: 'hiburan', label: 'Hiburan', icon: Film },
+  { value: 'pendidikan', label: 'Pendidikan', icon: Book },
+  { value: 'tabungan', label: 'Tabungan', icon: Landmark },
+  { value: 'lainnya_pengeluaran', label: 'Lainnya', icon: Banknote },
 ];
 
 export const ALL_CATEGORIES = [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES];
 
 export function getCategoryInfo(cat: Category) {
-  return ALL_CATEGORIES.find(c => c.value === cat) || { value: cat, label: cat, emoji: '📌' };
+  return ALL_CATEGORIES.find(c => c.value === cat) || { value: cat, label: cat, icon: Tag };
 }
 
 export function formatRupiah(amount: number): string {

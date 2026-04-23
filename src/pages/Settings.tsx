@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import { Copy, Link2, Heart, User, Mail, Key, CheckCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { motion } from 'framer-motion';
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100 } }
+} as const;
 
 export default function Settings() {
   const { userProfile, linkCouple } = useAuth();
@@ -26,7 +32,7 @@ export default function Settings() {
     setLinking(true);
     try {
       await linkCouple(inviteCode.toUpperCase().trim());
-      setLinkSuccess('Berhasil terhubung dengan pasangan! 💑');
+      setLinkSuccess('Berhasil terhubung dengan pasangan!');
       setInviteCode('');
     } catch (err: any) {
       setLinkError(err.message || 'Terjadi kesalahan');
@@ -36,11 +42,19 @@ export default function Settings() {
   }
 
   return (
-    <div className="p-6 lg:p-8 max-w-2xl mx-auto space-y-6 animate-fade-in">
-      <h1 className="font-display text-2xl lg:text-3xl text-sage-900">Pengaturan</h1>
+    <motion.div 
+      initial="hidden"
+      animate="visible"
+      variants={{
+        hidden: { opacity: 0 },
+        visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+      }}
+      className="p-6 lg:p-8 max-w-2xl mx-auto space-y-6"
+    >
+      <motion.h1 variants={itemVariants} className="font-display text-2xl lg:text-3xl text-sage-900">Pengaturan</motion.h1>
 
       {/* Profile Card */}
-      <div className="bg-white rounded-3xl border border-cream-200 p-6">
+      <motion.div variants={itemVariants} className="bg-white rounded-3xl border border-cream-200 p-6">
         <h2 className="font-display text-lg text-sage-800 mb-5">Profil Saya</h2>
         <div className="space-y-4">
           <div className="flex items-center gap-4">
@@ -55,10 +69,10 @@ export default function Settings() {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Couple Status */}
-      <div className="bg-white rounded-3xl border border-cream-200 p-6">
+      <motion.div variants={itemVariants} className="bg-white rounded-3xl border border-cream-200 p-6">
         <h2 className="font-display text-lg text-sage-800 mb-5 flex items-center gap-2">
           <Heart className="w-5 h-5 text-rose-400 fill-rose-400" />
           Status Pasangan
@@ -69,7 +83,9 @@ export default function Settings() {
             <div className="flex items-center gap-3 p-4 bg-sage-50 rounded-2xl border border-sage-200">
               <CheckCircle className="w-5 h-5 text-sage-600" />
               <div>
-                <div className="font-medium text-sage-800">Terhubung dengan pasangan</div>
+                <div className="font-medium text-sage-800">
+                  Terhubung dengan {userProfile.partnerName || 'Pasangan'}
+                </div>
                 <div className="text-sm text-sage-500">{userProfile.partnerEmail}</div>
               </div>
             </div>
@@ -143,10 +159,10 @@ export default function Settings() {
             </div>
           </div>
         )}
-      </div>
+      </motion.div>
 
       {/* Info */}
-      <div className="bg-cream-50 rounded-3xl border border-cream-200 p-6">
+      <motion.div variants={itemVariants} className="bg-cream-50 rounded-3xl border border-cream-200 p-6">
         <h2 className="font-display text-lg text-sage-800 mb-3">Tentang Aplikasi</h2>
         <div className="space-y-2 text-sm text-sage-500">
           <div className="flex justify-between">
@@ -155,10 +171,10 @@ export default function Settings() {
           </div>
           <div className="flex justify-between">
             <span>Dibuat dengan</span>
-            <span className="text-sage-700">❤️ React + Firebase</span>
+            <span className="text-sage-700">React + Firebase</span>
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

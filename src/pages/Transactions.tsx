@@ -1,5 +1,11 @@
 import { useState, useMemo } from 'react';
-import { Plus, Search, Trash2, Filter, AlertTriangle, Calendar } from 'lucide-react';
+import { Plus, Search, Trash2, Filter, AlertTriangle, Calendar, Inbox } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100 } }
+} as const;
 import { format, parseISO, startOfMonth, endOfMonth } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { useAuth } from '../contexts/AuthContext';
@@ -68,9 +74,17 @@ export default function Transactions() {
   }
 
   return (
-    <div className="p-6 lg:p-8 max-w-4xl mx-auto space-y-6 animate-fade-in">
+    <motion.div 
+      initial="hidden"
+      animate="visible"
+      variants={{
+        hidden: { opacity: 0 },
+        visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+      }}
+      className="p-6 lg:p-8 max-w-4xl mx-auto space-y-6"
+    >
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <motion.div variants={itemVariants} className="flex items-center justify-between">
         <h1 className="font-display text-2xl lg:text-3xl text-sage-900">Transaksi</h1>
         <button
           onClick={() => setShowModal(true)}
@@ -79,10 +93,10 @@ export default function Transactions() {
           <Plus className="w-4 h-4" />
           <span className="hidden sm:inline">Tambah</span>
         </button>
-      </div>
+      </motion.div>
 
       {/* Summary */}
-      <div className="grid grid-cols-2 gap-4">
+      <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4">
         <div className="bg-sage-50 border border-sage-200 rounded-2xl p-4">
           <div className="text-xs text-sage-500 mb-1">Total Pemasukan</div>
           <div className="font-mono font-semibold text-sage-700">{formatRupiah(totalIncome)}</div>
@@ -91,10 +105,10 @@ export default function Transactions() {
           <div className="text-xs text-sage-500 mb-1">Total Pengeluaran</div>
           <div className="font-mono font-semibold text-rose-600">{formatRupiah(totalExpense)}</div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Filters */}
-      <div className="bg-white rounded-3xl p-4 border border-cream-200 space-y-3">
+      <motion.div variants={itemVariants} className="bg-white rounded-3xl p-4 border border-cream-200 space-y-3">
         {/* Search */}
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-sage-400" />
@@ -144,7 +158,7 @@ export default function Transactions() {
             />
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Transaction List */}
       {error ? (
@@ -163,13 +177,17 @@ export default function Transactions() {
         </div>
       ) : grouped.length === 0 ? (
         <div className="text-center py-20 text-sage-400">
-          <div className="text-5xl mb-4">🔍</div>
+          <Search className="w-16 h-16 mx-auto text-sage-300 mb-4" />
           <p className="font-body">Tidak ada transaksi ditemukan</p>
         </div>
       ) : (
-        <div className="space-y-6">
+        <motion.div variants={itemVariants} className="space-y-6">
           {grouped.map(([date, txs]) => (
-            <div key={date}>
+            <motion.div 
+              key={date}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
               <div className="flex items-center gap-3 mb-3">
                 <div className="text-xs font-semibold text-sage-500 uppercase tracking-wider">
                   {format(parseISO(date), 'EEEE, dd MMMM yyyy', { locale: id })}
@@ -190,7 +208,7 @@ export default function Transactions() {
                   return (
                     <div key={tx.id} className="group flex items-center gap-4 p-4 hover:bg-cream-50/50 transition-all border-b border-transparent hover:border-cream-100 cursor-pointer">
                       <div className="w-12 h-12 rounded-2xl bg-white shadow-sm border border-cream-100 flex items-center justify-center text-2xl flex-shrink-0 group-hover:scale-105 transition-transform">
-                        {cat.emoji}
+                        <cat.icon className="w-6 h-6 text-sage-500 group-hover:text-sage-700" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-medium text-sage-800 text-sm truncate">
@@ -200,7 +218,7 @@ export default function Transactions() {
                           <span className="text-xs text-sage-400 font-medium">{cat.label}</span>
                           <div className="w-1 h-1 rounded-full bg-cream-200"></div>
                           <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide uppercase ${isMine ? 'bg-sage-100 text-sage-600' : 'bg-rose-100 text-rose-600'}`}>
-                            {isMine ? 'Saya' : 'Pasangan'}
+                            {isMine ? 'Saya' : (userProfile?.partnerName || 'Pasangan')}
                           </div>
                         </div>
                       </div>
@@ -217,12 +235,14 @@ export default function Transactions() {
                   );
                 })}
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
 
-      {showModal && <TransactionModal onClose={() => setShowModal(false)} />}
+      <AnimatePresence>
+        {showModal && <TransactionModal onClose={() => setShowModal(false)} />}
+      </AnimatePresence>
       
       <ConfirmModal
         isOpen={!!txToDelete}
@@ -232,6 +252,6 @@ export default function Transactions() {
         onCancel={() => setTxToDelete(null)}
         isLoading={isDeleting}
       />
-    </div>
+    </motion.div>
   );
 }

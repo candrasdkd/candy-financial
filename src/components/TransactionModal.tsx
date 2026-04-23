@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, TrendingUp, TrendingDown, ChevronDown } from 'lucide-react';
+import { X, TrendingUp, TrendingDown, ChevronDown, AlertTriangle } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useTransactions } from '../hooks/useTransactions';
 import {
   TransactionType,
@@ -28,20 +29,14 @@ export default function TransactionModal({ onClose }: Props) {
   const categories = type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
   const isExpense = type === 'expense';
 
-  // Animate in
+  // Focus on open
   useEffect(() => {
-    requestAnimationFrame(() => setVisible(true));
     setTimeout(() => amountRef.current?.focus(), 300);
   }, []);
 
-  function handleClose() {
-    setVisible(false);
-    setTimeout(onClose, 300);
-  }
-
   // Close on Escape
   useEffect(() => {
-    const fn = (e: KeyboardEvent) => { if (e.key === 'Escape') handleClose(); };
+    const fn = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', fn);
     return () => window.removeEventListener('keydown', fn);
   }, []);
@@ -57,7 +52,7 @@ export default function TransactionModal({ onClose }: Props) {
     setLoading(true);
     try {
       await addTransaction({ type, category, amount: numAmount, description, date });
-      handleClose();
+      onClose();
     } catch (err: any) {
       setError(err.message || 'Terjadi kesalahan');
     } finally {
@@ -78,20 +73,21 @@ export default function TransactionModal({ onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col justify-end sm:justify-center sm:items-center sm:p-4">
       {/* Backdrop */}
-      <div
-        className={`absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${visible ? 'opacity-100' : 'opacity-0'}`}
-        onClick={handleClose}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
       />
 
       {/* Sheet / Modal */}
-      <div
-        className={`
-          relative bg-white w-full sm:max-w-lg sm:rounded-3xl rounded-t-3xl
-          shadow-2xl flex flex-col
-          transition-transform duration-300 ease-out
-          max-h-[92dvh] sm:max-h-[90vh]
-          ${visible ? 'translate-y-0 sm:scale-100 sm:opacity-100' : 'translate-y-full sm:scale-95 sm:opacity-0'}
-        `}
+      <motion.div
+        initial={{ y: '100%', opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: '100%', opacity: 0 }}
+        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+        className="relative bg-white w-full sm:max-w-lg sm:rounded-3xl rounded-t-3xl shadow-2xl flex flex-col max-h-[92dvh] sm:max-h-[90vh] overflow-hidden"
       >
         {/* Drag Handle (mobile only) */}
         <div className="sm:hidden flex justify-center pt-3 pb-1 flex-shrink-0">
@@ -105,7 +101,7 @@ export default function TransactionModal({ onClose }: Props) {
             <p className="text-xs text-sage-400 mt-0.5">Catat pemasukan atau pengeluaran</p>
           </div>
           <button
-            onClick={handleClose}
+            onClick={onClose}
             className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-cream-100 transition-colors text-sage-500"
           >
             <X className="w-5 h-5" />
@@ -184,9 +180,7 @@ export default function TransactionModal({ onClose }: Props) {
                         }
                       `}
                     >
-                      <span className={`text-xl leading-none transition-transform duration-150 ${active ? 'scale-110' : ''}`}>
-                        {cat.emoji}
-                      </span>
+                      <cat.icon className={`w-6 h-6 transition-transform duration-150 ${active ? 'scale-110' : ''}`} />
                       <span className="leading-tight text-center text-[10px]">{cat.label}</span>
                     </button>
                   );
@@ -224,7 +218,7 @@ export default function TransactionModal({ onClose }: Props) {
 
             {error && (
               <div className="flex items-center gap-2 text-rose-600 text-sm bg-rose-50 border border-rose-200 px-4 py-3 rounded-xl">
-                <span className="text-base">⚠️</span> {error}
+                <AlertTriangle className="w-5 h-5" /> {error}
               </div>
             )}
           </div>
@@ -257,7 +251,7 @@ export default function TransactionModal({ onClose }: Props) {
             </button>
           </div>
         </form>
-      </div>
+      </motion.div>
     </div>
   );
 }

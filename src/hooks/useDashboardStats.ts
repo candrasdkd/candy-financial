@@ -77,7 +77,7 @@ export function useDashboardStats(transactions: Transaction[], date: Date = new 
         return {
           name: info.label,
           value: val,
-          emoji: info.emoji,
+          icon: info.icon,
         };
       });
   }, [thisMonthTx]);

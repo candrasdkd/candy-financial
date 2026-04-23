@@ -1,5 +1,11 @@
 import { useState, useMemo } from 'react';
-import { TrendingUp, TrendingDown, Wallet, Plus, ArrowRight, Heart } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, Plus, ArrowRight, Heart, Inbox } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100 } }
+} as const;
 import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
 import { id } from 'date-fns/locale';
 import {
@@ -20,7 +26,7 @@ import { useDashboardStats } from '../hooks/useDashboardStats';
 import TransactionModal from '../components/TransactionModal';
 import { Link } from 'react-router-dom';
 
-const COLORS = ['#5a845d', '#7da180', '#a8c2aa', '#e14f6c', '#ec7a90', '#f4aab7', '#cda06a', '#dabb8c', '#e8d5b4'];
+const COLORS = ['#334155', '#475569', '#64748b', '#dc2626', '#ef4444', '#f87171', '#0ea5e9', '#38bdf8', '#7dd3fc'];
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -81,12 +87,20 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in">
+    <motion.div 
+      initial="hidden"
+      animate="visible"
+      variants={{
+        hidden: { opacity: 0 },
+        visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+      }}
+      className="p-6 lg:p-8 max-w-7xl mx-auto space-y-6"
+    >
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <motion.div variants={itemVariants} className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-2xl lg:text-3xl text-sage-900">
-            Halo, {userProfile.displayName} 👋
+            Halo, {userProfile.displayName}
           </h1>
           <p className="text-sage-500 text-sm mt-1">
             {format(now, 'EEEE, dd MMMM yyyy', { locale: id })}
@@ -99,10 +113,10 @@ export default function Dashboard() {
           <Plus className="w-4 h-4" />
           <span className="hidden sm:inline">Tambah</span>
         </button>
-      </div>
+      </motion.div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-3 gap-5">
         <div className={`p-6 rounded-3xl text-white shadow-xl ${balance >= 0 ? 'bg-gradient-to-br from-sage-600 to-sage-800 shadow-sage-900/20' : 'bg-gradient-to-br from-rose-500 to-rose-700 shadow-rose-900/20'} relative overflow-hidden`}>
           <div className="absolute -right-6 -top-6 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
           <div className="flex items-center gap-2 mb-4 relative z-10">
@@ -134,10 +148,10 @@ export default function Dashboard() {
           <div className="font-mono text-2xl font-semibold text-rose-700">{formatRupiah(totalExpense)}</div>
           <div className="text-xs text-sage-400 mt-2">{thisMonthTx.filter(t => t.type === 'expense').length} transaksi</div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Area Chart */}
         <div className="lg:col-span-2 bg-white rounded-3xl p-6 border border-cream-200">
           <h3 className="font-display text-lg text-sage-800 mb-4">7 Hari Terakhir</h3>
@@ -145,19 +159,19 @@ export default function Dashboard() {
             <AreaChart data={chartData}>
               <defs>
                 <linearGradient id="income" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#5a845d" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#5a845d" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#334155" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="#334155" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="expense" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#e14f6c" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#e14f6c" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#dc2626" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="#dc2626" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#7da180' }} axisLine={false} tickLine={false} />
+              <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
               <YAxis hide />
               <Tooltip content={<CustomTooltip />} />
-              <Area type="monotone" dataKey="pemasukan" stroke="#5a845d" fill="url(#income)" strokeWidth={2} name="Pemasukan" />
-              <Area type="monotone" dataKey="pengeluaran" stroke="#e14f6c" fill="url(#expense)" strokeWidth={2} name="Pengeluaran" />
+              <Area type="monotone" dataKey="pemasukan" stroke="#334155" fill="url(#income)" strokeWidth={2} name="Pemasukan" />
+              <Area type="monotone" dataKey="pengeluaran" stroke="#dc2626" fill="url(#expense)" strokeWidth={2} name="Pengeluaran" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -182,7 +196,8 @@ export default function Dashboard() {
                   <div key={i} className="flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
-                      <span className="text-sage-600">{item.emoji} {item.name}</span>
+                      <item.icon className="w-4 h-4" />
+                      <span className="text-sage-600">{item.name}</span>
                     </div>
                     <span className="font-mono text-sage-800">{formatRupiah(item.value)}</span>
                   </div>
@@ -195,10 +210,10 @@ export default function Dashboard() {
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {/* Recent Transactions */}
-      <div className="bg-white rounded-3xl p-6 border border-cream-200">
+      <motion.div variants={itemVariants} className="bg-white rounded-3xl p-6 border border-cream-200">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-display text-lg text-sage-800">Transaksi Terbaru</h3>
           <Link to="/transactions" className="text-sage-600 text-sm font-medium flex items-center gap-1 hover:text-sage-800">
@@ -213,7 +228,7 @@ export default function Dashboard() {
           </div>
         ) : recentTx.length === 0 ? (
           <div className="text-center py-12 text-sage-400">
-            <div className="text-4xl mb-3">📭</div>
+            <Inbox className="w-12 h-12 mx-auto text-sage-300 mb-3" />
             <p>Belum ada transaksi. Mulai catat sekarang!</p>
           </div>
         ) : (
@@ -225,7 +240,7 @@ export default function Dashboard() {
               return (
                 <div key={tx.id} className="group flex items-center gap-4 p-3.5 rounded-2xl hover:bg-cream-50/50 hover:shadow-sm transition-all border border-transparent hover:border-cream-100 cursor-pointer">
                   <div className="w-12 h-12 rounded-2xl bg-white shadow-sm border border-cream-100 flex items-center justify-center text-2xl flex-shrink-0 group-hover:scale-105 transition-transform">
-                    {cat.emoji}
+                    <cat.icon className="w-6 h-6 text-sage-500 group-hover:text-sage-700" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-sage-800 text-sm truncate">
@@ -237,7 +252,7 @@ export default function Dashboard() {
                       </span>
                       <div className="w-1 h-1 rounded-full bg-cream-200"></div>
                       <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide uppercase ${isMine ? 'bg-sage-100 text-sage-600' : 'bg-rose-100 text-rose-600'}`}>
-                        {isMine ? 'Saya' : 'Pasangan'}
+                        {isMine ? 'Saya' : (userProfile?.partnerName || 'Pasangan')}
                       </div>
                     </div>
                   </div>
@@ -249,9 +264,11 @@ export default function Dashboard() {
             })}
           </div>
         )}
-      </div>
+      </motion.div>
 
-      {showModal && <TransactionModal onClose={() => setShowModal(false)} />}
-    </div>
+      <AnimatePresence>
+        {showModal && <TransactionModal onClose={() => setShowModal(false)} />}
+      </AnimatePresence>
+    </motion.div>
   );
 }

@@ -2,6 +2,12 @@ import { useState, useMemo } from 'react';
 import { format, parseISO, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { PiggyBank, Plus, Edit2, Trash2, AlertTriangle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100 } }
+} as const;
 import ConfirmModal from '../components/ConfirmModal';
 import { useBudgets } from '../hooks/useTransactions';
 import { useTransactions } from '../hooks/useTransactions';
@@ -57,9 +63,17 @@ export default function Budget() {
   );
 
   return (
-    <div className="p-6 lg:p-8 max-w-4xl mx-auto space-y-6 animate-fade-in">
+    <motion.div 
+      initial="hidden"
+      animate="visible"
+      variants={{
+        hidden: { opacity: 0 },
+        visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+      }}
+      className="p-6 lg:p-8 max-w-4xl mx-auto space-y-6"
+    >
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
+      <motion.div variants={itemVariants} className="flex items-center justify-between flex-wrap gap-4">
         <h1 className="font-display text-2xl lg:text-3xl text-sage-900">Anggaran</h1>
         <div className="flex items-center gap-3">
           <input
@@ -78,55 +92,63 @@ export default function Budget() {
             </button>
           )}
         </div>
-      </div>
+      </motion.div>
 
-      {/* Add New Budget */}
-      {addingNew && (
-        <div className="bg-white rounded-3xl border-2 border-sage-300 p-5 animate-scale-in">
-          <h3 className="font-display text-lg text-sage-800 mb-4">Atur Anggaran Baru</h3>
-          <div className="flex gap-3 flex-wrap">
-            <select
-              value={newCategory}
-              onChange={e => setNewCategory(e.target.value as Category)}
-              className="flex-1 min-w-0 px-4 py-2.5 border border-cream-200 rounded-xl text-sage-800 focus:outline-none focus:border-sage-400 bg-white text-sm"
-            >
-              {availableCategories.map(cat => (
-                <option key={cat.value} value={cat.value}>
-                  {cat.emoji} {cat.label}
-                </option>
-              ))}
-            </select>
-            <div className="relative flex-1 min-w-[140px]">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sage-500 font-mono text-sm">Rp</span>
-              <input
-                type="text"
-                value={limitInput}
-                onChange={e => {
-                  const n = e.target.value.replace(/\D/g, '');
-                  setLimitInput(n ? parseInt(n).toLocaleString('id-ID') : '');
-                }}
-                placeholder="0"
-                className="w-full pl-10 pr-4 py-2.5 border border-cream-200 rounded-xl font-mono text-sage-900 focus:outline-none focus:border-sage-400 text-sm"
-              />
+      <AnimatePresence>
+        {addingNew && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="bg-white rounded-3xl border-2 border-sage-300 p-5 mb-6">
+              <h3 className="font-display text-lg text-sage-800 mb-4">Atur Anggaran Baru</h3>
+              <div className="flex gap-3 flex-wrap">
+                <select
+                  value={newCategory}
+                  onChange={e => setNewCategory(e.target.value as Category)}
+                  className="flex-1 min-w-0 px-4 py-2.5 border border-cream-200 rounded-xl text-sage-800 focus:outline-none focus:border-sage-400 bg-white text-sm"
+                >
+                  {availableCategories.map(cat => (
+                    <option key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="relative flex-1 min-w-[140px]">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sage-500 font-mono text-sm">Rp</span>
+                  <input
+                    type="text"
+                    value={limitInput}
+                    onChange={e => {
+                      const n = e.target.value.replace(/\D/g, '');
+                      setLimitInput(n ? parseInt(n).toLocaleString('id-ID') : '');
+                    }}
+                    placeholder="0"
+                    className="w-full pl-10 pr-4 py-2.5 border border-cream-200 rounded-xl font-mono text-sage-900 focus:outline-none focus:border-sage-400 text-sm"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleSave(newCategory)}
+                    disabled={loading}
+                    className="px-5 py-2.5 bg-sage-600 text-white rounded-xl text-sm font-medium hover:bg-sage-700 disabled:opacity-60"
+                  >
+                    Simpan
+                  </button>
+                  <button
+                    onClick={() => setAddingNew(false)}
+                    className="px-5 py-2.5 border border-cream-200 text-sage-600 rounded-xl text-sm font-medium hover:bg-cream-50"
+                  >
+                    Batal
+                  </button>
+                </div>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleSave(newCategory)}
-                disabled={loading}
-                className="px-5 py-2.5 bg-sage-600 text-white rounded-xl text-sm font-medium hover:bg-sage-700 disabled:opacity-60"
-              >
-                Simpan
-              </button>
-              <button
-                onClick={() => setAddingNew(false)}
-                className="px-5 py-2.5 border border-cream-200 text-sage-600 rounded-xl text-sm font-medium hover:bg-cream-50"
-              >
-                Batal
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Budget List */}
       {error ? (
@@ -150,7 +172,7 @@ export default function Budget() {
           <p className="text-sm mt-1">Klik "Tambah" untuk mulai mengatur anggaran.</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <motion.div variants={itemVariants} className="space-y-3">
           {monthBudgets.map(budget => {
             const cat = getCategoryInfo(budget.category);
             const spent = expenseByCategory[budget.category] || 0;
@@ -163,7 +185,7 @@ export default function Budget() {
               <div key={budget.id} className={`bg-white rounded-3xl border-2 p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${over ? 'border-rose-200 hover:shadow-rose-900/10' : nearLimit ? 'border-cream-400 hover:shadow-cream-900/10' : 'border-cream-200 hover:shadow-sage-900/10'}`}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <span className="text-2xl">{cat.emoji}</span>
+                    <cat.icon className="w-8 h-8 text-sage-500" />
                     <div>
                       <div className="font-semibold text-sage-800">{cat.label}</div>
                       <div className="text-xs text-sage-400 font-mono">
@@ -236,7 +258,7 @@ export default function Budget() {
               </div>
             );
           })}
-        </div>
+        </motion.div>
       )}
       
       {/* Confirm Delete Modal */}
@@ -248,6 +270,6 @@ export default function Budget() {
         onCancel={() => setBudgetToDelete(null)}
         isLoading={loading}
       />
-    </div>
+    </motion.div>
   );
 }

@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Heart } from 'lucide-react';
+import { Heart, Coins, BarChart3, Landmark } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { motion } from 'framer-motion';
 
 export default function Login() {
   const { login } = useAuth();
@@ -48,7 +49,12 @@ export default function Login() {
           ))}
         </div>
 
-        <div className="relative">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1, ease: 'easeOut' }}
+          className="relative"
+        >
           <div className="flex items-center gap-3 mb-12">
             <Heart className="w-8 h-8 text-rose-400 fill-rose-400" />
             <span className="font-display text-2xl text-cream-100">DuaHati Finance</span>
@@ -61,25 +67,45 @@ export default function Login() {
             Transparansi finansial untuk hubungan yang lebih harmonis.
             Catat, pantau, dan rencanakan keuangan rumah tangga bersama.
           </p>
-        </div>
+        </motion.div>
 
-        <div className="relative grid grid-cols-3 gap-4">
+        <motion.div 
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: { opacity: 1, transition: { staggerChildren: 0.15, delayChildren: 0.4 } }
+          }}
+          className="relative grid grid-cols-3 gap-4"
+        >
           {[
-            { label: 'Pemasukan', emoji: '💰' },
-            { label: 'Pengeluaran', emoji: '📊' },
-            { label: 'Anggaran', emoji: '🏦' },
+            { label: 'Pemasukan', icon: Coins },
+            { label: 'Pengeluaran', icon: BarChart3 },
+            { label: 'Anggaran', icon: Landmark },
           ].map(item => (
-            <div key={item.label} className="bg-sage-800/50 rounded-2xl p-4 text-center">
-              <div className="text-2xl mb-2">{item.emoji}</div>
+            <motion.div 
+              key={item.label} 
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100 } }
+              } as const}
+              className="bg-sage-800/50 rounded-2xl p-4 text-center"
+            >
+              <item.icon className="w-8 h-8 mx-auto mb-2 text-cream-200" />
               <div className="text-cream-300 text-sm font-body">{item.label}</div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
 
       {/* Right Panel */}
       <div className="flex-1 flex items-center justify-center p-8 bg-cream-50">
-        <div className="w-full max-w-md animate-slide-up">
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.2, ease: 'easeOut' }}
+          className="w-full max-w-md"
+        >
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center gap-2 mb-8">
             <Heart className="w-6 h-6 text-rose-500 fill-rose-500" />
@@ -139,7 +165,7 @@ export default function Login() {
               Daftar sekarang
             </Link>
           </p>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
