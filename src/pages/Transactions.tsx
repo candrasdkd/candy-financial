@@ -8,29 +8,28 @@ const itemVariants = {
 } as const;
 import { format, parseISO, startOfMonth, endOfMonth } from 'date-fns';
 import { id } from 'date-fns/locale';
-import { useAuth } from '../contexts/AuthContext';
-import ConfirmModal from '../components/ConfirmModal';
+import { useAuthStore } from '../store/useAuthStore';
 import { useTransactions } from '../hooks/useTransactions';
+import { useConfirmStore } from '../store/useConfirmStore';
 import { formatRupiah, getCategoryInfo, TransactionType, ALL_CATEGORIES } from '../types';
 import TransactionModal from '../components/TransactionModal';
 
 export default function Transactions() {
-  const { userProfile } = useAuth();
+  const { userProfile } = useAuthStore();
   const { transactions, loading, error, deleteTransaction } = useTransactions();
   const [showModal, setShowModal] = useState(false);
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState<TransactionType | 'all'>('all');
   const [startDate, setStartDate] = useState(format(startOfMonth(new Date()), 'yyyy-MM-dd'));
   const [endDate, setEndDate] = useState(format(endOfMonth(new Date()), 'yyyy-MM-dd'));
-  const [txToDelete, setTxToDelete] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const { confirm, close, setLoading: setConfirmLoading } = useConfirmStore();
 
   const filtered = useMemo(() => {
     return transactions.filter(tx => {
       if (filterType !== 'all' && tx.type !== filterType) return false;
       if (startDate && tx.date < startDate) return false;
       if (endDate && tx.date > endDate) return false;
-      
+
       if (search) {
         const cat = getCategoryInfo(tx.category);
         const q = search.toLowerCase();
@@ -59,22 +58,23 @@ export default function Transactions() {
   }, [filtered]);
 
   async function handleDelete(id: string) {
-    setTxToDelete(id);
-  }
-
-  async function confirmDelete() {
-    if (!txToDelete) return;
-    setIsDeleting(true);
-    try {
-      await deleteTransaction(txToDelete);
-      setTxToDelete(null);
-    } finally {
-      setIsDeleting(false);
-    }
+    confirm({
+      title: 'Hapus Transaksi',
+      message: 'Apakah Anda yakin ingin menghapus transaksi ini? Saldo dan statistik akan otomatis diperbarui.',
+      onConfirm: async () => {
+        setConfirmLoading(true);
+        try {
+          await deleteTransaction(id);
+          close();
+        } finally {
+          setConfirmLoading(false);
+        }
+      }
+    });
   }
 
   return (
-    <motion.div 
+    <motion.div
       initial="hidden"
       animate="visible"
       variants={{
@@ -137,25 +137,26 @@ export default function Transactions() {
           </div>
 
           {/* Date Range filter */}
-          <div className="flex items-center gap-2 bg-cream-50 p-1 rounded-xl border border-cream-200">
-            <div className="flex items-center pl-2 text-sage-400">
-              <Calendar className="w-4 h-4" />
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 bg-cream-50 p-1 rounded-2xl border border-cream-200 w-full sm:w-auto">
+            <div className="flex items-center gap-2 px-2 cursor-pointer" onClick={(e) => (e.currentTarget.querySelector('input') as HTMLInputElement).showPicker()}>
+              <input
+                type="date"
+                value={startDate}
+                onChange={e => setStartDate(e.target.value)}
+                className="py-1.5 text-sm text-sage-700 focus:outline-none bg-transparent w-full cursor-pointer"
+                title="Dari Tanggal"
+              />
             </div>
-            <input
-              type="date"
-              value={startDate}
-              onChange={e => setStartDate(e.target.value)}
-              className="px-2 py-1.5 text-sm text-sage-700 focus:outline-none bg-transparent"
-              title="Dari Tanggal"
-            />
-            <span className="text-sage-300">-</span>
-            <input
-              type="date"
-              value={endDate}
-              onChange={e => setEndDate(e.target.value)}
-              className="px-2 py-1.5 text-sm text-sage-700 focus:outline-none bg-transparent"
-              title="Sampai Tanggal"
-            />
+            <span className="hidden sm:inline text-sage-300">-</span>
+            <div className="flex items-center gap-2 px-2 border-t border-cream-200 sm:border-t-0 cursor-pointer" onClick={(e) => (e.currentTarget.querySelector('input') as HTMLInputElement).showPicker()}>
+              <input
+                type="date"
+                value={endDate}
+                onChange={e => setEndDate(e.target.value)}
+                className="py-1.5 text-sm text-sage-700 focus:outline-none bg-transparent w-full cursor-pointer"
+                title="Sampai Tanggal"
+              />
+            </div>
           </div>
         </div>
       </motion.div>
@@ -183,7 +184,7 @@ export default function Transactions() {
       ) : (
         <motion.div variants={itemVariants} className="space-y-6">
           {grouped.map(([date, txs]) => (
-            <motion.div 
+            <motion.div
               key={date}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -204,7 +205,7 @@ export default function Transactions() {
                 {txs.map(tx => {
                   const cat = getCategoryInfo(tx.category);
                   const isMine = tx.addedBy === userProfile?.displayName;
-                  
+
                   return (
                     <div key={tx.id} className="group flex items-center gap-4 p-4 hover:bg-cream-50/50 transition-all border-b border-transparent hover:border-cream-100 cursor-pointer">
                       <div className="w-12 h-12 rounded-2xl bg-white shadow-sm border border-cream-100 flex items-center justify-center text-2xl flex-shrink-0 group-hover:scale-105 transition-transform">
@@ -243,15 +244,6 @@ export default function Transactions() {
       <AnimatePresence>
         {showModal && <TransactionModal onClose={() => setShowModal(false)} />}
       </AnimatePresence>
-      
-      <ConfirmModal
-        isOpen={!!txToDelete}
-        title="Hapus Transaksi"
-        message="Apakah Anda yakin ingin menghapus transaksi ini? Saldo dan statistik akan otomatis diperbarui."
-        onConfirm={confirmDelete}
-        onCancel={() => setTxToDelete(null)}
-        isLoading={isDeleting}
-      />
     </motion.div>
   );
 }

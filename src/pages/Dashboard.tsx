@@ -19,7 +19,7 @@ import {
   Pie,
   Cell,
 } from 'recharts';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuthStore } from '../store/useAuthStore';
 import { useTransactions } from '../hooks/useTransactions';
 import { formatRupiah, getCategoryInfo } from '../types';
 import { useDashboardStats } from '../hooks/useDashboardStats';
@@ -51,7 +51,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export default function Dashboard() {
-  const { userProfile } = useAuth();
+  const { userProfile } = useAuthStore();
   const { transactions, loading } = useTransactions();
   const [showModal, setShowModal] = useState(false);
   const now = new Date();

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Copy, Link2, Heart, User, Mail, Key, CheckCircle } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuthStore } from '../store/useAuthStore';
+import { useConfirmStore } from '../store/useConfirmStore';
 import { motion } from 'framer-motion';
 
 const itemVariants = {
@@ -9,7 +10,8 @@ const itemVariants = {
 } as const;
 
 export default function Settings() {
-  const { userProfile, linkCouple } = useAuth();
+  const { userProfile, linkCouple } = useAuthStore();
+  const { confirm, close, setLoading: setConfirmLoading } = useConfirmStore();
   const [inviteCode, setInviteCode] = useState('');
   const [linking, setLinking] = useState(false);
   const [linkError, setLinkError] = useState('');
@@ -24,21 +26,30 @@ export default function Settings() {
     }
   }
 
-  async function handleLink(e: React.FormEvent) {
+  function handleLink(e: React.FormEvent) {
     e.preventDefault();
-    setLinkError('');
-    setLinkSuccess('');
-    if (!inviteCode.trim()) return;
-    setLinking(true);
-    try {
-      await linkCouple(inviteCode.toUpperCase().trim());
-      setLinkSuccess('Berhasil terhubung dengan pasangan!');
-      setInviteCode('');
-    } catch (err: any) {
-      setLinkError(err.message || 'Terjadi kesalahan');
-    } finally {
-      setLinking(false);
-    }
+    if (!inviteCode) return;
+    
+    confirm({
+      title: 'Hubungkan Pasangan',
+      message: `Apakah Anda yakin ingin terhubung dengan pemilik kode ${inviteCode}? Setelah terhubung, Anda akan berbagi data keuangan secara realtime.`,
+      confirmText: 'Hubungkan',
+      variant: 'success',
+      onConfirm: async () => {
+        setConfirmLoading(true);
+        setLinkError('');
+        try {
+          await linkCouple(inviteCode.toUpperCase().trim());
+          close();
+          setInviteCode('');
+        } catch (err: any) {
+          setLinkError(err.message || 'Gagal menghubungkan pasangan');
+          close();
+        } finally {
+          setConfirmLoading(false);
+        }
+      }
+    });
   }
 
   return (

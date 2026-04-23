@@ -8,7 +8,7 @@ const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100 } }
 } as const;
-import ConfirmModal from '../components/ConfirmModal';
+import { useConfirmStore } from '../store/useConfirmStore';
 import { useBudgets } from '../hooks/useTransactions';
 import { useTransactions } from '../hooks/useTransactions';
 import { EXPENSE_CATEGORIES, getCategoryInfo, formatRupiah, Category } from '../types';
@@ -23,7 +23,7 @@ export default function Budget() {
   const [addingNew, setAddingNew] = useState(false);
   const [newCategory, setNewCategory] = useState<Category>('makan');
   const [loading, setLoading] = useState(false);
-  const [budgetToDelete, setBudgetToDelete] = useState<string | null>(null);
+  const { confirm, close, setLoading: setConfirmLoading } = useConfirmStore();
 
   const monthBudgets = budgets.filter(b => b.month === month);
 
@@ -44,18 +44,19 @@ export default function Budget() {
   }
 
   async function handleDelete(id: string) {
-    setBudgetToDelete(id);
-  }
-
-  async function confirmDelete() {
-    if (!budgetToDelete) return;
-    setLoading(true);
-    try {
-      await deleteBudget(budgetToDelete);
-      setBudgetToDelete(null);
-    } finally {
-      setLoading(false);
-    }
+    confirm({
+      title: 'Hapus Anggaran',
+      message: 'Apakah Anda yakin ingin menghapus anggaran bulan ini? Data yang sudah dihapus tidak dapat dikembalikan.',
+      onConfirm: async () => {
+        setConfirmLoading(true);
+        try {
+          await deleteBudget(id);
+          close();
+        } finally {
+          setConfirmLoading(false);
+        }
+      }
+    });
   }
 
   const availableCategories = EXPENSE_CATEGORIES.filter(
@@ -75,20 +76,21 @@ export default function Budget() {
       {/* Header */}
       <motion.div variants={itemVariants} className="flex items-center justify-between flex-wrap gap-4">
         <h1 className="font-display text-2xl lg:text-3xl text-sage-900">Anggaran</h1>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <input
             type="month"
             value={month}
             onChange={e => setMonth(e.target.value)}
-            className="px-3 py-2 border border-cream-200 rounded-xl text-sm text-sage-700 focus:outline-none focus:border-sage-400 bg-white"
+            onClick={(e) => e.currentTarget.showPicker()}
+            className="flex-1 sm:flex-none px-4 py-2.5 border border-cream-200 rounded-xl text-sm text-sage-700 focus:outline-none focus:border-sage-400 bg-white cursor-pointer"
           />
           {availableCategories.length > 0 && (
             <button
               onClick={() => { setAddingNew(true); setNewCategory(availableCategories[0].value); setLimitInput(''); }}
-              className="flex items-center gap-2 px-4 py-2 bg-sage-700 text-cream-100 rounded-xl font-medium text-sm hover:bg-sage-800 transition-all"
+              className="flex items-center justify-center gap-2 px-5 py-2.5 bg-sage-700 text-cream-100 rounded-xl font-semibold text-sm hover:bg-sage-800 transition-all shadow-sm active:scale-95"
             >
               <Plus className="w-4 h-4" />
-              Tambah
+              <span>Tambah</span>
             </button>
           )}
         </div>
@@ -261,15 +263,7 @@ export default function Budget() {
         </motion.div>
       )}
       
-      {/* Confirm Delete Modal */}
-      <ConfirmModal
-        isOpen={!!budgetToDelete}
-        title="Hapus Anggaran"
-        message="Apakah Anda yakin ingin menghapus anggaran bulan ini? Data yang sudah dihapus tidak dapat dikembalikan."
-        onConfirm={confirmDelete}
-        onCancel={() => setBudgetToDelete(null)}
-        isLoading={loading}
-      />
+
     </motion.div>
   );
 }

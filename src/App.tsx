@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { useEffect } from 'react';
+import { useAuthStore } from './store/useAuthStore';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -8,9 +9,10 @@ import Transactions from './pages/Transactions';
 import Budget from './pages/Budget';
 import Settings from './pages/Settings';
 import InstallPrompt from './components/InstallPrompt';
+import ConfirmModal from './components/ConfirmModal';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { currentUser, loading } = useAuth();
+  const { currentUser, loading } = useAuthStore();
 
   if (loading) {
     return (
@@ -28,7 +30,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
-  const { currentUser, loading } = useAuth();
+  const { currentUser, loading } = useAuthStore();
   if (loading) return null;
   if (currentUser) return <Navigate to="/" replace />;
   return <>{children}</>;
@@ -49,12 +51,18 @@ function AppRoutes() {
 }
 
 export default function App() {
+  const init = useAuthStore((state) => state.init);
+
+  useEffect(() => {
+    const unsub = init();
+    return () => unsub();
+  }, [init]);
+
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <AppRoutes />
-        <InstallPrompt />
-      </AuthProvider>
+      <AppRoutes />
+      <InstallPrompt />
+      <ConfirmModal />
     </BrowserRouter>
   );
 }

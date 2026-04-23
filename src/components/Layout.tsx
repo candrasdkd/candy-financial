@@ -10,7 +10,8 @@ import {
   Menu,
   X,
 } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuthStore } from '../store/useAuthStore';
+import { useConfirmStore } from '../store/useConfirmStore';
 
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -20,13 +21,24 @@ const navItems = [
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  const { userProfile, logout } = useAuth();
+  const { userProfile, logout } = useAuthStore();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const { confirm, close } = useConfirmStore();
+
   async function handleLogout() {
-    await logout();
-    navigate('/login');
+    confirm({
+      title: 'Keluar Aplikasi',
+      message: 'Apakah Anda yakin ingin keluar dari akun?',
+      confirmText: 'Keluar',
+      variant: 'info',
+      onConfirm: async () => {
+        await logout();
+        close();
+        navigate('/login');
+      }
+    });
   }
 
   const Sidebar = () => (

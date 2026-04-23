@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Heart, Coins, BarChart3, Landmark } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuthStore } from '../store/useAuthStore';
 import { motion } from 'framer-motion';
+import { useConfirmStore } from '../store/useConfirmStore';
 
 export default function Register() {
-  const { register } = useAuth();
+  const register = useAuthStore((state) => state.register);
   const navigate = useNavigate();
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
@@ -13,6 +14,7 @@ export default function Register() {
   const [confirm, setConfirm] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { confirm: showConfirm, close, setLoading: setConfirmLoading } = useConfirmStore();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -25,18 +27,29 @@ export default function Register() {
       setError('Password minimal 6 karakter');
       return;
     }
-    setLoading(true);
-    try {
-      await register(email, password, displayName);
-      navigate('/');
-    } catch (err: any) {
-      const msg = err.code === 'auth/email-already-in-use'
-        ? 'Email sudah terdaftar'
-        : err.message || 'Terjadi kesalahan';
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
+
+    showConfirm({
+      title: 'Daftar Akun',
+      message: `Apakah Anda yakin data yang dimasukkan sudah benar? Akun akan dibuat dengan email ${email}.`,
+      confirmText: 'Daftar',
+      variant: 'success',
+      onConfirm: async () => {
+        setConfirmLoading(true);
+        try {
+          await register(email, password, displayName);
+          close();
+          navigate('/');
+        } catch (err: any) {
+          const msg = err.code === 'auth/email-already-in-use'
+            ? 'Email sudah terdaftar'
+            : err.message || 'Terjadi kesalahan';
+          setError(msg);
+          close();
+        } finally {
+          setConfirmLoading(false);
+        }
+      }
+    });
   }
 
   return (
