@@ -73,7 +73,7 @@ export default function InstallPrompt() {
                                 Tap icon <Share className="inline w-3.5 h-3.5 mx-1" /> di browser bawah lalu pilih <strong>Add to Home Screen</strong>.
                             </>
                         ) : deferredPrompt ? (
-                            'Install DuaHati Finance di home screen agar lebih mudah dan cepat diakses.'
+                            'Install Candy Finance di home screen agar lebih mudah dan cepat diakses.'
                         ) : (
                             'Install via menu browser (titik tiga) lalu pilih "Add to Home Screen" atau "Install app".'
                         )}

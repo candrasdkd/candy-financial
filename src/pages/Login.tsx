@@ -57,7 +57,7 @@ export default function Login() {
         >
           <div className="flex items-center gap-3 mb-12">
             <Heart className="w-8 h-8 text-rose-400 fill-rose-400" />
-            <span className="font-display text-2xl text-cream-100">DuaHati Finance</span>
+            <span className="font-display text-2xl text-cream-100">Candy Finance</span>
           </div>
           <h1 className="font-display text-5xl text-cream-100 leading-tight mb-6">
             Kelola keuangan<br />
@@ -109,7 +109,7 @@ export default function Login() {
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center gap-2 mb-8">
             <Heart className="w-6 h-6 text-rose-500 fill-rose-500" />
-            <span className="font-display text-xl text-sage-800">DuaHati Finance</span>
+            <span className="font-display text-xl text-sage-800">Candy Finance</span>
           </div>
 
           <h2 className="font-display text-3xl text-sage-900 mb-2">Selamat datang</h2>

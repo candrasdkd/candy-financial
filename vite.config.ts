@@ -14,8 +14,8 @@ export default defineConfig({
         enabled: true
       },
       manifest: {
-        name: 'DuaHati Finance',
-        short_name: 'DuaHati',
+        name: 'Candy Finance',
+        short_name: 'Candy',
         description: 'Manajemen Keuangan Pasutri',
         theme_color: '#ffffff',
         background_color: '#ffffff',
