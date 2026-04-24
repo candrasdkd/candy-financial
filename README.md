@@ -1,4 +1,4 @@
-# 🍬 Candy Financial (Pasutri Finance)
+# 🍬 Candy Finance (Pasutri Finance)
 
 Aplikasi manajemen keuangan bergaya modern dan *premium* yang dirancang khusus untuk **pasangan suami istri (Pasutri)**. Dibangun dengan React (TypeScript), Vite, Tailwind CSS, dan Firebase.
 
@@ -111,6 +111,8 @@ Buka aplikasi di browser pada [http://localhost:5173](http://localhost:5173).
 - **Routing**: React Router DOM v6
 - **Date Handling**: date-fns
 - **Icons**: Lucide React
+- **Deployment**: Vercel (Auto-rewrite SPA routing enabled)
+- **PWA Strategy**: Vite PWA (AutoUpdate enabled for instant changes)
 
 ## 📁 Struktur Proyek Utama
 

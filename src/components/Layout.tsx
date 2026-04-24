@@ -55,10 +55,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       {/* User info */}
       <div className="px-6 py-4 border-b border-sage-700">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-sage-600 flex items-center justify-center">
-            <span className="text-cream-100 font-body font-semibold text-sm">
-              {userProfile?.displayName?.[0]?.toUpperCase()}
-            </span>
+          <div className="w-10 h-10 rounded-2xl overflow-hidden bg-sage-800/50 border border-sage-700 shadow-inner flex-shrink-0">
+            <img
+              src={`https://api.dicebear.com/7.x/fun-emoji/svg?seed=${userProfile?.displayName || 'user'}`}
+              alt="avatar"
+              className="w-full h-full object-cover"
+            />
           </div>
           <div>
             <p className="text-cream-200 font-body font-medium text-sm">{userProfile?.displayName}</p>
@@ -81,10 +83,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             end={to === '/'}
             onClick={() => setMobileOpen(false)}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 ${
-                isActive
-                  ? 'bg-sage-800 text-white shadow-sm'
-                  : 'text-sage-400 hover:bg-sage-800/50 hover:text-white'
+              `flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 ${isActive
+                ? 'bg-sage-800 text-white shadow-sm'
+                : 'text-sage-400 hover:bg-sage-800/50 hover:text-white'
               }`
             }
           >

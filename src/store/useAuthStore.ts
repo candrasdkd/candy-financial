@@ -16,7 +16,8 @@ import {
   query, 
   where, 
   getDocs,
-  addDoc
+  addDoc,
+  onSnapshot
 } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { UserProfile } from '../types';
@@ -30,11 +31,12 @@ interface AuthState {
   
   // Actions
   init: () => () => void;
-  register: (email: string, password: string, displayName: string) => Promise<void>;
+  register: (email: string, password: string, displayName: string, gender: 'male' | 'female') => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   linkCouple: (inviteCode: string) => Promise<void>;
   refreshProfile: () => Promise<void>;
+  updateUserProfile: (data: { displayName?: string, gender?: 'male' | 'female' }) => Promise<void>;
 }
 
 function generateInviteCode(): string {
@@ -48,41 +50,57 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   initialized: false,
 
   init: () => {
-    const unsub = onAuthStateChanged(auth, async (user) => {
+    let profileUnsub: (() => void) | null = null;
+    let partnerUnsub: (() => void) | null = null;
+
+    const authUnsub = onAuthStateChanged(auth, async (user) => {
       set({ currentUser: user, initialized: true });
       
+      if (profileUnsub) profileUnsub();
+      if (partnerUnsub) partnerUnsub();
+      profileUnsub = null;
+      partnerUnsub = null;
+
       if (user) {
-        const profileSnap = await getDoc(doc(db, 'users', user.uid));
-        if (profileSnap.exists()) {
-          let profile = profileSnap.data() as UserProfile;
-          
-          // Auto-sync partnerName if missing
-          if (profile.coupleId && !profile.partnerName && profile.partnerEmail) {
-            try {
-              const q = query(collection(db, 'users'), where('email', '==', profile.partnerEmail));
-              const snap = await getDocs(q);
-              if (!snap.empty) {
-                const partnerData = snap.docs[0].data() as UserProfile;
-                await updateDoc(doc(db, 'users', user.uid), {
-                  partnerName: partnerData.displayName
-                });
-                profile = { ...profile, partnerName: partnerData.displayName };
-              }
-            } catch (e) {
-              console.error('Failed to sync partner name', e);
+        profileUnsub = onSnapshot(doc(db, 'users', user.uid), (snap) => {
+          if (snap.exists()) {
+            const profile = snap.data() as UserProfile;
+            set({ userProfile: profile });
+
+            // If linked to a partner, listen to partner's profile for real-time name/avatar sync
+            if (profile.partnerEmail && !partnerUnsub) {
+              const q = query(
+                collection(db, 'users'), 
+                where('email', '==', profile.partnerEmail)
+              );
+              partnerUnsub = onSnapshot(q, (partnerSnap) => {
+                if (!partnerSnap.empty) {
+                  const partnerData = partnerSnap.docs[0].data() as UserProfile;
+                  set((state) => ({
+                    userProfile: state.userProfile ? {
+                      ...state.userProfile,
+                      partnerName: partnerData.displayName
+                    } : null
+                  }));
+                }
+              });
             }
           }
-          set({ userProfile: profile });
-        }
+          set({ loading: false });
+        });
       } else {
-        set({ userProfile: null });
+        set({ userProfile: null, loading: false });
       }
-      set({ loading: false });
     });
-    return unsub;
+
+    return () => {
+      authUnsub();
+      if (profileUnsub) profileUnsub();
+      if (partnerUnsub) partnerUnsub();
+    };
   },
 
-  register: async (email, password, displayName) => {
+  register: async (email, password, displayName, gender) => {
     const { user } = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(user, { displayName });
     
@@ -95,6 +113,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       partnerEmail: null,
       partnerName: null,
       inviteCode,
+      gender,
     };
     
     await setDoc(doc(db, 'users', user.uid), profile);
@@ -155,5 +174,42 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     });
 
     await refreshProfile();
+  },
+
+  updateUserProfile: async (data) => {
+    const { currentUser, userProfile } = get();
+    if (!currentUser || !userProfile) throw new Error('Tidak ada user');
+
+    // Update Firestore
+    await updateDoc(doc(db, 'users', currentUser.uid), data as any);
+
+    // Update Firebase Auth if displayName changed
+    if (data.displayName) {
+      await updateProfile(currentUser, { displayName: data.displayName });
+
+      // Sync partner's partnerName if they are linked
+      if (userProfile.partnerEmail) {
+        try {
+          const q = query(
+            collection(db, 'users'), 
+            where('email', '==', userProfile.partnerEmail)
+          );
+          const snap = await getDocs(q);
+          if (!snap.empty) {
+            const partnerDoc = snap.docs[0];
+            await updateDoc(doc(db, 'users', partnerDoc.id), {
+              partnerName: data.displayName
+            });
+          }
+        } catch (e) {
+          console.error('Failed to sync name to partner', e);
+        }
+      }
+    }
+
+    // Update local state
+    set({
+      userProfile: { ...userProfile, ...data }
+    });
   }
 }));

@@ -62,6 +62,7 @@ export interface UserProfile {
   partnerEmail: string | null;
   partnerName: string | null;
   inviteCode: string;
+  gender: 'male' | 'female' | null;
 }
 
 export interface CoupleData {

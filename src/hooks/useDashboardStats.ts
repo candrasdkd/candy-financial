@@ -36,31 +36,37 @@ export function useDashboardStats(transactions: Transaction[], date: Date = new 
     };
   }, [thisMonthTx]);
 
-  // 3. Chart data 7 hari terakhir
+  // 3. Chart data 1 bulan penuh
   const chartData = useMemo(() => {
-    const days: { date: string; pemasukan: number; pengeluaran: number }[] = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const key = format(d, 'yyyy-MM-dd');
-
+    const days: { date: string; income: number; expense: number }[] = [];
+    const monthStart = startOfMonth(date);
+    const monthEnd = endOfMonth(date);
+    
+    // Iterasi dari tanggal 1 sampai akhir bulan
+    let current = new Date(monthStart);
+    while (current <= monthEnd) {
+      const key = format(current, 'yyyy-MM-dd');
       const dayTx = transactions.filter(t => t.date.startsWith(key));
-      let pemasukan = 0;
-      let pengeluaran = 0;
+      
+      let income = 0;
+      let expense = 0;
 
       dayTx.forEach(t => {
-        if (t.type === 'income') pemasukan += t.amount;
-        else if (t.type === 'expense') pengeluaran += t.amount;
+        if (t.type === 'income') income += t.amount;
+        else if (t.type === 'expense') expense += t.amount;
       });
 
       days.push({
-        date: format(d, 'dd MMM', { locale: id }),
-        pemasukan,
-        pengeluaran,
+        date: format(current, 'dd', { locale: id }), // Hanya angka tanggal biar tidak sesak
+        income,
+        expense,
       });
+
+      // Next day
+      current = new Date(current.getTime() + 86400000);
     }
     return days;
-  }, [transactions]);
+  }, [transactions, date]);
 
   // 4. Pie chart data pengeluaran per kategori bulan ini
   const pieData = useMemo(() => {

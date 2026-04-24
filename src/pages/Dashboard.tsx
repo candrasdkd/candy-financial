@@ -1,12 +1,18 @@
 import { useState, useMemo } from 'react';
-import { TrendingUp, TrendingDown, Wallet, Plus, ArrowRight, Heart, Inbox } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100 } }
-} as const;
-import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  Wallet, 
+  Plus, 
+  ArrowRight, 
+  Heart, 
+  Inbox,
+  Sparkles,
+  Calendar,
+  History
+} from 'lucide-react';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
+import { format, parseISO } from 'date-fns';
 import { id } from 'date-fns/locale';
 import {
   ResponsiveContainer,
@@ -26,6 +32,19 @@ import { useDashboardStats } from '../hooks/useDashboardStats';
 import TransactionModal from '../components/TransactionModal';
 import { Link } from 'react-router-dom';
 
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: { 
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+};
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100 } }
+};
+
 const COLORS = [
   '#4F6F52', // Sage Green
   '#E6A4B4', // Rose Pink
@@ -40,11 +59,11 @@ const COLORS = [
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white/90 backdrop-blur-md border border-cream-200 p-4 rounded-2xl shadow-xl shadow-sage-900/10">
-        <p className="text-sage-500 text-xs mb-3 font-medium">{label}</p>
+      <div className="bg-white/95 backdrop-blur-xl border border-cream-200 p-4 rounded-[1.5rem] shadow-2xl shadow-sage-900/10">
+        <p className="text-sage-400 text-[10px] font-bold uppercase tracking-widest mb-2">{label}</p>
         <div className="space-y-2">
           {payload.map((p: any, i: number) => (
-            <div key={i} className="flex items-center justify-between gap-6 text-sm font-medium">
+            <div key={i} className="flex items-center justify-between gap-6 text-sm font-bold">
               <div className="flex items-center gap-2">
                 <div className="w-2.5 h-2.5 rounded-full" style={{ background: p.color || p.payload.fill }} />
                 <span className="text-sage-800">{p.name}</span>
@@ -77,17 +96,22 @@ export default function Dashboard() {
 
   if (!userProfile?.coupleId) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-full p-8 text-center">
-        <div className="w-20 h-20 bg-rose-100 rounded-full flex items-center justify-center mb-6">
-          <Heart className="w-10 h-10 text-rose-400 fill-rose-400" />
-        </div>
-        <h2 className="font-display text-2xl text-sage-800 mb-3">Hubungkan dengan Pasangan</h2>
-        <p className="text-sage-500 mb-6 max-w-sm">
-          Sebelum mulai, hubungkan akun Anda dengan pasangan untuk mengelola keuangan bersama.
+      <div className="flex flex-col items-center justify-center min-h-[80vh] p-8 text-center relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-rose-100/30 rounded-full blur-[100px] -z-10" />
+        <motion.div 
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          className="w-24 h-24 bg-white rounded-[2.5rem] shadow-2xl flex items-center justify-center mb-8 border border-rose-50"
+        >
+          <Heart className="w-12 h-12 text-rose-400 fill-rose-400" />
+        </motion.div>
+        <h2 className="font-display text-3xl text-sage-900 mb-4 tracking-tight">Hubungkan Cintamu</h2>
+        <p className="text-sage-500 mb-8 max-w-sm leading-relaxed">
+          Candy Finance bekerja paling manis saat kamu menggunakannya bersama pasangan. Hubungkan akunmu sekarang!
         </p>
         <Link
           to="/settings"
-          className="px-8 py-3 bg-sage-700 text-cream-100 rounded-2xl font-semibold hover:bg-sage-800 transition-colors"
+          className="px-10 py-4 bg-sage-800 text-white rounded-[2rem] font-bold hover:bg-sage-900 transition-all shadow-xl shadow-sage-900/10 active:scale-95"
         >
           Hubungkan Sekarang
         </Link>
@@ -99,199 +123,235 @@ export default function Dashboard() {
     <motion.div 
       initial="hidden"
       animate="visible"
-      variants={{
-        hidden: { opacity: 0 },
-        visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
-      }}
-      className="p-6 lg:p-8 max-w-7xl mx-auto space-y-6"
+      variants={containerVariants}
+      className="p-6 lg:p-12 max-w-7xl mx-auto space-y-10 pb-24"
     >
-      {/* Header */}
-      <motion.div variants={itemVariants} className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-2xl lg:text-3xl text-sage-900">
+      {/* Header & Greeting */}
+      <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-rose-400 mb-1">
+            <Sparkles className="w-4 h-4 fill-rose-400" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.3em]">Ringkasan Bulanan</span>
+          </div>
+          <h1 className="font-display text-4xl lg:text-5xl text-sage-900 tracking-tight">
             Halo, {userProfile.displayName}
           </h1>
-          <p className="text-sage-500 text-sm mt-1">
-            {format(now, 'EEEE, dd MMMM yyyy', { locale: id })}
-          </p>
+          <div className="flex items-center gap-2 text-sage-400 font-medium">
+            <Calendar className="w-4 h-4" />
+            <span className="text-sm">{format(now, 'EEEE, dd MMMM yyyy', { locale: id })}</span>
+          </div>
         </div>
+        
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 px-5 py-3 bg-sage-700 text-cream-100 rounded-2xl font-semibold hover:bg-sage-800 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-sage-700/20"
+          className="flex items-center justify-center gap-3 px-8 py-4 bg-sage-800 text-white rounded-[2rem] font-bold hover:bg-sage-900 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl shadow-sage-900/20"
         >
-          <Plus className="w-4 h-4" />
-          <span className="hidden sm:inline">Tambah</span>
+          <Plus className="w-5 h-5" />
+          <span>Tambah Transaksi</span>
         </button>
       </motion.div>
 
-      {/* Summary Cards */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div className={`p-8 rounded-[2rem] text-white shadow-2xl ${balance >= 0 ? 'bg-gradient-to-br from-sage-700 to-sage-900 shadow-sage-900/20' : 'bg-gradient-to-br from-rose-500 to-rose-700 shadow-rose-900/20'} relative overflow-hidden group transition-all duration-500 hover:scale-[1.02]`}>
-          <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
-          <div className="flex items-center gap-3 mb-6 relative z-10">
-            <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-md">
-              <Wallet className="w-5 h-5 text-cream-100" />
+      {/* Hero Stats Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main Balance Card */}
+        <motion.div 
+          variants={itemVariants} 
+          className={`lg:col-span-2 p-10 rounded-[3rem] text-white relative overflow-hidden group transition-all duration-700 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] ${balance >= 0 ? 'bg-gradient-to-br from-sage-700 to-sage-900' : 'bg-gradient-to-br from-rose-600 to-rose-800'}`}
+        >
+          <div className="absolute -right-20 -top-20 w-80 h-80 bg-white/10 rounded-full blur-[100px] group-hover:scale-125 transition-transform duration-1000" />
+          <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-rose-400/20 rounded-full blur-[60px]" />
+          
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 relative z-10 h-full">
+            <div className="space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-xl border border-white/20">
+                  <Wallet className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <span className="text-xs font-bold text-white/60 uppercase tracking-[0.2em] block">Saldo Bersama</span>
+                  <span className="text-sm font-medium text-white/90">{format(now, 'MMMM yyyy', { locale: id })}</span>
+                </div>
+              </div>
+              <div className="font-mono text-5xl lg:text-6xl font-bold tracking-tighter drop-shadow-sm">
+                {formatRupiah(balance)}
+              </div>
             </div>
-            <span className="text-sm font-medium text-cream-100/80 font-body">Saldo Bulan Ini</span>
-          </div>
-          <div className="font-mono text-3xl lg:text-4xl font-bold relative z-10 tracking-tight">{formatRupiah(balance)}</div>
-          <div className="text-xs font-medium opacity-60 mt-3 relative z-10">{format(now, 'MMMM yyyy', { locale: id })}</div>
-        </div>
-
-        <div className="p-8 rounded-[2rem] bg-white border border-cream-200 hover:-translate-y-2 hover:shadow-2xl hover:shadow-emerald-900/10 transition-all duration-500 group relative overflow-hidden">
-          <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-50 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-          <div className="flex items-center gap-3 mb-6 relative z-10">
-            <div className="w-10 h-10 bg-emerald-50 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-              <TrendingUp className="w-5 h-5 text-emerald-600" />
+            
+            <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 space-y-4 md:w-64">
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-emerald-300" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-white/80">In</span>
+                </div>
+                <span className="font-mono text-sm font-bold text-emerald-300">{formatRupiah(totalIncome)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <TrendingDown className="w-4 h-4 text-rose-300" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-white/80">Out</span>
+                </div>
+                <span className="font-mono text-sm font-bold text-rose-300">{formatRupiah(totalExpense)}</span>
+              </div>
             </div>
-            <span className="text-sm text-sage-500 font-medium font-body">Pemasukan</span>
           </div>
-          <div className="font-mono text-3xl font-bold text-emerald-600 relative z-10 tracking-tight">{formatRupiah(totalIncome)}</div>
-          <div className="text-xs text-sage-400 mt-3 relative z-10 font-medium">{thisMonthTx.filter(t => t.type === 'income').length} transaksi terdaftar</div>
-        </div>
+        </motion.div>
 
-        <div className="p-8 rounded-[2rem] bg-white border border-cream-200 hover:-translate-y-2 hover:shadow-2xl hover:shadow-rose-900/10 transition-all duration-500 group relative overflow-hidden">
-          <div className="absolute -right-4 -top-4 w-24 h-24 bg-rose-50 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-          <div className="flex items-center gap-3 mb-6 relative z-10">
-            <div className="w-10 h-10 bg-rose-50 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-              <TrendingDown className="w-5 h-5 text-rose-500" />
-            </div>
-            <span className="text-sm text-sage-500 font-medium font-body">Pengeluaran</span>
+        {/* Category Visual */}
+        <motion.div variants={itemVariants} className="bg-white rounded-[3rem] border border-sage-50 p-10 shadow-xl shadow-sage-900/[0.03] flex flex-col justify-between">
+          <div>
+            <h3 className="font-display text-2xl text-sage-900 mb-1">Pengeluaran</h3>
+            <p className="text-sm text-sage-400 font-medium mb-6">Berdasarkan kategori</p>
           </div>
-          <div className="font-mono text-3xl font-bold text-rose-600 relative z-10 tracking-tight">{formatRupiah(totalExpense)}</div>
-          <div className="text-xs text-sage-400 mt-3 relative z-10 font-medium">{thisMonthTx.filter(t => t.type === 'expense').length} transaksi terdaftar</div>
-        </div>
-      </motion.div>
-
-      {/* Charts Row */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Area Chart */}
-        <div className="lg:col-span-2 bg-white rounded-3xl p-6 border border-cream-200">
-          <h3 className="font-display text-lg text-sage-800 mb-4">7 Hari Terakhir</h3>
-          <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={chartData}>
-              <defs>
-                <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#f43f5e" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
-              <YAxis hide />
-              <Tooltip content={<CustomTooltip />} />
-              <Area
-                type="monotone"
-                dataKey="income"
-                stroke="#10b981"
-                fillOpacity={1}
-                fill="url(#colorIncome)"
-                strokeWidth={4}
-              />
-              <Area
-                type="monotone"
-                dataKey="expense"
-                stroke="#f43f5e"
-                fillOpacity={1}
-                fill="url(#colorExpense)"
-                strokeWidth={4}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Pie Chart */}
-        <div className="bg-white rounded-3xl p-6 border border-cream-200">
-          <h3 className="font-display text-lg text-sage-800 mb-4">Pengeluaran</h3>
+          
           {pieData.length > 0 ? (
-            <>
-              <ResponsiveContainer width="100%" height={140}>
-                <PieChart>
-                  <Pie data={pieData} dataKey="value" cx="50%" cy="50%" innerRadius={40} outerRadius={65} strokeWidth={0}>
-                    {pieData.map((_, i) => (
-                      <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip content={<CustomTooltip />} />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="space-y-1.5 mt-2">
-                {pieData.slice(0, 4).map((item, i) => (
-                  <div key={i} className="flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
-                      <item.icon className="w-4 h-4" />
-                      <span className="text-sage-600">{item.name}</span>
+            <div className="relative">
+              <div className="h-[200px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={pieData} dataKey="value" cx="50%" cy="50%" innerRadius={60} outerRadius={85} strokeWidth={0} paddingAngle={4}>
+                      {pieData.map((_, i) => (
+                        <Cell key={i} fill={COLORS[i % COLORS.length]} className="focus:outline-none" />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<CustomTooltip />} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span className="text-[10px] font-bold text-sage-400 uppercase tracking-widest">Total</span>
+                <span className="text-xl font-bold text-sage-900">{formatRupiah(totalExpense)}</span>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-48 space-y-4 text-sage-300">
+              <Inbox className="w-12 h-12" />
+              <p className="text-sm font-medium">Belum ada data</p>
+            </div>
+          )}
+        </motion.div>
+      </div>
+
+      {/* Charts & Trends Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Trend Area Chart */}
+        <motion.div variants={itemVariants} className="lg:col-span-2 bg-white rounded-[3rem] p-10 border border-sage-50 shadow-xl shadow-sage-900/[0.03]">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h3 className="font-display text-2xl text-sage-900 mb-1">Tren Bulanan</h3>
+              <p className="text-sm text-sage-400 font-medium">Perbandingan In vs Out</p>
+            </div>
+            <div className="flex gap-4">
+              <div className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                <span className="text-[10px] font-bold text-sage-500 uppercase tracking-widest">Pemasukan</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 rounded-full bg-rose-500" />
+                <span className="text-[10px] font-bold text-sage-500 uppercase tracking-widest">Pengeluaran</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="h-[280px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData}>
+                <defs>
+                  <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="#f43f5e" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 600 }} axisLine={false} tickLine={false} />
+                <YAxis hide />
+                <Tooltip content={<CustomTooltip />} />
+                <Area
+                  type="monotone"
+                  dataKey="income"
+                  name="Pemasukan"
+                  stroke="#10b981"
+                  fillOpacity={1}
+                  fill="url(#colorIncome)"
+                  strokeWidth={4}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="expense"
+                  name="Pengeluaran"
+                  stroke="#f43f5e"
+                  fillOpacity={1}
+                  fill="url(#colorExpense)"
+                  strokeWidth={4}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </motion.div>
+
+        {/* Quick History List */}
+        <motion.div variants={itemVariants} className="bg-white rounded-[3rem] p-10 border border-sage-50 shadow-xl shadow-sage-900/[0.03]">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h3 className="font-display text-2xl text-sage-900 mb-1">Aktivitas</h3>
+              <p className="text-sm text-sage-400 font-medium">Transaksi terbaru</p>
+            </div>
+            <Link to="/transactions" className="w-10 h-10 bg-sage-50 rounded-xl flex items-center justify-center text-sage-600 hover:bg-sage-100 transition-colors">
+              <ArrowRight className="w-5 h-5" />
+            </Link>
+          </div>
+
+          <div className="space-y-6">
+            {loading ? (
+              <div className="space-y-6">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="flex items-center gap-4 animate-pulse">
+                    <div className="w-12 h-12 bg-sage-50 rounded-2xl" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 bg-sage-50 rounded w-2/3" />
+                      <div className="h-3 bg-sage-50 rounded w-1/3" />
                     </div>
-                    <span className="font-mono text-sage-800">{formatRupiah(item.value)}</span>
                   </div>
                 ))}
               </div>
-            </>
-          ) : (
-            <div className="flex items-center justify-center h-40 text-sage-400 text-sm">
-              Belum ada pengeluaran
-            </div>
-          )}
-        </div>
-      </motion.div>
-
-      {/* Recent Transactions */}
-      <motion.div variants={itemVariants} className="bg-white rounded-3xl p-6 border border-cream-200">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-display text-lg text-sage-800">Transaksi Terbaru</h3>
-          <Link to="/transactions" className="text-sage-600 text-sm font-medium flex items-center gap-1 hover:text-sage-800">
-            Semua <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
-        {loading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="h-14 bg-cream-100 rounded-2xl animate-pulse" />
-            ))}
-          </div>
-        ) : recentTx.length === 0 ? (
-          <div className="text-center py-12 text-sage-400">
-            <Inbox className="w-12 h-12 mx-auto text-sage-300 mb-3" />
-            <p>Belum ada transaksi. Mulai catat sekarang!</p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {recentTx.map(tx => {
-              const cat = getCategoryInfo(tx.category);
-              const isMine = tx.addedBy === userProfile.displayName;
-              
-              return (
-                <div key={tx.id} className="group flex items-center gap-4 p-3.5 rounded-2xl hover:bg-cream-50/50 hover:shadow-sm transition-all border border-transparent hover:border-cream-100 cursor-pointer">
-                  <div className="w-12 h-12 rounded-2xl bg-white shadow-sm border border-cream-100 flex items-center justify-center text-2xl flex-shrink-0 group-hover:scale-105 transition-transform">
-                    <cat.icon className="w-6 h-6 text-sage-500 group-hover:text-sage-700" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sage-800 text-sm truncate">
-                      {tx.description || cat.label}
+            ) : recentTx.length === 0 ? (
+              <div className="text-center py-12 space-y-4">
+                <History className="w-10 h-10 mx-auto text-sage-200" />
+                <p className="text-sm text-sage-400 font-medium leading-relaxed">Belum ada transaksi yang dicatat.</p>
+              </div>
+            ) : (
+              recentTx.slice(0, 4).map(tx => {
+                const cat = getCategoryInfo(tx.category);
+                const isMine = tx.addedBy === userProfile.displayName;
+                
+                return (
+                  <div key={tx.id} className="group flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-sage-50 flex items-center justify-center text-2xl flex-shrink-0 group-hover:scale-110 transition-transform duration-500">
+                      <cat.icon className="w-6 h-6 text-sage-500 group-hover:text-sage-700" />
                     </div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs text-sage-400 font-medium">
-                        {format(parseISO(tx.date), 'dd MMM', { locale: id })}
-                      </span>
-                      <div className="w-1 h-1 rounded-full bg-cream-200"></div>
-                      <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide uppercase ${isMine ? 'bg-sage-100 text-sage-600' : 'bg-rose-100 text-rose-600'}`}>
-                        {isMine ? 'Saya' : (userProfile?.partnerName || 'Pasangan')}
+                    <div className="flex-1 min-w-0">
+                      <div className="font-bold text-sage-900 text-sm truncate leading-tight mb-0.5">
+                        {tx.description || cat.label}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter ${isMine ? 'bg-sage-100 text-sage-700' : 'bg-rose-100 text-rose-600'}`}>
+                          {isMine ? 'Saya' : (userProfile?.partnerName || 'Pasangan')}
+                        </span>
+                        <span className="text-[10px] text-sage-300 font-medium uppercase tracking-widest">{cat.label}</span>
                       </div>
                     </div>
+                    <div className={`font-mono font-bold text-sm flex-shrink-0 ${tx.type === 'income' ? 'text-emerald-500' : 'text-rose-500'}`}>
+                      {tx.type === 'income' ? '+' : '-'}{formatRupiah(tx.amount)}
+                    </div>
                   </div>
-                  <div className={`font-mono font-bold text-sm flex-shrink-0 ${tx.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                    {tx.type === 'income' ? '+' : '-'}{formatRupiah(tx.amount)}
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
-        )}
-      </motion.div>
+        </motion.div>
+      </div>
 
       <AnimatePresence>
         {showModal && <TransactionModal onClose={() => setShowModal(false)} />}

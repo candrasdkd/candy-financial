@@ -1,22 +1,50 @@
 import { useState } from 'react';
-import { Copy, Link2, Heart, User, Mail, Key, CheckCircle } from 'lucide-react';
+import { 
+  Copy, 
+  Check, 
+  Heart, 
+  LogOut, 
+  Shield, 
+  Smartphone, 
+  Info, 
+  ChevronRight,
+  Camera,
+  HeartHandshake,
+  Mail,
+  Link2
+} from 'lucide-react';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { useAuthStore } from '../store/useAuthStore';
 import { useConfirmStore } from '../store/useConfirmStore';
-import { motion } from 'framer-motion';
 
-const itemVariants = {
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: { 
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+};
+
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100 } }
-} as const;
+};
 
 export default function Settings() {
-  const { userProfile, linkCouple } = useAuthStore();
+  const { userProfile, logout, linkCouple, updateUserProfile } = useAuthStore();
   const { confirm, close, setLoading: setConfirmLoading } = useConfirmStore();
   const [inviteCode, setInviteCode] = useState('');
   const [linking, setLinking] = useState(false);
   const [linkError, setLinkError] = useState('');
   const [linkSuccess, setLinkSuccess] = useState('');
   const [copied, setCopied] = useState(false);
+
+  // Edit Profile State
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState(userProfile?.displayName || '');
+  const [editGender, setEditGender] = useState(userProfile?.gender || 'male');
+  const [saving, setSaving] = useState(false);
+  const [updateError, setUpdateError] = useState('');
 
   function copyCode() {
     if (userProfile?.inviteCode) {
@@ -26,166 +54,280 @@ export default function Settings() {
     }
   }
 
-  function handleLink(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleLink(e?: React.FormEvent) {
+    if (e) e.preventDefault();
     if (!inviteCode) return;
-    
-    confirm({
-      title: 'Hubungkan Pasangan',
-      message: `Apakah Anda yakin ingin terhubung dengan pemilik kode ${inviteCode}? Setelah terhubung, Anda akan berbagi data keuangan secara realtime.`,
-      confirmText: 'Hubungkan',
-      variant: 'success',
-      onConfirm: async () => {
-        setConfirmLoading(true);
-        setLinkError('');
-        try {
-          await linkCouple(inviteCode.toUpperCase().trim());
-          close();
-          setInviteCode('');
-        } catch (err: any) {
-          setLinkError(err.message || 'Gagal menghubungkan pasangan');
-          close();
-        } finally {
-          setConfirmLoading(false);
-        }
-      }
-    });
+    setLinking(true);
+    setLinkError('');
+    try {
+      await linkCouple(inviteCode.toUpperCase().trim());
+      setLinkSuccess('Berhasil terhubung!');
+      setInviteCode('');
+    } catch (err: any) {
+      setLinkError(err.message || 'Gagal menghubungkan');
+    } finally {
+      setLinking(false);
+    }
+  }
+
+  async function handleUpdateProfile() {
+    setSaving(true);
+    setUpdateError('');
+    try {
+      await updateUserProfile({
+        displayName: editName,
+        gender: editGender as 'male' | 'female'
+      });
+      setIsEditing(false);
+    } catch (err: any) {
+      setUpdateError(err.message || 'Gagal memperbarui profil');
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
     <motion.div 
       initial="hidden"
       animate="visible"
-      variants={{
-        hidden: { opacity: 0 },
-        visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
-      }}
-      className="p-6 lg:p-8 max-w-2xl mx-auto space-y-6"
+      variants={containerVariants}
+      className="p-6 lg:p-12 max-w-4xl mx-auto space-y-10 pb-24"
     >
-      <motion.h1 variants={itemVariants} className="font-display text-2xl lg:text-3xl text-sage-900">Pengaturan</motion.h1>
-
-      {/* Profile Card */}
-      <motion.div variants={itemVariants} className="bg-white rounded-3xl border border-cream-200 p-6">
-        <h2 className="font-display text-lg text-sage-800 mb-5">Profil Saya</h2>
-        <div className="space-y-4">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-sage-100 rounded-full flex items-center justify-center">
-              <span className="text-2xl font-display text-sage-700">
-                {userProfile?.displayName?.[0]?.toUpperCase()}
-              </span>
-            </div>
-            <div>
-              <div className="font-semibold text-sage-800">{userProfile?.displayName}</div>
-              <div className="text-sage-500 text-sm">{userProfile?.email}</div>
-            </div>
+      {/* Header Profile Section */}
+      <motion.div variants={itemVariants} className="relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-sage-600/10 to-rose-400/10 blur-3xl -z-10 rounded-[3rem]" />
+        
+        <div className="bg-white/80 backdrop-blur-xl border border-white/60 rounded-[2.5rem] p-8 shadow-2xl shadow-sage-900/5 overflow-hidden relative">
+          <div className="absolute top-0 right-0 p-8">
+            <button
+              onClick={() => {
+                if (isEditing) handleUpdateProfile();
+                else setIsEditing(true);
+              }}
+              disabled={saving}
+              className={`text-sm font-bold px-6 py-2.5 rounded-2xl transition-all shadow-sm ${
+                isEditing 
+                  ? 'bg-sage-800 text-white hover:bg-sage-900' 
+                  : 'bg-white/90 text-sage-700 hover:bg-white border border-sage-100'
+              }`}
+            >
+              {saving ? '...' : isEditing ? 'Simpan' : 'Ubah Profil'}
+            </button>
           </div>
-        </div>
-      </motion.div>
 
-      {/* Couple Status */}
-      <motion.div variants={itemVariants} className="bg-white rounded-3xl border border-cream-200 p-6">
-        <h2 className="font-display text-lg text-sage-800 mb-5 flex items-center gap-2">
-          <Heart className="w-5 h-5 text-rose-400 fill-rose-400" />
-          Status Pasangan
-        </h2>
-
-        {userProfile?.coupleId ? (
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 p-4 bg-sage-50 rounded-2xl border border-sage-200">
-              <CheckCircle className="w-5 h-5 text-sage-600" />
-              <div>
-                <div className="font-medium text-sage-800">
-                  Terhubung dengan {userProfile.partnerName || 'Pasangan'}
-                </div>
-                <div className="text-sm text-sage-500">{userProfile.partnerEmail}</div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {/* My invite code */}
-            <div>
-              <div className="text-sm font-semibold text-sage-600 mb-2">Kode Undanganmu</div>
-              <p className="text-xs text-sage-400 mb-3">
-                Bagikan kode ini ke pasanganmu untuk terhubung.
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="flex-1 px-5 py-3.5 bg-cream-50 border-2 border-cream-200 rounded-2xl font-mono text-2xl text-center tracking-widest font-bold text-sage-800">
-                  {userProfile?.inviteCode}
-                </div>
-                <button
-                  onClick={copyCode}
-                  className="px-4 py-3.5 bg-sage-100 hover:bg-sage-200 text-sage-700 rounded-2xl transition-all flex items-center gap-2 text-sm font-medium"
-                >
-                  {copied ? <CheckCircle className="w-4 h-4 text-sage-600" /> : <Copy className="w-4 h-4" />}
-                  {copied ? 'Disalin!' : 'Salin'}
-                </button>
-              </div>
-            </div>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-cream-200" />
-              </div>
-              <div className="relative flex justify-center">
-                <span className="bg-white px-4 text-xs text-sage-400 uppercase tracking-wider">atau</span>
-              </div>
-            </div>
-
-            {/* Enter partner code */}
-            <div>
-              <div className="text-sm font-semibold text-sage-600 mb-2">Masukkan Kode Pasangan</div>
-              <p className="text-xs text-sage-400 mb-3">
-                Minta kode undangan dari pasanganmu dan masukkan di sini.
-              </p>
-              <form onSubmit={handleLink} className="flex gap-3">
-                <input
-                  type="text"
-                  value={inviteCode}
-                  onChange={e => setInviteCode(e.target.value.toUpperCase())}
-                  placeholder="XXXXXX"
-                  maxLength={6}
-                  className="flex-1 px-5 py-3.5 border-2 border-cream-200 rounded-2xl font-mono text-xl text-center tracking-widest text-sage-900 focus:outline-none focus:border-sage-400 transition-colors uppercase"
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
+            <div className="relative group">
+              <div className="w-32 h-32 bg-gradient-to-br from-sage-50 to-cream-100 rounded-[2.5rem] overflow-hidden border-4 border-white shadow-xl group-hover:scale-[1.02] transition-transform duration-500">
+                <img
+                  src={`https://api.dicebear.com/7.x/fun-emoji/svg?seed=${(isEditing ? editName : userProfile?.displayName) || 'user'}`}
+                  alt="avatar"
+                  className="w-full h-full object-cover"
                 />
-                <button
-                  type="submit"
-                  disabled={linking || inviteCode.length < 6}
-                  className="px-5 py-3.5 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl font-semibold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                >
-                  <Link2 className="w-4 h-4" />
-                  <span className="hidden sm:inline">Hubungkan</span>
-                </button>
-              </form>
-
-              {linkError && (
-                <div className="mt-3 text-rose-600 text-sm bg-rose-50 border border-rose-200 px-4 py-3 rounded-xl">
-                  {linkError}
-                </div>
-              )}
-              {linkSuccess && (
-                <div className="mt-3 text-sage-700 text-sm bg-sage-50 border border-sage-200 px-4 py-3 rounded-xl">
-                  {linkSuccess}
+              </div>
+              {isEditing && (
+                <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-sage-800 rounded-2xl flex items-center justify-center text-white border-4 border-white shadow-lg">
+                  <Camera className="w-4 h-4" />
                 </div>
               )}
             </div>
-          </div>
-        )}
-      </motion.div>
 
-      {/* Info */}
-      <motion.div variants={itemVariants} className="bg-cream-50 rounded-3xl border border-cream-200 p-6">
-        <h2 className="font-display text-lg text-sage-800 mb-3">Tentang Aplikasi</h2>
-        <div className="space-y-2 text-sm text-sage-500">
-          <div className="flex justify-between">
-            <span>Versi</span>
-            <span className="font-mono text-sage-700">1.0.0</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Dibuat dengan</span>
-            <span className="text-sage-700">React + Firebase</span>
+            <div className="flex-1 text-center md:text-left space-y-4 pt-2">
+              {isEditing ? (
+                <div className="space-y-4 max-w-sm mx-auto md:mx-0">
+                  <div>
+                    <label className="text-[10px] font-bold text-sage-400 uppercase tracking-widest mb-1.5 block px-1">Nama Lengkap</label>
+                    <input
+                      type="text"
+                      value={editName}
+                      onChange={e => setEditName(e.target.value)}
+                      className="w-full px-5 py-3 bg-white/80 border border-sage-100 rounded-2xl text-sage-800 focus:outline-none focus:ring-2 focus:ring-sage-200 transition-all font-medium"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-sage-400 uppercase tracking-widest mb-1.5 block px-1">Jenis Kelamin</label>
+                    <div className="flex gap-2 p-1 bg-white/80 border border-sage-100 rounded-2xl">
+                      {[
+                        { value: 'male', label: 'Laki-laki' },
+                        { value: 'female', label: 'Perempuan' }
+                      ].map(opt => (
+                        <button
+                          key={opt.value}
+                          onClick={() => setEditGender(opt.value as any)}
+                          className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
+                            editGender === opt.value
+                              ? 'bg-sage-800 text-white shadow-md'
+                              : 'text-sage-400 hover:text-sage-600'
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <button onClick={() => setIsEditing(false)} className="text-xs font-bold text-rose-400 hover:text-rose-600 transition-colors px-1">Batalkan Perubahan</button>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  <h2 className="text-3xl font-display text-sage-900">{userProfile?.displayName}</h2>
+                  <div className="flex items-center justify-center md:justify-start gap-2 text-sage-500">
+                    <Mail className="w-4 h-4" />
+                    <span className="text-sm font-medium">{userProfile?.email}</span>
+                  </div>
+                  <div className="flex items-center justify-center md:justify-start gap-3 mt-4">
+                    <span className="px-4 py-1.5 bg-sage-100 text-sage-700 text-[10px] font-bold rounded-full uppercase tracking-widest">
+                      {userProfile?.gender === 'female' ? '👩 Perempuan' : '👨 Laki-laki'}
+                    </span>
+                    <span className="px-4 py-1.5 bg-rose-50 text-rose-600 text-[10px] font-bold rounded-full uppercase tracking-widest flex items-center gap-1.5">
+                      <Shield className="w-3 h-3" /> Akun Terverifikasi
+                    </span>
+                  </div>
+                </div>
+              )}
+              {updateError && <p className="text-xs text-rose-500 font-bold mt-2">{updateError}</p>}
+            </div>
           </div>
         </div>
       </motion.div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Couple Connection Section */}
+        <motion.div variants={itemVariants} className="space-y-4">
+          <h3 className="text-xs font-bold text-sage-400 uppercase tracking-[0.2em] px-2 flex items-center gap-2">
+            <HeartHandshake className="w-4 h-4" /> Hubungan
+          </h3>
+          
+          <div className="bg-white rounded-[2rem] border border-sage-100 p-8 shadow-xl shadow-sage-900/[0.03] relative overflow-hidden group min-h-[260px] flex flex-col justify-center">
+            <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700">
+              <Heart className="w-24 h-24 text-rose-400 fill-rose-400" />
+            </div>
+
+            {userProfile?.coupleId ? (
+              <div className="space-y-6 relative z-10">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-rose-50 rounded-2xl flex items-center justify-center">
+                    <Heart className="w-7 h-7 text-rose-400 fill-rose-400" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-rose-400 uppercase tracking-wider mb-0.5">Terhubung Dengan</div>
+                    <div className="text-lg font-display text-sage-900">{userProfile.partnerName}</div>
+                    <div className="text-xs text-sage-400">{userProfile.partnerEmail}</div>
+                  </div>
+                </div>
+                <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center gap-3">
+                  <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center text-white">
+                    <Check className="w-4 h-4 stroke-[3]" />
+                  </div>
+                  <div className="text-xs font-bold text-emerald-700">Sistem keuangan bersama aktif</div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-6 relative z-10">
+                <div className="space-y-2">
+                  <h4 className="font-display text-xl text-sage-900">Mulai Bersama Pasangan</h4>
+                  <p className="text-sm text-sage-500 leading-relaxed">Hubungkan akunmu untuk mengelola budget dan transaksi secara harmonis.</p>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="p-4 bg-sage-50 rounded-2xl border border-sage-100">
+                    <label className="text-[10px] font-bold text-sage-400 uppercase tracking-widest mb-2 block">Kode Undangan Kamu</label>
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-2xl font-bold text-sage-800 tracking-widest">{userProfile?.inviteCode}</span>
+                      <button
+                        onClick={copyCode}
+                        className={`p-3 rounded-xl transition-all ${copied ? 'bg-emerald-500 text-white' : 'bg-white text-sage-600 hover:bg-sage-100 shadow-sm'}`}
+                      >
+                        {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <form onSubmit={handleLink} className="space-y-3 pt-2">
+                    <input
+                      type="text"
+                      value={inviteCode}
+                      onChange={e => setInviteCode(e.target.value.toUpperCase().trim())}
+                      placeholder="KODE PASANGAN"
+                      maxLength={6}
+                      className="w-full px-5 py-4 bg-white border border-sage-100 rounded-2xl text-center font-mono text-lg tracking-widest focus:outline-none focus:ring-4 focus:ring-sage-500/10 focus:border-sage-300 transition-all uppercase"
+                    />
+                    <button
+                      type="submit"
+                      disabled={linking || inviteCode.length < 6}
+                      className="w-full py-4 bg-sage-800 text-white rounded-2xl font-bold hover:bg-sage-900 disabled:opacity-50 transition-all shadow-xl shadow-sage-900/10 active:scale-[0.98] flex items-center justify-center gap-2"
+                    >
+                      {linking ? 'Menghubungkan...' : (
+                        <>
+                          <Link2 className="w-4 h-4" />
+                          Hubungkan
+                        </>
+                      )}
+                    </button>
+                    {linkError && <p className="text-center text-xs font-bold text-rose-500">{linkError}</p>}
+                    {linkSuccess && <p className="text-center text-xs font-bold text-emerald-600">{linkSuccess}</p>}
+                  </form>
+                </div>
+              </div>
+            )}
+          </div>
+        </motion.div>
+
+        {/* Other Settings */}
+        <motion.div variants={itemVariants} className="space-y-4">
+          <h3 className="text-xs font-bold text-sage-400 uppercase tracking-[0.2em] px-2 flex items-center gap-2">
+            <Smartphone className="w-4 h-4" /> Preferensi & Info
+          </h3>
+          
+          <div className="bg-white rounded-[2rem] border border-sage-100 divide-y divide-sage-50 shadow-xl shadow-sage-900/[0.03] overflow-hidden">
+            {[
+              { icon: Shield, label: 'Keamanan Data', value: 'Enkripsi Aktif', color: 'text-blue-500', bg: 'bg-blue-50' },
+              { icon: Info, label: 'Versi Aplikasi', value: '1.0.0 (Gold)', color: 'text-amber-500', bg: 'bg-amber-50' },
+            ].map((item, i) => (
+              <div key={i} className="flex items-center justify-between p-5 hover:bg-sage-50 transition-colors group cursor-pointer">
+                <div className="flex items-center gap-4">
+                  <div className={`w-10 h-10 ${item.bg} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                    <item.icon className={`w-5 h-5 ${item.color}`} />
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-sage-800">{item.label}</div>
+                    <div className="text-[10px] text-sage-400 font-medium uppercase tracking-wider">{item.value}</div>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-sage-300 group-hover:translate-x-1 transition-transform" />
+              </div>
+            ))}
+            
+            <button
+              onClick={() => {
+                confirm({
+                  title: 'Keluar Aplikasi',
+                  message: 'Apakah Anda yakin ingin keluar?',
+                  onConfirm: async () => {
+                    setConfirmLoading(true);
+                    await logout();
+                    close();
+                  }
+                });
+              }}
+              className="w-full flex items-center justify-between p-5 hover:bg-rose-50 transition-colors group text-left"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <LogOut className="w-5 h-5 text-rose-500" />
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-rose-600">Keluar Sesi</div>
+                  <div className="text-[10px] text-rose-300 font-medium uppercase tracking-wider">Log out dari akun ini</div>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-rose-200 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
+
+          <div className="text-center pt-4">
+            <p className="text-[10px] font-bold text-sage-300 uppercase tracking-[0.3em]">Candy Finance • Made with ❤️</p>
+          </div>
+        </motion.div>
+      </div>
     </motion.div>
   );
 }
