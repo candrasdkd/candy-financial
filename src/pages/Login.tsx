@@ -1,33 +1,18 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Heart, Coins, BarChart3, Landmark, Mail, Lock, ArrowRight, Shield, Smartphone, Loader2 } from 'lucide-react';
-import { useAuthStore } from '../store/useAuthStore';
+import { Link } from 'react-router-dom';
+import { Heart, Coins, Mail, Lock, ArrowRight, Shield, Smartphone, Loader2 } from 'lucide-react';
+import { useLogin } from '../hooks/useLogin';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Login() {
-  const login = useAuthStore((state) => state.login);
-  const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-    try {
-      await login(email, password);
-      navigate('/');
-    } catch (err: any) {
-      const msg = err.code === 'auth/invalid-credential'
-        ? 'Email atau password salah'
-        : err.message || 'Terjadi kesalahan';
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
-  }
+  const {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    loading,
+    error,
+    handleSubmit
+  } = useLogin();
 
   return (
     <div className="min-h-screen bg-sage-950 flex relative overflow-hidden">

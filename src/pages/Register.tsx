@@ -1,41 +1,24 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Heart, User, Mail, Lock, ArrowRight, Sparkles, ChevronRight, ChevronLeft, Loader2 } from 'lucide-react';
-import { useAuthStore } from '../store/useAuthStore';
+import { useRegister } from '../hooks/useRegister';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Register() {
-  const register = useAuthStore((state) => state.register);
-  const navigate = useNavigate();
-  const [step, setStep] = useState(1);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [displayName, setDisplayName] = useState('');
-  const [gender, setGender] = useState<'male' | 'female'>('male');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (step === 1) {
-      setStep(2);
-      return;
-    }
-    
-    setError('');
-    setLoading(true);
-    try {
-      await register(email, password, displayName, gender);
-      navigate('/');
-    } catch (err: any) {
-      const msg = err.code === 'auth/email-already-in-use'
-        ? 'Email sudah terdaftar'
-        : err.message || 'Terjadi kesalahan';
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
-  }
+  const {
+    step,
+    setStep,
+    email,
+    setEmail,
+    password,
+    setPassword,
+    displayName,
+    setDisplayName,
+    gender,
+    setGender,
+    loading,
+    error,
+    handleSubmit
+  } = useRegister();
 
   return (
     <div className="min-h-screen bg-sage-950 flex relative overflow-hidden">

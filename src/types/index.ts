@@ -97,6 +97,8 @@ export function getCategoryInfo(cat: Category) {
   return ALL_CATEGORIES.find(c => c.value === cat) || { value: cat, label: cat, icon: Tag };
 }
 
+export const MAX_AMOUNT = 100_000_000;
+
 export function formatRupiah(amount: number): string {
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
@@ -104,4 +106,9 @@ export function formatRupiah(amount: number): string {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
+}
+
+export function parseRupiah(val: string): number {
+  const nums = val.replace(/\D/g, '');
+  return nums ? parseInt(nums) : 0;
 }

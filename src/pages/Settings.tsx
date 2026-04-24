@@ -30,61 +30,32 @@ const itemVariants: Variants = {
   visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100 } }
 };
 
+import { useSettingsPage } from '../hooks/useSettingsPage';
+
 export default function Settings() {
-  const { userProfile, logout, linkCouple, updateUserProfile } = useAuthStore();
-  const { confirm, close, setLoading: setConfirmLoading } = useConfirmStore();
-  const [inviteCode, setInviteCode] = useState('');
-  const [linking, setLinking] = useState(false);
-  const [linkError, setLinkError] = useState('');
-  const [linkSuccess, setLinkSuccess] = useState('');
-  const [copied, setCopied] = useState(false);
+  const {
+    userProfile,
+    isEditing,
+    setIsEditing,
+    editName,
+    setEditName,
+    editGender,
+    setEditGender,
+    saving,
+    updateError,
+    inviteCode,
+    setInviteCode,
+    linking,
+    linkError,
+    linkSuccess,
+    copied,
+    copyCode,
+    handleLink,
+    handleUpdateProfile,
+    handleLogout
+  } = useSettingsPage();
 
-  // Edit Profile State
-  const [isEditing, setIsEditing] = useState(false);
-  const [editName, setEditName] = useState(userProfile?.displayName || '');
-  const [editGender, setEditGender] = useState(userProfile?.gender || 'male');
-  const [saving, setSaving] = useState(false);
-  const [updateError, setUpdateError] = useState('');
 
-  function copyCode() {
-    if (userProfile?.inviteCode) {
-      navigator.clipboard.writeText(userProfile.inviteCode);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  }
-
-  async function handleLink(e?: React.FormEvent) {
-    if (e) e.preventDefault();
-    if (!inviteCode) return;
-    setLinking(true);
-    setLinkError('');
-    try {
-      await linkCouple(inviteCode.toUpperCase().trim());
-      setLinkSuccess('Berhasil terhubung!');
-      setInviteCode('');
-    } catch (err: any) {
-      setLinkError(err.message || 'Gagal menghubungkan');
-    } finally {
-      setLinking(false);
-    }
-  }
-
-  async function handleUpdateProfile() {
-    setSaving(true);
-    setUpdateError('');
-    try {
-      await updateUserProfile({
-        displayName: editName,
-        gender: editGender as 'male' | 'female'
-      });
-      setIsEditing(false);
-    } catch (err: any) {
-      setUpdateError(err.message || 'Gagal memperbarui profil');
-    } finally {
-      setSaving(false);
-    }
-  }
 
   return (
     <motion.div 
@@ -297,17 +268,7 @@ export default function Settings() {
             ))}
             
             <button
-              onClick={() => {
-                confirm({
-                  title: 'Keluar Aplikasi',
-                  message: 'Apakah Anda yakin ingin keluar?',
-                  onConfirm: async () => {
-                    setConfirmLoading(true);
-                    await logout();
-                    close();
-                  }
-                });
-              }}
+              onClick={handleLogout}
               className="w-full flex items-center justify-between p-5 hover:bg-rose-50 transition-colors group text-left"
             >
               <div className="flex items-center gap-4">

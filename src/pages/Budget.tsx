@@ -1,5 +1,4 @@
-import { useState, useMemo } from 'react';
-import { format, parseISO, startOfMonth, endOfMonth } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { 
   PiggyBank, 
@@ -7,18 +6,14 @@ import {
   Edit2, 
   Trash2, 
   AlertTriangle,
-  ArrowRight,
   Sparkles,
   PieChart,
-  ChevronRight,
   TrendingDown,
   X
 } from 'lucide-react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { useConfirmStore } from '../store/useConfirmStore';
-import { useBudgets, useTransactions } from '../hooks/useTransactions';
-import { EXPENSE_CATEGORIES, getCategoryInfo, formatRupiah, Category } from '../types';
-import { useBudgetStats } from '../hooks/useBudgetStats';
+import { useBudgetPage } from '../hooks/useBudgetPage';
+import { getCategoryInfo, formatRupiah, Category } from '../types';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -34,64 +29,29 @@ const itemVariants: Variants = {
 };
 
 export default function Budget() {
-  const { budgets, loading: budgetsLoading, error, setBudget, deleteBudget } = useBudgets();
-  const { transactions } = useTransactions();
-  const [month, setMonth] = useState(format(new Date(), 'yyyy-MM'));
-  const [editing, setEditing] = useState<Category | null>(null);
-  const [limitInput, setLimitInput] = useState('');
-  const [addingNew, setAddingNew] = useState(false);
-  const [newCategory, setNewCategory] = useState<Category>('makan');
-  const [loading, setLoading] = useState(false);
-  const { confirm, close, setLoading: setConfirmLoading } = useConfirmStore();
-
-  const monthBudgets = budgets.filter(b => b.month === month);
-  const { expenseByCategory } = useBudgetStats(transactions, month);
-
-  const { totalLimit, totalSpent } = useMemo(() => {
-    const limit = monthBudgets.reduce((s, b) => s + b.limit, 0);
-    const spent = monthBudgets.reduce((s, b) => s + (expenseByCategory[b.category] || 0), 0);
-    return { totalLimit: limit, totalSpent: spent };
-  }, [monthBudgets, expenseByCategory]);
-
-  const totalPct = totalLimit > 0 ? Math.min((totalSpent / totalLimit) * 100, 100) : 0;
-
-  async function handleSave(cat: Category) {
-    const limit = parseInt(limitInput.replace(/\D/g, ''));
-    if (!limit || limit <= 0) return;
-    if (limit > 100000000) {
-      alert('Maksimal anggaran per kategori adalah Rp 100.000.000');
-      return;
-    }
-    setLoading(true);
-    try {
-      await setBudget(cat, limit, month);
-      setEditing(null);
-      setAddingNew(false);
-      setLimitInput('');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleDelete(id: string) {
-    confirm({
-      title: 'Hapus Anggaran',
-      message: 'Apakah Anda yakin ingin menghapus anggaran bulan ini? Data yang sudah dihapus tidak dapat dikembalikan.',
-      onConfirm: async () => {
-        setConfirmLoading(true);
-        try {
-          await deleteBudget(id);
-          close();
-        } finally {
-          setConfirmLoading(false);
-        }
-      }
-    });
-  }
-
-  const availableCategories = EXPENSE_CATEGORIES.filter(
-    c => !monthBudgets.some(b => b.category === c.value)
-  );
+  const {
+    month,
+    setMonth,
+    editing,
+    setEditing,
+    limitInput,
+    setLimitInput,
+    addingNew,
+    setAddingNew,
+    newCategory,
+    setNewCategory,
+    loading,
+    budgetsLoading,
+    error,
+    monthBudgets,
+    expenseByCategory,
+    totalLimit,
+    totalSpent,
+    totalPct,
+    handleSave,
+    handleDelete,
+    availableCategories
+  } = useBudgetPage();
 
   return (
     <motion.div 

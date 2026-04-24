@@ -1,27 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
-import { 
-  X, 
-  TrendingUp, 
-  TrendingDown, 
-  AlertTriangle, 
-  Loader2,
-  Calendar,
-  Type,
-  Sparkles
-} from 'lucide-react';
+import { X, TrendingUp, TrendingDown, AlertTriangle, Loader2, Calendar, Type, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { useTransactions } from '../hooks/useTransactions';
-import {
-  TransactionType,
-  Category,
-  INCOME_CATEGORIES,
-  EXPENSE_CATEGORIES,
-} from '../types';
-import { format } from 'date-fns';
-
-interface Props {
-  onClose: () => void;
-}
+import { useTransactionForm } from '../hooks/useTransactionForm';
+import { TransactionType } from '../types';
 
 const containerVariants: Variants = {
   hidden: { y: '100%', opacity: 0 },
@@ -48,61 +28,34 @@ const itemVariants: Variants = {
   visible: { opacity: 1, y: 0 }
 };
 
+interface Props {
+  onClose: () => void;
+}
+
 export default function TransactionModal({ onClose }: Props) {
-  const { addTransaction } = useTransactions();
-  const [type, setType] = useState<TransactionType>('expense');
-  const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState<Category>('makan');
-  const [description, setDescription] = useState('');
-  const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const amountRef = useRef<HTMLInputElement>(null);
+  const {
+    type,
+    setType,
+    amount,
+    setAmount,
+    category,
+    setCategory,
+    description,
+    setDescription,
+    date,
+    setDate,
+    loading,
+    error,
+    amountRef,
+    categories,
+    isExpense,
+    formatAmount,
+    handleSubmit
+  } = useTransactionForm(onClose);
 
-  const categories = type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
-  const isExpense = type === 'expense';
-
-  useEffect(() => {
-    setTimeout(() => amountRef.current?.focus(), 400);
-  }, []);
-
-  useEffect(() => {
-    const fn = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', fn);
-    return () => window.removeEventListener('keydown', fn);
-  }, [onClose]);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError('');
-    const numAmount = parseInt(amount.replace(/\D/g, ''));
-    if (!numAmount || numAmount <= 0) {
-      setError('Masukkan jumlah yang valid');
-      return;
-    }
-    if (numAmount > 100000000) {
-      setError('Maksimal transaksi adalah Rp 100.000.000');
-      return;
-    }
-    setLoading(true);
-    try {
-      await addTransaction({ type, category, amount: numAmount, description, date });
-      onClose();
-    } catch (err: any) {
-      setError(err.message || 'Terjadi kesalahan');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function formatAmount(val: string) {
-    const nums = val.replace(/\D/g, '');
-    return nums ? parseInt(nums).toLocaleString('id-ID') : '';
-  }
-
-  const accentColor = isExpense ? 'rose' : 'emerald';
-  const themeClasses = isExpense 
+  const theme = isExpense 
     ? {
+        accent: 'rose',
         bg: 'bg-rose-500',
         text: 'text-rose-500',
         light: 'bg-rose-50',
@@ -110,12 +63,14 @@ export default function TransactionModal({ onClose }: Props) {
         shadow: 'shadow-rose-500/20'
       }
     : {
+        accent: 'emerald',
         bg: 'bg-emerald-600',
         text: 'text-emerald-600',
         light: 'bg-emerald-50',
         border: 'border-emerald-100',
         shadow: 'shadow-emerald-500/20'
       };
+
 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col justify-end sm:justify-center sm:items-center p-0 sm:p-6 !mt-0">
@@ -185,12 +140,12 @@ export default function TransactionModal({ onClose }: Props) {
           <div className="flex-1 overflow-y-auto px-6 space-y-6 pb-6 custom-scrollbar">
             
             {/* Amount Input */}
-            <motion.div variants={itemVariants} className={`rounded-[2rem] p-6 ${themeClasses.light} border-2 ${themeClasses.border} transition-colors duration-500 shadow-inner`}>
-              <label className={`block text-[9px] font-black uppercase tracking-[0.2em] mb-3 text-center ${themeClasses.text}`}>
+            <motion.div variants={itemVariants} className={`rounded-[2rem] p-6 ${theme.light} border-2 ${theme.border} transition-colors duration-500 shadow-inner`}>
+              <label className={`block text-[9px] font-black uppercase tracking-[0.2em] mb-3 text-center ${theme.text}`}>
                 Nominal {type === 'expense' ? 'Keluar' : 'Masuk'}
               </label>
               <div className="flex items-center justify-center gap-2">
-                <span className={`font-mono font-black text-xl ${themeClasses.text} opacity-40`}>Rp</span>
+                <span className={`font-mono font-black text-xl ${theme.text} opacity-40`}>Rp</span>
                 <input
                   ref={amountRef}
                   type="text"
@@ -204,6 +159,7 @@ export default function TransactionModal({ onClose }: Props) {
                 />
               </div>
             </motion.div>
+
 
             {/* ERROR MESSAGE - Moved here for better visibility */}
             <AnimatePresence>
@@ -243,7 +199,7 @@ export default function TransactionModal({ onClose }: Props) {
                         flex flex-col items-center gap-1.5 p-3 rounded-[1.2rem] border-2 text-[9px] font-black uppercase tracking-tighter
                         transition-all duration-300 active:scale-95 disabled:opacity-50
                         ${active
-                          ? `${themeClasses.border} ${themeClasses.light} ${themeClasses.text} shadow-md`
+                          ? `${theme.border} ${theme.light} ${theme.text} shadow-md`
                           : 'border-sage-50 text-sage-400 hover:border-sage-100 hover:bg-sage-50'
                         }
                       `}
@@ -296,8 +252,8 @@ export default function TransactionModal({ onClose }: Props) {
                 w-full py-4 rounded-[1.8rem] font-black text-white text-sm uppercase tracking-[0.2em]
                 transition-all duration-300 shadow-xl
                 ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.02] active:scale-95'}
-                ${themeClasses.bg}
-                ${themeClasses.shadow}
+                ${theme.bg}
+                ${theme.shadow}
               `}
             >
               {loading ? (
