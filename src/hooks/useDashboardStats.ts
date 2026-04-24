@@ -19,7 +19,7 @@ export function useDashboardStats(transactions: Transaction[], date: Date = new 
     });
   }, [transactions, date]);
 
-  // 2. Hitung total pemasukan, pengeluaran, saldo
+  // 2. Hitung total pemasukan, pengeluaran, saldo (Hanya bulan ini)
   const { totalIncome, totalExpense, balance } = useMemo(() => {
     let income = 0;
     let expense = 0;
@@ -36,13 +36,19 @@ export function useDashboardStats(transactions: Transaction[], date: Date = new 
     };
   }, [thisMonthTx]);
 
+  // 2.1 Hitung Total Saldo (Seluruh Waktu / Tabungan Kumulatif)
+  const allTimeBalance = useMemo(() => {
+    return transactions.reduce((acc, tx) => {
+      return tx.type === 'income' ? acc + tx.amount : acc - tx.amount;
+    }, 0);
+  }, [transactions]);
+
   // 3. Chart data 1 bulan penuh
   const chartData = useMemo(() => {
     const days: { date: string; income: number; expense: number }[] = [];
     const monthStart = startOfMonth(date);
     const monthEnd = endOfMonth(date);
     
-    // Iterasi dari tanggal 1 sampai akhir bulan
     let current = new Date(monthStart);
     while (current <= monthEnd) {
       const key = format(current, 'yyyy-MM-dd');
@@ -57,12 +63,11 @@ export function useDashboardStats(transactions: Transaction[], date: Date = new 
       });
 
       days.push({
-        date: format(current, 'dd', { locale: id }), // Hanya angka tanggal biar tidak sesak
+        date: format(current, 'dd', { locale: id }),
         income,
         expense,
       });
 
-      // Next day
       current = new Date(current.getTime() + 86400000);
     }
     return days;
@@ -76,7 +81,6 @@ export function useDashboardStats(transactions: Transaction[], date: Date = new 
     });
 
     return Object.entries(grouped)
-      // Sort descending based on value
       .sort(([, valA], [, valB]) => valB - valA)
       .map(([cat, val]) => {
         const info = getCategoryInfo(cat as any);
@@ -96,6 +100,7 @@ export function useDashboardStats(transactions: Transaction[], date: Date = new 
     totalIncome,
     totalExpense,
     balance,
+    allTimeBalance,
     chartData,
     pieData,
     recentTx,

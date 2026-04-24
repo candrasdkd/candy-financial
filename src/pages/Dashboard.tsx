@@ -88,10 +88,10 @@ export default function Dashboard() {
     totalIncome,
     totalExpense,
     balance,
+    allTimeBalance,
     chartData,
     pieData,
     recentTx,
-    thisMonthTx,
   } = useDashboardStats(transactions, now);
 
   if (!userProfile?.coupleId) {
@@ -156,7 +156,7 @@ export default function Dashboard() {
         {/* Main Balance Card */}
         <motion.div 
           variants={itemVariants} 
-          className={`lg:col-span-2 p-10 rounded-[3rem] text-white relative overflow-hidden group transition-all duration-700 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] ${balance >= 0 ? 'bg-gradient-to-br from-sage-700 to-sage-900' : 'bg-gradient-to-br from-rose-600 to-rose-800'}`}
+          className={`lg:col-span-2 p-10 rounded-[3rem] text-white relative overflow-hidden group transition-all duration-700 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] ${allTimeBalance >= 0 ? 'bg-gradient-to-br from-sage-700 to-sage-900' : 'bg-gradient-to-br from-rose-600 to-rose-800'}`}
         >
           <div className="absolute -right-20 -top-20 w-80 h-80 bg-white/10 rounded-full blur-[100px] group-hover:scale-125 transition-transform duration-1000" />
           <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-rose-400/20 rounded-full blur-[60px]" />
@@ -168,12 +168,20 @@ export default function Dashboard() {
                   <Wallet className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <span className="text-xs font-bold text-white/60 uppercase tracking-[0.2em] block">Saldo Bersama</span>
-                  <span className="text-sm font-medium text-white/90">{format(now, 'MMMM yyyy', { locale: id })}</span>
+                  <span className="text-xs font-bold text-white/60 uppercase tracking-[0.2em] block">Total Saldo (Tabungan)</span>
+                  <span className="text-sm font-medium text-white/90">Akumulasi Seluruh Waktu</span>
                 </div>
               </div>
-              <div className="font-mono text-5xl lg:text-6xl font-bold tracking-tighter drop-shadow-sm">
-                {formatRupiah(balance)}
+              <div className="space-y-2">
+                <div className="font-mono text-5xl lg:text-6xl font-bold tracking-tighter drop-shadow-sm">
+                  {formatRupiah(allTimeBalance)}
+                </div>
+                {balance !== allTimeBalance && (
+                  <div className="flex items-center gap-2 text-white/60 text-xs font-medium">
+                    <Sparkles className="w-3 h-3" />
+                    <span>Selisih bulan ini: {balance >= 0 ? '+' : ''}{formatRupiah(balance)}</span>
+                  </div>
+                )}
               </div>
             </div>
             

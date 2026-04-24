@@ -58,6 +58,10 @@ export default function Budget() {
   async function handleSave(cat: Category) {
     const limit = parseInt(limitInput.replace(/\D/g, ''));
     if (!limit || limit <= 0) return;
+    if (limit > 100000000) {
+      alert('Maksimal anggaran per kategori adalah Rp 100.000.000');
+      return;
+    }
     setLoading(true);
     try {
       await setBudget(cat, limit, month);

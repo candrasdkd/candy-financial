@@ -1,6 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, TrendingUp, TrendingDown, ChevronDown, AlertTriangle } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { 
+  X, 
+  TrendingUp, 
+  TrendingDown, 
+  AlertTriangle, 
+  Loader2,
+  Calendar,
+  Type,
+  Sparkles
+} from 'lucide-react';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { useTransactions } from '../hooks/useTransactions';
 import {
   TransactionType,
@@ -14,6 +23,31 @@ interface Props {
   onClose: () => void;
 }
 
+const containerVariants: Variants = {
+  hidden: { y: '100%', opacity: 0 },
+  visible: { 
+    y: 0, 
+    opacity: 1,
+    transition: { 
+      type: 'spring', 
+      damping: 25, 
+      stiffness: 200,
+      staggerChildren: 0.05,
+      delayChildren: 0.1
+    }
+  },
+  exit: { 
+    y: '100%', 
+    opacity: 0,
+    transition: { ease: 'easeInOut', duration: 0.3 }
+  }
+};
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 }
+};
+
 export default function TransactionModal({ onClose }: Props) {
   const { addTransaction } = useTransactions();
   const [type, setType] = useState<TransactionType>('expense');
@@ -23,23 +57,20 @@ export default function TransactionModal({ onClose }: Props) {
   const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [visible, setVisible] = useState(false);
   const amountRef = useRef<HTMLInputElement>(null);
 
   const categories = type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
   const isExpense = type === 'expense';
 
-  // Focus on open
   useEffect(() => {
-    setTimeout(() => amountRef.current?.focus(), 300);
+    setTimeout(() => amountRef.current?.focus(), 400);
   }, []);
 
-  // Close on Escape
   useEffect(() => {
     const fn = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', fn);
     return () => window.removeEventListener('keydown', fn);
-  }, []);
+  }, [onClose]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -47,6 +78,10 @@ export default function TransactionModal({ onClose }: Props) {
     const numAmount = parseInt(amount.replace(/\D/g, ''));
     if (!numAmount || numAmount <= 0) {
       setError('Masukkan jumlah yang valid');
+      return;
+    }
+    if (numAmount > 100000000) {
+      setError('Maksimal transaksi adalah Rp 100.000.000');
       return;
     }
     setLoading(true);
@@ -65,188 +100,215 @@ export default function TransactionModal({ onClose }: Props) {
     return nums ? parseInt(nums).toLocaleString('id-ID') : '';
   }
 
-  const accentBg = isExpense ? 'bg-rose-500' : 'bg-sage-600';
-  const accentText = isExpense ? 'text-rose-500' : 'text-sage-600';
-  const accentBorder = isExpense ? 'border-rose-400' : 'border-sage-400';
-  const accentLight = isExpense ? 'bg-rose-50' : 'bg-sage-50';
+  const accentColor = isExpense ? 'rose' : 'emerald';
+  const themeClasses = isExpense 
+    ? {
+        bg: 'bg-rose-500',
+        text: 'text-rose-500',
+        light: 'bg-rose-50',
+        border: 'border-rose-100',
+        shadow: 'shadow-rose-500/20'
+      }
+    : {
+        bg: 'bg-emerald-600',
+        text: 'text-emerald-600',
+        light: 'bg-emerald-50',
+        border: 'border-emerald-100',
+        shadow: 'shadow-emerald-500/20'
+      };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end sm:justify-center sm:items-center sm:p-4">
+    <div className="fixed inset-0 z-[100] flex flex-col justify-end sm:justify-center sm:items-center p-0 sm:p-6 !mt-0">
       {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="absolute inset-0 bg-sage-950/60 backdrop-blur-md"
         onClick={onClose}
       />
 
       {/* Sheet / Modal */}
       <motion.div
-        initial={{ y: '100%', opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: '100%', opacity: 0 }}
-        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-        className="relative bg-white w-full sm:max-w-lg sm:rounded-3xl rounded-t-3xl shadow-2xl flex flex-col max-h-[92dvh] sm:max-h-[90vh] overflow-hidden"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        className="relative bg-white w-full sm:max-w-md sm:rounded-[2.5rem] rounded-t-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.3)] flex flex-col max-h-[95dvh] overflow-hidden border border-white/20"
       >
-        {/* Drag Handle (mobile only) */}
-        <div className="sm:hidden flex justify-center pt-3 pb-1 flex-shrink-0">
-          <div className="w-10 h-1 rounded-full bg-gray-300" />
-        </div>
-
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-3 pb-4 sm:pt-5 sm:px-6 flex-shrink-0">
-          <div>
-            <h2 className="font-display text-xl text-sage-900">Tambah Transaksi</h2>
-            <p className="text-xs text-sage-400 mt-0.5">Catat pemasukan atau pengeluaran</p>
+        {/* Header Section */}
+        <div className="flex-shrink-0 px-6 pt-6 pb-2">
+          <div className="flex items-center justify-between mb-4">
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2 text-rose-400">
+                <Sparkles className="w-3 h-3 fill-rose-400" />
+                <span className="text-[9px] font-bold uppercase tracking-[0.3em]">Transaksi Baru</span>
+              </div>
+              <h2 className="font-display text-2xl text-sage-900 tracking-tight">Catat Keuangan</h2>
+            </div>
+            <button
+              onClick={onClose}
+              className="w-10 h-10 flex items-center justify-center rounded-xl bg-sage-50 text-sage-400 hover:bg-sage-100 hover:text-sage-600 transition-all"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-cream-100 transition-colors text-sage-500"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
 
-        {/* Type Toggle — full width strip */}
-        <div className="px-5 sm:px-6 pb-4 flex-shrink-0">
-          <div className="grid grid-cols-2 gap-2 p-1 bg-cream-100 rounded-2xl">
-            {([
-              { val: 'expense', label: 'Pengeluaran', icon: TrendingDown, color: 'text-rose-500' },
-              { val: 'income', label: 'Pemasukan', icon: TrendingUp, color: 'text-sage-600' },
-            ] as const).map(({ val, label, icon: Icon, color }) => (
+          {/* Type Toggle */}
+          <motion.div variants={itemVariants} className="grid grid-cols-2 gap-1.5 p-1 bg-sage-50 rounded-[1.5rem] border border-sage-100">
+            {[
+              { val: 'expense', label: 'Keluar', icon: TrendingDown, color: 'text-rose-500' },
+              { val: 'income', label: 'Masuk', icon: TrendingUp, color: 'text-emerald-600' },
+            ].map(({ val, label, icon: Icon, color }) => (
               <button
                 key={val}
                 type="button"
-                onClick={() => { setType(val); setCategory(val === 'expense' ? 'makan' : 'gaji'); }}
+                disabled={loading}
+                onClick={() => { setType(val as TransactionType); setCategory(val === 'expense' ? 'makan' : 'gaji'); }}
                 className={`
-                  flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold
-                  transition-all duration-200
+                  flex items-center justify-center gap-2.5 py-3 rounded-[1.2rem] text-[11px] font-bold uppercase tracking-wider
+                  transition-all duration-300 disabled:opacity-50
                   ${type === val
-                    ? `bg-white shadow-sm ${color}`
+                    ? `bg-white shadow-lg ${color}`
                     : 'text-sage-400 hover:text-sage-600'}
                 `}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="w-3.5 h-3.5" />
                 {label}
               </button>
             ))}
-          </div>
+          </motion.div>
         </div>
 
-        {/* Scrollable Body */}
+        {/* Form Body */}
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
-          <div className="flex-1 overflow-y-auto px-5 sm:px-6 space-y-5 pb-2">
-
-            {/* Amount — big hero input */}
-            <div className={`rounded-2xl p-4 ${accentLight} border-2 ${accentBorder} transition-colors duration-300`}>
-              <label className={`block text-xs font-bold uppercase tracking-widest mb-2 ${accentText}`}>
-                Jumlah
+          <div className="flex-1 overflow-y-auto px-6 space-y-6 pb-6 custom-scrollbar">
+            
+            {/* Amount Input */}
+            <motion.div variants={itemVariants} className={`rounded-[2rem] p-6 ${themeClasses.light} border-2 ${themeClasses.border} transition-colors duration-500 shadow-inner`}>
+              <label className={`block text-[9px] font-black uppercase tracking-[0.2em] mb-3 text-center ${themeClasses.text}`}>
+                Nominal {type === 'expense' ? 'Keluar' : 'Masuk'}
               </label>
-              <div className="flex items-center gap-2">
-                <span className={`font-mono font-bold text-lg ${accentText}`}>Rp</span>
+              <div className="flex items-center justify-center gap-2">
+                <span className={`font-mono font-black text-xl ${themeClasses.text} opacity-40`}>Rp</span>
                 <input
                   ref={amountRef}
                   type="text"
                   inputMode="numeric"
                   value={amount}
+                  disabled={loading}
                   onChange={e => setAmount(formatAmount(e.target.value))}
                   placeholder="0"
                   required
-                  className={`flex-1 bg-transparent font-mono text-3xl font-bold text-sage-900 focus:outline-none placeholder-sage-300 min-w-0`}
+                  className={`bg-transparent font-mono text-4xl font-black text-sage-900 focus:outline-none placeholder-sage-200 text-center w-full tracking-tighter disabled:opacity-50`}
                 />
               </div>
-            </div>
+            </motion.div>
 
-            {/* Category grid */}
-            <div>
-              <label className="block text-xs font-bold text-sage-400 uppercase tracking-widest mb-3">
-                Kategori
+            {/* ERROR MESSAGE - Moved here for better visibility */}
+            <AnimatePresence>
+              {error && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                  animate={{ 
+                    opacity: 1, 
+                    y: 0, 
+                    scale: 1,
+                    x: [0, -4, 4, -4, 4, 0] // Shake animation
+                  }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="flex items-center justify-center gap-2 text-rose-600 text-[11px] font-black uppercase tracking-widest bg-rose-50 border-2 border-rose-100 px-6 py-4 rounded-[1.5rem] shadow-lg shadow-rose-900/10"
+                >
+                  <AlertTriangle className="w-4 h-4" />
+                  <span>{error}</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Category Grid */}
+            <motion.div variants={itemVariants} className="space-y-3">
+              <label className="block text-[9px] font-black text-sage-400 uppercase tracking-[0.2em] px-1">
+                Pilih Kategori
               </label>
-              <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+              <div className="grid grid-cols-4 gap-2.5">
                 {categories.map(cat => {
                   const active = category === cat.value;
                   return (
                     <button
                       key={cat.value}
                       type="button"
+                      disabled={loading}
                       onClick={() => setCategory(cat.value)}
                       className={`
-                        flex flex-col items-center gap-1.5 p-2.5 rounded-2xl border-2 text-xs font-medium
-                        transition-all duration-150 active:scale-95
+                        flex flex-col items-center gap-1.5 p-3 rounded-[1.2rem] border-2 text-[9px] font-black uppercase tracking-tighter
+                        transition-all duration-300 active:scale-95 disabled:opacity-50
                         ${active
-                          ? `${accentBorder} ${accentLight} ${accentText} shadow-sm`
-                          : 'border-cream-200 text-sage-500 hover:border-cream-300 hover:bg-cream-50'
+                          ? `${themeClasses.border} ${themeClasses.light} ${themeClasses.text} shadow-md`
+                          : 'border-sage-50 text-sage-400 hover:border-sage-100 hover:bg-sage-50'
                         }
                       `}
                     >
-                      <cat.icon className={`w-6 h-6 transition-transform duration-150 ${active ? 'scale-110' : ''}`} />
-                      <span className="leading-tight text-center text-[10px]">{cat.label}</span>
+                      <cat.icon className={`w-6 h-6 transition-transform duration-500 ${active ? 'scale-110' : 'opacity-60'}`} />
+                      <span className="leading-tight text-center truncate w-full">{cat.label}</span>
                     </button>
                   );
                 })}
               </div>
-            </div>
+            </motion.div>
 
-            {/* Description + Date side by side on sm+ */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-sage-400 uppercase tracking-widest mb-2">
-                  Keterangan
+            {/* Details Section */}
+            <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="flex items-center gap-2 text-[9px] font-black text-sage-400 uppercase tracking-[0.2em] px-1">
+                  <Type className="w-3 h-3" /> Keterangan
                 </label>
                 <input
                   type="text"
                   value={description}
+                  disabled={loading}
                   onChange={e => setDescription(e.target.value)}
-                  placeholder="Misal: Makan siang berdua"
-                  className="w-full px-4 py-3 border-2 border-cream-200 rounded-xl text-sage-900 focus:outline-none focus:border-sage-400 transition-colors text-sm bg-white"
+                  placeholder="Misal: Makan malam"
+                  className="w-full px-5 py-3.5 bg-sage-50 border border-sage-100 rounded-xl text-sage-900 focus:outline-none focus:ring-2 focus:ring-sage-500/20 transition-all font-bold disabled:opacity-50 text-sm"
                 />
               </div>
-              <div>
-                <label className="block text-xs font-bold text-sage-400 uppercase tracking-widest mb-2">
-                  Tanggal
+              <div className="space-y-1.5">
+                <label className="flex items-center gap-2 text-[9px] font-black text-sage-400 uppercase tracking-[0.2em] px-1">
+                  <Calendar className="w-3 h-3" /> Tanggal
                 </label>
                 <input
                   type="date"
                   value={date}
+                  disabled={loading}
                   onChange={e => setDate(e.target.value)}
                   required
-                  className="w-full px-4 py-3 border-2 border-cream-200 rounded-xl text-sage-900 focus:outline-none focus:border-sage-400 transition-colors text-sm bg-white"
+                  className="w-full px-5 py-3.5 bg-sage-50 border border-sage-100 rounded-xl text-sage-900 focus:outline-none focus:ring-2 focus:ring-sage-500/20 transition-all font-bold disabled:opacity-50 cursor-pointer text-sm"
                 />
               </div>
-            </div>
-
-            {error && (
-              <div className="flex items-center gap-2 text-rose-600 text-sm bg-rose-50 border border-rose-200 px-4 py-3 rounded-xl">
-                <AlertTriangle className="w-5 h-5" /> {error}
-              </div>
-            )}
+            </motion.div>
           </div>
 
-          {/* Submit — sticky footer */}
-          <div className="px-5 sm:px-6 pt-3 pb-5 sm:pb-6 flex-shrink-0 border-t border-cream-100 mt-2">
+          {/* Sticky Submit Button */}
+          <div className="flex-shrink-0 p-6 border-t border-sage-50 bg-white/80 backdrop-blur-xl">
             <button
               type="submit"
               disabled={loading}
               className={`
-                w-full py-4 rounded-2xl font-bold text-white text-base
-                transition-all duration-200
-                ${loading ? 'opacity-60 cursor-not-allowed' : 'hover:brightness-105 active:scale-[0.98]'}
-                ${accentBg}
-                shadow-lg
+                w-full py-4 rounded-[1.8rem] font-black text-white text-sm uppercase tracking-[0.2em]
+                transition-all duration-300 shadow-xl
+                ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.02] active:scale-95'}
+                ${themeClasses.bg}
+                ${themeClasses.shadow}
               `}
-              style={{ boxShadow: isExpense ? '0 8px 24px rgba(225,79,108,0.3)' : '0 8px 24px rgba(90,132,93,0.3)' }}
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
-                  <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                  </svg>
+                  <Loader2 className="w-5 h-5 animate-spin" />
                   Menyimpan...
                 </span>
               ) : (
-                `Simpan ${isExpense ? 'Pengeluaran' : 'Pemasukan'}`
+                <span className="flex items-center justify-center gap-2">
+                  Simpan Transaksi
+                </span>
               )}
             </button>
           </div>
