@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { Upload, FileText, ChevronDown, FolderOpen, Loader2, Filter, X, CheckCircle2, Download, FileType } from 'lucide-react';
+import { Upload, FileText, ChevronDown, FolderOpen, Loader2, Filter, X, CheckCircle2, Download, User } from 'lucide-react';
 import { useDocuments, CATEGORY_INFO, DocCategory, FamilyDocument } from '../hooks/useDocuments';
 import { useConfirmStore } from '../store/useConfirmStore';
 import { useAuthStore } from '../store/useAuthStore';
@@ -26,6 +26,7 @@ export default function Documents() {
   const [showUpload, setShowUpload] = useState(false);
   const [selected, setSelected] = useState<FamilyDocument | null>(null);
   const [activeCat, setActiveCat] = useState<DocCategory | 'all'>('all');
+  const [activePartner, setActivePartner] = useState<string | 'all'>('all');
   const [showCatDropdown, setShowCatDropdown] = useState(false);
 
   // Selection States
@@ -33,8 +34,18 @@ export default function Documents() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isExporting, setIsExporting] = useState(false);
 
-  const filtered = activeCat === 'all' ? documents : documents.filter(d => d.category === activeCat);
+  // Daftar partner unik yang punya dokumen
+  const partners = Array.from(new Set(documents.map(d => d.uploadedBy).filter(Boolean)));
+
+  const filtered = documents.filter(d => {
+    const catOk = activeCat === 'all' || d.category === activeCat;
+    const partnerOk = activePartner === 'all' || d.uploadedBy === activePartner;
+    return catOk && partnerOk;
+  });
   const activeLabel = activeCat === 'all' ? 'Semua Dokumen' : CATEGORY_INFO[activeCat].label;
+
+  // Inisial nama untuk avatar
+  const getInitials = (name: string) => name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
   const toggleDocSelection = (id: string) => {
     setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
@@ -190,17 +201,18 @@ export default function Documents() {
             {showCatDropdown && (
               <>
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]" onClick={() => setShowCatDropdown(false)} />
-                <motion.div initial={{ opacity: 0, y: 100, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 100, scale: 0.95 }}
-                  className="fixed md:absolute bottom-0 md:bottom-auto left-0 md:mt-2 w-full md:w-[480px] bg-white border-t md:border border-sage-100 rounded-t-[2.5rem] md:rounded-[2rem] shadow-2xl z-[70] p-6 md:p-8 overflow-hidden"
-                >
-                  <div className="flex items-center justify-between mb-6">
+                  className="fixed inset-0 bg-sage-950/60 backdrop-blur-md z-[150]" onClick={() => setShowCatDropdown(false)} />
+                <div className="fixed inset-0 flex items-end md:items-center justify-center z-[160] pointer-events-none pb-0 md:p-4">
+                  <motion.div initial={{ opacity: 0, y: 100, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 100, scale: 0.95 }}
+                    className="w-full md:w-[480px] bg-white border-t md:border border-sage-100 rounded-t-[2.5rem] md:rounded-[2.5rem] shadow-2xl p-6 pb-10 md:pb-8 md:p-8 overflow-hidden max-h-[85vh] flex flex-col pointer-events-auto"
+                  >
+                  <div className="flex items-center justify-between mb-6 flex-shrink-0">
                     <p className="text-[10px] font-bold text-sage-400 uppercase tracking-[0.15em] ml-1">Pilih Jenis Dokumen</p>
                     <button onClick={() => setShowCatDropdown(false)} className="md:hidden w-8 h-8 rounded-full bg-sage-50 flex items-center justify-center">
                       <X className="w-4 h-4 text-sage-400" />
                     </button>
                   </div>
-                  <div className="grid grid-cols-3 gap-3 md:gap-4 max-h-[60vh] overflow-y-auto pr-1 scrollbar-hide">
+                  <div className="grid grid-cols-3 gap-3 md:gap-4 overflow-y-auto pr-1 scrollbar-hide flex-1">
                     <button onClick={() => { setActiveCat('all'); setShowCatDropdown(false); }}
                       className={`flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border transition-all ${activeCat === 'all' ? 'bg-sage-900 border-sage-900 text-white shadow-xl' : 'bg-white border-sage-100 text-sage-600 hover:bg-sage-50'}`}
                     >
@@ -217,10 +229,49 @@ export default function Documents() {
                     ))}
                   </div>
                 </motion.div>
+                </div>
               </>
             )}
           </AnimatePresence>
         </div>
+
+        {/* Partner Filter Pills */}
+        {partners.length > 1 && (
+          <div className="flex items-center gap-2 px-2 md:px-0 flex-wrap">
+            <div className="flex items-center gap-1.5 text-[9px] font-bold text-sage-400 uppercase tracking-widest">
+              <User className="w-3 h-3" />
+              <span className="hidden md:inline">Pemilik</span>
+            </div>
+            <button
+              onClick={() => setActivePartner('all')}
+              className={`px-3 py-1.5 rounded-full text-[10px] font-bold transition-all border ${
+                activePartner === 'all'
+                  ? 'bg-sage-900 text-white border-sage-900 shadow-sm'
+                  : 'bg-white text-sage-500 border-sage-100 hover:border-sage-200'
+              }`}
+            >
+              Semua
+            </button>
+            {partners.map(name => (
+              <button
+                key={name}
+                onClick={() => setActivePartner(activePartner === name ? 'all' : name)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold transition-all border ${
+                  activePartner === name
+                    ? 'bg-sage-900 text-white border-sage-900 shadow-sm'
+                    : 'bg-white text-sage-600 border-sage-100 hover:border-sage-200'
+                }`}
+              >
+                <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-black ${
+                  activePartner === name ? 'bg-white/20' : 'bg-sage-100'
+                }`}>
+                  {getInitials(name)}
+                </div>
+                <span className="max-w-[80px] truncate">{name.split(' ')[0]}</span>
+              </button>
+            ))}
+          </div>
+        )}
 
         <div className="hidden md:flex items-center gap-2 px-4 text-xs font-bold text-sage-400 uppercase tracking-widest ml-auto">
           <FolderOpen className="w-3.5 h-3.5" />

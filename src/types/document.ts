@@ -1,4 +1,4 @@
-export type DocCategory = 'ktp' | 'sim' | 'npwp' | 'nikah' | 'ijazah' | 'akta' | 'paspor' | 'kk' | 'sertifikat' | 'bpjs_kes' | 'bpjs_ket' | 'asuransi' | 'lainnya';
+export type DocCategory = 'ktp' | 'sim' | 'npwp' | 'nikah' | 'ijazah' | 'akta' | 'paspor' | 'kk' | 'sertifikat' | 'bpjs_kes' | 'bpjs_ket' | 'asuransi' | 'sip' | 'lainnya';
 
 export interface OcrField {
   label: string;

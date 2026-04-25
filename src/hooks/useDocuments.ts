@@ -63,6 +63,41 @@ export function useDocuments() {
     }
   }, []);
 
+  /** Re-scan dari URL gambar yang sudah tersimpan di cloud */
+  const rescanDocument = useCallback(async (documentId: string, imageUrls: string[], category: DocCategory) => {
+    setError(null);
+    setOcrLoading(true);
+    try {
+      const { createWorker } = await import('tesseract.js');
+      const worker = await createWorker('ind+eng', 1, { logger: () => {} });
+
+      let combinedText = '';
+      for (const url of imageUrls) {
+        // Fetch gambar dari URL → konversi ke File agar bisa di-preprocess
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const file = new File([blob], 'page.jpg', { type: blob.type || 'image/jpeg' });
+        const processedImageUrl = await preprocessForOcr(file);
+        const { data } = await worker.recognize(processedImageUrl);
+        combinedText += data.text.trim() + '\n';
+      }
+
+      await worker.terminate();
+      const fields = parseOcrToFields(combinedText, category);
+
+      // Simpan langsung ke Firestore
+      const docRef = doc(db, 'family_documents', documentId);
+      await updateDoc(docRef, { fields, extractedText: combinedText });
+
+      setOcrLoading(false);
+      return { rawText: combinedText, fields };
+    } catch (err: any) {
+      setOcrLoading(false);
+      setError('Gagal scan ulang dokumen.');
+      throw err;
+    }
+  }, []);
+
   /** Step 2: Upload & Simpan Firestore */
   const uploadAndSave = useCallback(async (params: {
     files: File[];
@@ -158,6 +193,7 @@ export function useDocuments() {
     ocrLoading,
     error,
     scanDocument,
+    rescanDocument,
     uploadAndSave,
     deleteDocument,
     updateDocument,

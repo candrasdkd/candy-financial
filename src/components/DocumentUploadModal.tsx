@@ -146,7 +146,7 @@ export default function DocumentUploadModal({ onClose }: { onClose: () => void }
                   <div className="grid grid-cols-4 gap-2">
                     {CATS.map(([key, info]) => (
                       <button key={key} onClick={() => setCategory(key)}
-                        className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl border transition-all duration-300 ${category === key ? 'bg-sage-50 border-sage-200 text-sage-900 shadow-sm' : 'border-sage-50 text-sage-300 hover:border-sage-100'}`}>
+                        className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl border transition-all duration-300 ${category === key ? 'bg-sage-900 border-sage-900 text-white shadow-xl scale-[1.02]' : 'bg-white border-sage-200 text-sage-500 hover:bg-sage-50 hover:text-sage-800 hover:border-sage-300'}`}>
                         <div className="text-xl mb-0.5">{info.emoji}</div>
                         <div className="text-[8px] font-bold uppercase leading-tight text-center truncate w-full">{info.label}</div>
                       </button>
