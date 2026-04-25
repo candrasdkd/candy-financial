@@ -124,7 +124,7 @@ export default function Dashboard() {
       initial="hidden"
       animate="visible"
       variants={containerVariants}
-      className="p-6 lg:p-12 max-w-7xl mx-auto space-y-10 pb-24"
+      className="p-4 md:p-8 lg:p-12 max-w-7xl mx-auto space-y-6 md:space-y-10 pb-24"
     >
       {/* Header & Greeting */}
       <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -156,28 +156,29 @@ export default function Dashboard() {
         {/* Main Balance Card */}
         <motion.div 
           variants={itemVariants} 
-          className={`lg:col-span-2 p-10 rounded-[3rem] text-white relative overflow-hidden group transition-all duration-700 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] ${allTimeBalance >= 0 ? 'bg-gradient-to-br from-sage-700 to-sage-900' : 'bg-gradient-to-br from-rose-600 to-rose-800'}`}
+          className={`lg:col-span-2 p-6 md:p-10 rounded-[2.5rem] md:rounded-[3rem] text-white relative overflow-hidden group transition-all duration-700 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] ${allTimeBalance >= 0 ? 'bg-gradient-to-br from-sage-700 to-sage-900' : 'bg-gradient-to-br from-rose-600 to-rose-800'}`}
         >
           <div className="absolute -right-20 -top-20 w-80 h-80 bg-white/10 rounded-full blur-[100px] group-hover:scale-125 transition-transform duration-1000" />
           <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-rose-400/20 rounded-full blur-[60px]" />
           
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 relative z-10 h-full">
+          <div className="flex flex-col justify-between h-full relative z-10">
             <div className="space-y-6">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-xl border border-white/20">
                   <Wallet className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <span className="text-xs font-bold text-white/60 uppercase tracking-[0.2em] block">Total Saldo (Tabungan)</span>
-                  <span className="text-sm font-medium text-white/90">Akumulasi Seluruh Waktu</span>
+                  <span className="text-[10px] font-bold text-white/60 uppercase tracking-[0.2em] block">Total Saldo (Tabungan)</span>
+                  <span className="text-xs font-medium text-white/80">Akumulasi Seluruh Waktu</span>
                 </div>
               </div>
-              <div className="space-y-2">
-                <div className="font-mono text-5xl lg:text-6xl font-bold tracking-tighter drop-shadow-sm">
+              
+              <div className="space-y-3">
+                <div className="font-mono text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter drop-shadow-md leading-none">
                   {formatRupiah(allTimeBalance)}
                 </div>
                 {balance !== allTimeBalance && (
-                  <div className="flex items-center gap-2 text-white/60 text-xs font-medium">
+                  <div className="flex items-center gap-2 text-white/50 text-[10px] font-bold uppercase tracking-widest bg-white/10 w-fit px-4 py-1.5 rounded-full border border-white/10">
                     <Sparkles className="w-3 h-3" />
                     <span>Selisih bulan ini: {balance >= 0 ? '+' : ''}{formatRupiah(balance)}</span>
                   </div>
@@ -185,20 +186,24 @@ export default function Dashboard() {
               </div>
             </div>
             
-            <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 space-y-4 md:w-64">
-              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 pt-6 md:pt-8 border-t border-white/10">
+              <div className="flex md:flex-col items-center md:items-start justify-between md:justify-start gap-2 md:space-y-2">
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-emerald-300" />
-                  <span className="text-xs font-bold uppercase tracking-wider text-white/80">In</span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-white/50">Income</span>
                 </div>
-                <span className="font-mono text-sm font-bold text-emerald-300">{formatRupiah(totalIncome)}</span>
+                <div className="font-mono text-sm md:text-2xl font-bold text-emerald-300">
+                  {formatRupiah(totalIncome)}
+                </div>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex md:flex-col items-center md:items-start justify-between md:justify-start gap-2 md:space-y-2 md:border-l md:border-white/10 md:pl-8">
                 <div className="flex items-center gap-2">
-                  <TrendingDown className="w-4 h-4 text-rose-300" />
-                  <span className="text-xs font-bold uppercase tracking-wider text-white/80">Out</span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+                  <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-white/50">Expense</span>
                 </div>
-                <span className="font-mono text-sm font-bold text-rose-300">{formatRupiah(totalExpense)}</span>
+                <div className="font-mono text-sm md:text-2xl font-bold text-rose-300">
+                  {formatRupiah(totalExpense)}
+                </div>
               </div>
             </div>
           </div>
@@ -225,9 +230,11 @@ export default function Dashboard() {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-[10px] font-bold text-sage-400 uppercase tracking-widest">Total</span>
-                <span className="text-xl font-bold text-sage-900">{formatRupiah(totalExpense)}</span>
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none p-4">
+                <span className="text-[8px] md:text-[10px] font-bold text-sage-300 uppercase tracking-widest mb-1">Total Keluar</span>
+                <span className="text-[11px] md:text-sm font-bold text-sage-900 text-center leading-tight">
+                  {formatRupiah(totalExpense)}
+                </span>
               </div>
             </div>
           ) : (
@@ -243,23 +250,23 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Trend Area Chart */}
         <motion.div variants={itemVariants} className="lg:col-span-2 bg-white rounded-[3rem] p-10 border border-sage-50 shadow-xl shadow-sage-900/[0.03]">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
             <div>
               <h3 className="font-display text-2xl text-sage-900 mb-1">Tren Bulanan</h3>
               <p className="text-sm text-sage-400 font-medium">Perbandingan In vs Out</p>
             </div>
-            <div className="flex gap-4">
+            
+            <div className="flex flex-wrap items-center gap-4">
               <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                <span className="text-[10px] font-bold text-sage-500 uppercase tracking-widest">Pemasukan</span>
+                <div className="w-3 h-3 rounded-full bg-emerald-400" />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-sage-600">Pemasukan</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-rose-500" />
-                <span className="text-[10px] font-bold text-sage-500 uppercase tracking-widest">Pengeluaran</span>
+                <div className="w-3 h-3 rounded-full bg-rose-400" />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-sage-600">Pengeluaran</span>
               </div>
             </div>
           </div>
-          
           <div className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData}>
@@ -300,7 +307,7 @@ export default function Dashboard() {
         </motion.div>
 
         {/* Quick History List */}
-        <motion.div variants={itemVariants} className="bg-white rounded-[3rem] p-10 border border-sage-50 shadow-xl shadow-sage-900/[0.03]">
+        <motion.div variants={itemVariants} className="bg-white rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-10 border border-sage-50 shadow-xl shadow-sage-900/[0.03]">
           <div className="flex items-center justify-between mb-8">
             <div>
               <h3 className="font-display text-2xl text-sage-900 mb-1">Aktivitas</h3>

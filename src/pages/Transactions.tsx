@@ -126,24 +126,26 @@ export default function Transactions() {
             ))}
           </div>
 
-          {/* Date Pickers */}
-          <div className="md:col-span-4 flex items-center gap-2 bg-sage-50/50 p-1 rounded-[1.5rem] border border-sage-100 overflow-hidden">
-            <div className="flex-1 flex items-center px-3 gap-2">
-              <Calendar className="w-3.5 h-3.5 text-sage-400" />
+          <div className="md:col-span-4 flex items-center bg-sage-50/50 p-1 rounded-[1.5rem] border border-sage-100 overflow-hidden">
+            <div className="flex-1 flex items-center px-3 gap-2 group/date relative">
+              <Calendar className="w-3.5 h-3.5 text-sage-400 shrink-0" />
               <input
                 type="date"
                 value={startDate}
                 onChange={e => setStartDate(e.target.value)}
-                className="w-full py-2 bg-transparent text-xs font-bold text-sage-700 focus:outline-none cursor-pointer"
+                onClick={(e) => e.currentTarget.showPicker()}
+                className="w-full py-2 bg-transparent text-[11px] font-bold text-sage-700 focus:outline-none cursor-pointer appearance-none [&::-webkit-calendar-picker-indicator]:hidden"
               />
             </div>
-            <div className="w-px h-6 bg-sage-100" />
-            <div className="flex-1 flex items-center px-3 gap-2">
+            <div className="w-px h-6 bg-sage-100 shrink-0" />
+            <div className="flex-1 flex items-center px-3 gap-2 group/date relative">
+              <Calendar className="w-3.5 h-3.5 text-sage-400 shrink-0" />
               <input
                 type="date"
                 value={endDate}
                 onChange={e => setEndDate(e.target.value)}
-                className="w-full py-2 bg-transparent text-xs font-bold text-sage-700 focus:outline-none cursor-pointer"
+                onClick={(e) => e.currentTarget.showPicker()}
+                className="w-full py-2 bg-transparent text-[11px] font-bold text-sage-700 focus:outline-none cursor-pointer appearance-none [&::-webkit-calendar-picker-indicator]:hidden"
               />
             </div>
           </div>
@@ -151,23 +153,28 @@ export default function Transactions() {
       </motion.div>
 
       {/* Summary Cards Row */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div className="p-8 rounded-[2.5rem] bg-emerald-50/50 border border-emerald-100/50 flex items-center justify-between group transition-all hover:bg-emerald-50">
-          <div>
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-600 mb-2 block">Pemasukan Terfilter</span>
-            <div className="font-mono text-3xl font-bold text-emerald-700 tracking-tighter">{formatRupiah(totalIncome)}</div>
+      <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+        <div className="p-6 md:p-8 rounded-[2.5rem] bg-emerald-50/50 border border-emerald-100/50 flex items-center justify-between group transition-all hover:bg-emerald-50">
+          <div className="space-y-1">
+            <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-600 block">Pemasukan Terfilter</span>
+            <div className="font-mono text-2xl md:text-3xl font-bold text-emerald-700 tracking-tighter truncate">
+              {formatRupiah(totalIncome)}
+            </div>
           </div>
-          <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
-            <TrendingUp className="w-7 h-7" />
+          <div className="w-12 h-12 md:w-14 md:h-14 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform flex-shrink-0 ml-4">
+            <TrendingUp className="w-6 h-6 md:w-7 md:h-7" />
           </div>
         </div>
-        <div className="p-8 rounded-[2.5rem] bg-rose-50/50 border border-rose-100/50 flex items-center justify-between group transition-all hover:bg-rose-50">
-          <div>
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-rose-500 mb-2 block">Pengeluaran Terfilter</span>
-            <div className="font-mono text-3xl font-bold text-rose-600 tracking-tighter">{formatRupiah(totalExpense)}</div>
+
+        <div className="p-6 md:p-8 rounded-[2.5rem] bg-rose-50/50 border border-rose-100/50 flex items-center justify-between group transition-all hover:bg-rose-50">
+          <div className="space-y-1">
+            <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-rose-500 block">Pengeluaran Terfilter</span>
+            <div className="font-mono text-2xl md:text-3xl font-bold text-rose-600 tracking-tighter truncate">
+              {formatRupiah(totalExpense)}
+            </div>
           </div>
-          <div className="w-14 h-14 bg-rose-100 rounded-2xl flex items-center justify-center text-rose-500 group-hover:scale-110 transition-transform">
-            <TrendingDown className="w-7 h-7" />
+          <div className="w-12 h-12 md:w-14 md:h-14 bg-rose-100 rounded-2xl flex items-center justify-center text-rose-500 group-hover:scale-110 transition-transform flex-shrink-0 ml-4">
+            <TrendingDown className="w-6 h-6 md:w-7 md:h-7" />
           </div>
         </div>
       </motion.div>
@@ -240,35 +247,34 @@ export default function Transactions() {
                           <cat.icon className="w-7 h-7 text-sage-500 group-hover:text-sage-700" />
                         </div>
                         
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-bold text-sage-900 text-base lg:text-lg truncate tracking-tight">
+                        <div className="flex-1 min-w-0 py-1">
+                          <div className="flex items-center gap-1.5 mb-1.5">
+                            <h4 className="font-bold text-sage-900 text-sm md:text-base lg:text-lg truncate tracking-tight">
                               {tx.description || cat.label}
                             </h4>
-                            <ChevronRight className="w-4 h-4 text-sage-200 group-hover:text-sage-400 group-hover:translate-x-1 transition-all" />
+                            <ChevronRight className="w-3.5 h-3.5 text-sage-200 group-hover:text-sage-400 shrink-0" />
                           </div>
                           
-                          <div className="flex flex-wrap items-center gap-3">
-                            <span className="text-[10px] font-bold text-sage-400 uppercase tracking-widest">{cat.label}</span>
-                            <div className="w-1 h-1 rounded-full bg-sage-100" />
-                            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-bold tracking-[0.1em] uppercase ${
-                              isMine ? 'bg-sage-100 text-sage-700' : 'bg-rose-100 text-rose-600'
+                          <div className="flex items-center gap-2 md:gap-3">
+                            <span className="text-[9px] md:text-[10px] font-bold text-sage-400 uppercase tracking-widest shrink-0">{cat.label}</span>
+                            <div className="w-1 h-1 rounded-full bg-sage-100 shrink-0" />
+                            <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] md:text-[9px] font-bold tracking-tight uppercase ${
+                              isMine ? 'bg-sage-50 text-sage-600' : 'bg-rose-50 text-rose-500'
                             }`}>
-                              <span className="w-1 h-1 rounded-full bg-current" />
-                              {isMine ? 'Saya' : (userProfile?.partnerName || 'Pasangan')}
+                              {isMine ? 'SAYA' : (userProfile?.partnerName?.toUpperCase() || 'PASANGAN')}
                             </div>
                           </div>
                         </div>
 
-                        <div className="flex flex-col items-end gap-2">
-                          <div className={`font-mono text-lg font-bold tracking-tighter ${tx.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                        <div className="flex flex-col items-end justify-between self-stretch py-1">
+                          <div className={`font-mono text-sm md:text-lg font-bold tracking-tighter whitespace-nowrap ${tx.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}`}>
                             {tx.type === 'income' ? '+' : '-'}{formatRupiah(tx.amount)}
                           </div>
                           <button
                             onClick={(e) => { e.stopPropagation(); handleDelete(tx.id); }}
-                            className="p-2.5 rounded-xl text-sage-300 hover:text-rose-500 hover:bg-rose-50 transition-all sm:opacity-0 sm:group-hover:opacity-100"
+                            className="p-2 rounded-lg text-sage-300 hover:text-rose-500 hover:bg-rose-50 transition-all sm:opacity-0 sm:group-hover:opacity-100"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </motion.div>
