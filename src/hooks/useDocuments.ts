@@ -67,8 +67,6 @@ export function useDocuments() {
     setOcrLoading(true);
     try {
       for (const file of files) {
-        if (file.size < MIN_FILE_SIZE) throw new Error(`File "${file.name}" terlalu kecil (min 100KB).`);
-        if (file.size > MAX_FILE_SIZE) throw new Error(`File "${file.name}" terlalu besar (maks 500KB).`);
         if (!ALLOWED_TYPES.includes(file.type)) throw new Error(`Format file "${file.name}" tidak didukung.`);
       }
 
@@ -143,8 +141,6 @@ export function useDocuments() {
 
     try {
       for (const file of params.files) {
-        if (file.size < MIN_FILE_SIZE) throw new Error(`File "${file.name}" terlalu kecil (min 100KB).`);
-        if (file.size > MAX_FILE_SIZE) throw new Error(`File "${file.name}" terlalu besar (maks 500KB).`);
         if (!ALLOWED_TYPES.includes(file.type)) throw new Error(`Format file "${file.name}" tidak didukung.`);
       }
 

@@ -27,8 +27,7 @@ export default function DocumentUploadModal({ onClose }: { onClose: () => void }
   const handleFile = async (f: File) => {
     setLocalError(null);
     if (f.size < 100 * 1024) {
-      setLocalError('File terlalu kecil! Minimal 100KB agar teks terbaca jelas.');
-      return;
+      setLocalError('Catatan: Ukuran foto di bawah 100KB, hasil scan teks mungkin kurang jelas.');
     }
     
     let processedFile = f;
@@ -181,7 +180,7 @@ export default function DocumentUploadModal({ onClose }: { onClose: () => void }
                 </div>
 
                 {error && (
-                  <div className="p-4 rounded-2xl bg-rose-50 border border-rose-100 flex items-center gap-3 text-rose-600 text-xs font-bold leading-relaxed">
+                  <div className={`p-4 rounded-2xl border flex items-center gap-3 text-xs font-bold leading-relaxed ${error.startsWith('Catatan') ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-rose-50 border-rose-100 text-rose-600'}`}>
                     <AlertCircle className="w-4 h-4 flex-shrink-0" /> {error}
                   </div>
                 )}
