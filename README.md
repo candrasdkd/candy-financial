@@ -1,131 +1,93 @@
-# 🍬 CandyNest — Family Management App
+# 🍬 CandyNest — Premium Family Hub
 
-Aplikasi manajemen keluarga modern dan *premium* yang dirancang untuk membantu keluarga mengelola **keuangan, dokumen, dan kebutuhan rumah tangga** dalam satu tempat. Dibangun dengan React (TypeScript), Vite, Tailwind CSS, dan Firebase.
+Aplikasi manajemen keluarga modern dan *premium* yang dirancang untuk membantu keluarga mengelola **keuangan, dokumen penting (OCR), dan anggaran** dalam satu tempat yang aman dan sinkron secara *real-time*.
 
-## ✨ Fitur Utama
+![CandyNest Logo](/public/logo.png)
 
-- 🔐 **Autentikasi & Akun** — Daftar & login aman dengan email/password.
-- 💑 **Sinkronisasi Pasangan** — Hubungkan akun dengan pasangan menggunakan *kode undangan*. Transaksi otomatis sinkron *real-time*.
-- 💰 **Pencatatan Transaksi** — Catat pemasukan dan pengeluaran dengan kategori ber-emoji. Dilengkapi identifikasi **"SAYA"** atau **"PASANGAN"** untuk melihat siapa yang mencatat.
-- 📊 **Dashboard Premium** — Tampilan kartu saldo modern ber-*gradient*, grafik Area Chart 7-hari interaktif, dan Pie Chart pengeluaran menggunakan Recharts dengan Custom Tooltips.
-- 📅 **Riwayat (Date Range Filter)** — Telusuri transaksi menggunakan rentang tanggal (*Date Range*) yang fleksibel dan fitur pencarian.
-- 🏦 **Anggaran (Budgeting)** — Atur batas pengeluaran bulanan per kategori. Terdapat *progress bar* yang berubah warna saat mendekati/melewati batas anggaran.
-- 📱 **Progressive Web App (PWA)** — Aplikasi *mobile-friendly* dan bisa langsung di-*install* ke layar utama (Home Screen) Android maupun iOS.
+## ✨ Fitur Unggulan (Premium Experience)
+
+- 💰 **Dashboard Keuangan Visioner** — Tampilan kartu saldo dengan gaya *Glassmorphism* yang elegan, grafik tren 7-hari yang interaktif, dan kalkulasi akumulasi tabungan seluruh waktu.
+- 📂 **Brankas Dokumen (Smart OCR)** — Simpan KTP, KK, Akta, dan dokumen penting lainnya. Dilengkapi teknologi **OCR (Optical Character Recognition)** untuk ekstrak data teks secara otomatis dari foto.
+- 💑 **Sinkronisasi Pasangan (Couple Sync)** — Hubungkan akun dengan pasangan menggunakan *kode undangan*. Semua data (transaksi & dokumen) sinkron otomatis secara *real-time* di kedua perangkat.
+- 📊 **Smart Budgeting** — Atur batas pengeluaran bulanan per kategori. Indikator visual dinamis akan memperingatkan jika kamu sudah mendekati atau melewati batas anggaran.
+- 📱 **Native-Feel Navigation** — Navigasi cerdas yang beradaptasi: **Dark Sidebar** yang profesional untuk desktop, dan **Premium Bottom Bar** yang ergonomis untuk pengalaman mobile terbaik.
+- ⚡ **Instalasi PWA** — Dapat di-install langsung ke layar utama (Home Screen) Android maupun iOS seperti aplikasi native dari App Store.
 
 ---
 
-## 🚀 Cara Setup (Local Development)
+## 🛠️ Tech Stack & Arsitektur Modern
 
-### 1. Install Dependencies
-Proyek ini menggunakan Yarn. Jalankan perintah:
-```bash
-yarn install
-```
+CandyNest dibangun menggunakan teknologi mutakhir untuk memastikan kecepatan dan keamanan data:
 
-### 2. Setup Firebase
-1. Buka [Firebase Console](https://console.firebase.google.com/)
-2. Buat proyek baru.
-3. Aktifkan **Authentication** → Sign-in method → **Email/Password**.
-4. Aktifkan **Firestore Database**.
+- **Core**: [React 18](https://reactjs.org/) + [TypeScript](https://www.typescriptlang.org/) + [Vite](https://vitejs.dev/)
+- **State Management**: [Zustand](https://zustand-demo.pmnd.rs/) (High-performance global state)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) (Custom Design System, Glassmorphism, Responsive)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/) (Smooth springs & transitions)
+- **Backend**: [Firebase](https://firebase.google.com/) (Auth, Cloud Firestore Real-time, Storage)
+- **AI/OCR Engine**: [Tesseract.js](https://tesseract.projectnaptha.com/) (Client-side Document Scanning)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Deployment**: [Vercel](https://vercel.com/)
 
-### 3. Konfigurasi Environment
-Duplikat file konfigurasi *environment*:
-```bash
-cp .env.example .env
-```
-Lalu lengkapi file `.env` dengan kredensial Firebase milikmu:
+---
+
+## 🚀 Memulai (Local Development)
+
+### 1. Persiapan Environment
+Duplikat file `.env.example` menjadi `.env` dan isi dengan kredensial Firebase Anda:
 ```env
-VITE_FIREBASE_API_KEY=AIzaSy...
-VITE_FIREBASE_AUTH_DOMAIN=project-name.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=project-name
-VITE_FIREBASE_STORAGE_BUCKET=project-name.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=123456789
-VITE_FIREBASE_APP_ID=1:123456789:web:abc123
+VITE_FIREBASE_API_KEY=your_key
+VITE_FIREBASE_AUTH_DOMAIN=your_domain
+VITE_FIREBASE_PROJECT_ID=your_id
+VITE_FIREBASE_STORAGE_BUCKET=your_bucket
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
 ```
 
-### 4. Firestore Security Rules
-Di Firebase Console → Firestore → Rules, ganti dan simpan *rules* berikut agar data aman dari kebocoran (*Data Privacy Protected*):
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    
-    // Fungsi bantuan untuk mengambil coupleId dari user yang sedang request
-    function getUserCoupleId() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.coupleId;
-    }
-
-    // Profil user
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-      // Izin khusus untuk proses pairing pasangan
-      allow update: if request.auth != null
-        && resource.data.coupleId == null
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['coupleId', 'partnerEmail']);
-    }
-
-    // Pasangan (Couples)
-    match /couples/{coupleId} {
-      allow read, update: if request.auth != null && request.auth.uid in resource.data.users;
-      allow create: if request.auth != null;
-    }
-
-    // Transaksi hanya untuk anggota pasangan tersebut
-    match /transactions/{txId} {
-      allow read, update, delete: if request.auth != null && resource.data.coupleId == getUserCoupleId();
-      allow create: if request.auth != null && request.resource.data.coupleId == getUserCoupleId();
-    }
-
-    // Budgeting sama dengan transaksi
-    match /budgets/{budgetId} {
-      allow read, update, delete: if request.auth != null && resource.data.coupleId == getUserCoupleId();
-      allow create: if request.auth != null && request.resource.data.coupleId == getUserCoupleId();
-    }
-  }
-}
-```
-
-### 5. Jalankan Aplikasi
+### 2. Instalasi & Menjalankan Proyek
+Proyek ini menggunakan **npm** (atau yarn/pnpm).
 ```bash
-yarn dev
+# Install dependencies
+npm install
+
+# Jalankan server development
+npm run dev
 ```
-Buka aplikasi di browser pada [http://localhost:5173](http://localhost:5173).
+Aplikasi akan berjalan di [http://localhost:5173](http://localhost:5173).
 
 ---
 
-## 📱 Alur Penggunaan (Pasutri)
-
-1. **Daftar**: Suami dan Istri masing-masing membuat akun di perangkat/HP masing-masing.
-2. **Koneksi**: Salah satu orang membuka **Pengaturan (Settings)** lalu menyalin **Kode Undangan**.
-3. **Hubungkan**: Orang yang satunya membuka menu **Pengaturan**, memasukkan kode tersebut, lalu klik **Hubungkan**.
-4. Selesai! Aplikasi langsung tersinkronisasi. Semua transaksi yang dimasukkan satu pihak akan otomatis muncul di HP pasangan.
-
----
-
-## 🛠️ Tech Stack & Arsitektur
-
-- **Frontend**: React 18, TypeScript, Vite
-- **Styling**: Tailwind CSS (Desain modern, glassmorphism, responsive)
-- **Backend & Database**: Firebase (Auth, Firestore *Realtime*)
-- **Grafik & Visualisasi**: Recharts
-- **Routing**: React Router DOM v6
-- **Date Handling**: date-fns
-- **Icons**: Lucide React
-- **Deployment**: Vercel (Auto-rewrite SPA routing enabled)
-- **PWA Strategy**: Vite PWA (AutoUpdate enabled for instant changes)
-
-## 📁 Struktur Proyek Utama
+## 📁 Struktur Folder Utama
 
 ```text
 src/
-├── components/          # Komponen UI (ConfirmModal, TransactionModal, dll)
-├── contexts/            # Context API (AuthContext)
-├── hooks/               # Custom Hooks penyederhanaan logika:
-│   ├── useTransactions.ts
-│   ├── useDashboardStats.ts # Logika kalkulasi Dashboard
-│   └── useBudgetStats.ts    # Logika kalkulasi Budgeting
-├── pages/               # React Router Pages (Dashboard, Budget, dll)
-├── types/               # Type Definition (.d.ts) dan helper fungsi
-├── App.tsx              # Root Router
-└── index.css            # Setup Tailwind base
+├── components/     # Komponen UI Reusable (Modal, Layout, Navigasi)
+├── store/          # Zustand Stores (Auth, Confirmation State)
+├── hooks/          # Custom Hooks (Transactions, Documents, Budget Logic)
+├── pages/          # Halaman Aplikasi (Dashboard, Transactions, Docs, Settings)
+├── types/          # Type Definitions untuk Document & Financial Data
+├── utils/          # Helper (OCR Parsing, Image Compression, Formatting)
+└── firebase.ts      # Konfigurasi Firebase SDK
 ```
+
+---
+
+## 🔒 Keamanan Data & Privasi
+
+CandyNest menerapkan aturan keamanan **Firestore Security Rules** yang ketat:
+- Data transaksi dan dokumen hanya bisa diakses oleh user yang terverifikasi dan terhubung dalam satu `coupleId`.
+- Proses pengunggahan dokumen ke **Firebase Storage** diproteksi dengan path folder unik per pasangan.
+- Teknologi OCR berjalan sepenuhnya di sisi *client* (browser user) untuk menjaga privasi data sensitif sebelum disimpan.
+
+---
+
+## 📱 Alur Menghubungkan Pasangan
+
+1. **Daftar**: Suami dan Istri membuat akun masing-masing.
+2. **Kirim Kode**: Salah satu pihak pergi ke menu **Pengaturan**, lalu salin **Kode Undangan**.
+3. **Konfirmasi**: Pihak lain memasukkan kode tersebut di menu Pengaturan HP-nya, lalu klik **Hubungkan**.
+4. **Selesai**: Data finansial dan brankas dokumen akan langsung tersinkronisasi di kedua HP secara ajaib. ✨
+
+---
+
+Dibuat dengan ❤️ oleh Keluarga untuk Keluarga.
+**CandyNest — Sweetening Your Family's Financial Future.**

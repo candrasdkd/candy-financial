@@ -49,13 +49,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <aside className="flex flex-col h-full bg-sage-900 text-cream-100 shadow-[8px_0_32px_rgba(0,0,0,0.1)]">
       {/* Logo */}
       <div className="px-8 py-12 border-b border-sage-800">
-        <div className="flex items-center gap-3 group cursor-pointer" onClick={() => navigate('/')}>
-          <div className="w-10 h-10 rounded-2xl bg-sage-800 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
-            <Heart className="w-6 h-6 text-rose-400 fill-rose-400" />
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-2xl bg-white p-0.5 shadow-lg shadow-black/20 overflow-hidden">
+            <img src="/logo.png" alt="CandyNest Logo" className="w-full h-full object-cover" />
           </div>
           <div>
-            <span className="font-display text-xl text-white block leading-none">CandyNest</span>
-            <span className="text-[10px] font-bold text-sage-400 uppercase tracking-[0.3em] mt-1.5 block">Family App</span>
+            <h1 className="font-display text-xl tracking-tight text-white leading-none">CandyNest</h1>
+            <p className="text-[10px] text-rose-300 font-bold uppercase tracking-widest mt-1">Family Hub</p>
           </div>
         </div>
       </div>
@@ -94,7 +94,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             {({ isActive }) => (
               <>
                 {isActive && (
-                  <motion.div 
+                  <motion.div
                     layoutId="activeNav"
                     className="absolute inset-0 bg-sage-800 rounded-2xl border border-sage-700 -z-10 shadow-lg shadow-black/20"
                     transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
@@ -140,7 +140,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </NavLink>
         );
       })}
-      
+
       {/* Menu Trigger for Mobile */}
       <button
         onClick={() => setMobileOpen(true)}
@@ -166,14 +166,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <AnimatePresence>
         {mobileOpen && (
           <div className="fixed inset-0 z-[110] md:hidden">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm" 
-              onClick={() => setMobileOpen(false)} 
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setMobileOpen(false)}
             />
-            <motion.div 
+            <motion.div
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
@@ -194,7 +194,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <Heart className="w-5 h-5 text-rose-400 fill-rose-400" />
             <span className="font-display text-lg text-sage-900">CandyNest</span>
           </div>
-          <button 
+          <button
             onClick={() => navigate('/settings')}
             className="w-10 h-10 rounded-full bg-sage-50 flex items-center justify-center border border-sage-100 overflow-hidden"
           >

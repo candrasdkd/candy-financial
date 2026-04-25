@@ -43,7 +43,7 @@ export default function ConfirmModal() {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -86,7 +86,15 @@ export default function ConfirmModal() {
             </button>
             <button
               onClick={async () => {
-                await onConfirm();
+                useConfirmStore.getState().setLoading(true);
+                try {
+                  await onConfirm();
+                  close();
+                } catch (err) {
+                  console.error('Confirm error:', err);
+                } finally {
+                  useConfirmStore.getState().setLoading(false);
+                }
               }}
               disabled={isLoading}
               className={`flex-1 px-4 py-3 rounded-xl ${config.btn} text-white font-medium transition-colors disabled:opacity-50 flex justify-center items-center`}

@@ -1,11 +1,11 @@
 import { useState, useMemo } from 'react';
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Wallet, 
-  Plus, 
-  ArrowRight, 
-  Heart, 
+import {
+  TrendingUp,
+  TrendingDown,
+  Wallet,
+  Plus,
+  ArrowRight,
+  Heart,
   Inbox,
   Sparkles,
   Calendar,
@@ -34,7 +34,7 @@ import { Link } from 'react-router-dom';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
-  visible: { 
+  visible: {
     opacity: 1,
     transition: { staggerChildren: 0.1 }
   }
@@ -98,7 +98,7 @@ export default function Dashboard() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[80vh] p-8 text-center relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-rose-100/30 rounded-full blur-[100px] -z-10" />
-        <motion.div 
+        <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           className="w-24 h-24 bg-white rounded-[2.5rem] shadow-2xl flex items-center justify-center mb-8 border border-rose-50"
@@ -120,7 +120,7 @@ export default function Dashboard() {
   }
 
   return (
-    <motion.div 
+    <motion.div
       initial="hidden"
       animate="visible"
       variants={containerVariants}
@@ -141,7 +141,7 @@ export default function Dashboard() {
             <span className="text-sm">{format(now, 'EEEE, dd MMMM yyyy', { locale: id })}</span>
           </div>
         </div>
-        
+
         <button
           onClick={() => setShowModal(true)}
           className="flex items-center justify-center gap-3 px-8 py-4 bg-sage-800 text-white rounded-[2rem] font-bold hover:bg-sage-900 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl shadow-sage-900/20"
@@ -154,25 +154,27 @@ export default function Dashboard() {
       {/* Hero Stats Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Balance Card */}
-        <motion.div 
-          variants={itemVariants} 
+        <motion.div
+          variants={itemVariants}
           className={`lg:col-span-2 p-6 md:p-10 rounded-[2.5rem] md:rounded-[3rem] text-white relative overflow-hidden group transition-all duration-700 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] ${allTimeBalance >= 0 ? 'bg-gradient-to-br from-sage-700 to-sage-900' : 'bg-gradient-to-br from-rose-600 to-rose-800'}`}
         >
           <div className="absolute -right-20 -top-20 w-80 h-80 bg-white/10 rounded-full blur-[100px] group-hover:scale-125 transition-transform duration-1000" />
           <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-rose-400/20 rounded-full blur-[60px]" />
-          
+
           <div className="flex flex-col justify-between h-full relative z-10">
             <div className="space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-xl border border-white/20">
-                  <Wallet className="w-6 h-6 text-white" />
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-xl border border-white/20 shadow-inner group-hover:scale-110 transition-transform duration-500">
+                  <div className="w-8 h-8 text-white">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4" /><path d="M4 6v12c0 1.1.9 2 2 2h14v-4" /><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z" /></svg>
+                  </div>
                 </div>
                 <div>
-                  <span className="text-[10px] font-bold text-white/60 uppercase tracking-[0.2em] block">Total Saldo (Tabungan)</span>
+                  <span className="text-[10px] font-bold text-white/60 uppercase tracking-[0.2em] block mb-1">Total Saldo (Tabungan)</span>
                   <span className="text-xs font-medium text-white/80">Akumulasi Seluruh Waktu</span>
                 </div>
               </div>
-              
+
               <div className="space-y-3">
                 <div className="font-mono text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter drop-shadow-md leading-none">
                   {formatRupiah(allTimeBalance)}
@@ -185,7 +187,7 @@ export default function Dashboard() {
                 )}
               </div>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 pt-6 md:pt-8 border-t border-white/10">
               <div className="flex md:flex-col items-center md:items-start justify-between md:justify-start gap-2 md:space-y-2">
                 <div className="flex items-center gap-2">
@@ -215,7 +217,7 @@ export default function Dashboard() {
             <h3 className="font-display text-2xl text-sage-900 mb-1">Pengeluaran</h3>
             <p className="text-sm text-sage-400 font-medium mb-6">Berdasarkan kategori</p>
           </div>
-          
+
           {pieData.length > 0 ? (
             <div className="relative">
               <div className="h-[200px]">
@@ -255,7 +257,7 @@ export default function Dashboard() {
               <h3 className="font-display text-2xl text-sage-900 mb-1">Tren Bulanan</h3>
               <p className="text-sm text-sage-400 font-medium">Perbandingan In vs Out</p>
             </div>
-            
+
             <div className="flex flex-wrap items-center gap-4">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-emerald-400" />
@@ -340,7 +342,7 @@ export default function Dashboard() {
               recentTx.slice(0, 4).map(tx => {
                 const cat = getCategoryInfo(tx.category);
                 const isMine = tx.addedBy === userProfile.displayName;
-                
+
                 return (
                   <div key={tx.id} className="group flex items-center gap-4">
                     <div className="w-12 h-12 rounded-2xl bg-sage-50 flex items-center justify-center text-2xl flex-shrink-0 group-hover:scale-110 transition-transform duration-500">
