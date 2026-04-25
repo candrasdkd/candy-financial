@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Heart, Users, Mail, Lock, ArrowRight, Shield, Smartphone, Loader2 } from 'lucide-react';
+import { Heart, Users, Mail, Lock, ArrowRight, Shield, Smartphone, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useLogin } from '../hooks/useLogin';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -11,7 +11,11 @@ export default function Login() {
     setPassword,
     loading,
     error,
-    handleSubmit
+    handleSubmit,
+    showPassword,
+    setShowPassword,
+    greeting,
+    handleForgotPassword
   } = useLogin();
 
   return (
@@ -113,7 +117,7 @@ export default function Login() {
             </div>
 
             <div className="mb-10 text-center lg:text-left">
-              <h2 className="font-display text-4xl text-cream-50 mb-3">Selamat Datang</h2>
+              <h2 className="font-display text-4xl text-cream-50 mb-3">{greeting}</h2>
               <p className="text-sage-400 font-body">Silakan masuk untuk melanjutkan</p>
             </div>
 
@@ -135,18 +139,28 @@ export default function Login() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-sage-400 uppercase tracking-[0.2em] px-1">Password</label>
+                <div className="flex justify-between items-center px-1">
+                  <label className="text-[10px] font-bold text-sage-400 uppercase tracking-[0.2em]">Password</label>
+                  <button type="button" onClick={handleForgotPassword} className="text-[10px] font-bold text-sage-300 hover:text-rose-400 transition-colors">Lupa Password?</button>
+                </div>
                 <div className="relative group">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-sage-500 group-focus-within:text-cream-100 transition-colors" />
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     placeholder="••••••••"
                     required
                     disabled={loading}
-                    className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-cream-50 placeholder:text-sage-600 focus:outline-none focus:ring-2 focus:ring-sage-500/50 focus:border-sage-500/50 transition-all font-medium disabled:opacity-50"
+                    className="w-full pl-12 pr-12 py-4 bg-white/5 border border-white/10 rounded-2xl text-cream-50 placeholder:text-sage-600 focus:outline-none focus:ring-2 focus:ring-sage-500/50 focus:border-sage-500/50 transition-all font-medium disabled:opacity-50"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-sage-500 hover:text-cream-100 transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 
@@ -10,6 +10,21 @@ export function useLogin() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [greeting, setGreeting] = useState('Selamat Datang');
+
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour < 11) setGreeting('Selamat Pagi');
+    else if (hour < 15) setGreeting('Selamat Siang');
+    else if (hour < 18) setGreeting('Selamat Sore');
+    else setGreeting('Selamat Malam');
+  }, []);
+
+  const handleForgotPassword = () => {
+    alert('Fitur Lupa Password sedang dalam pengembangan bre!');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,6 +53,10 @@ export function useLogin() {
     setPassword,
     loading,
     error,
-    handleSubmit
+    handleSubmit,
+    showPassword,
+    setShowPassword,
+    greeting,
+    handleForgotPassword
   };
 }
