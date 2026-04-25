@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
-import { useBudgetStats } from './useBudgetStats';
-import { Transaction } from '../types';
+import { useBudgetStats } from '../useBudgetStats';
+import { Transaction } from '../../types';
 
 describe('useBudgetStats', () => {
   const mockTransactions: Transaction[] = [

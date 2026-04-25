@@ -434,6 +434,45 @@ function parseSip(lines: string[], text: string): OcrField[] {
   ];
 }
 
+function parseAkta(lines: string[], text: string): OcrField[] {
+  // Nama: Di akta kelahiran model lama/baru biasanya setelah kalimat "telah lahir:"
+  const nama = extractLineAfterKeyword(lines, 'Nama') ||
+               extractByRegex(text, /telah\s*lahir\s*[:;]?\s*([A-Z\s]{5,})/i) ||
+               // Baris di antara tanda kutip (sering digunakan di akta lama)
+               extractByRegex(text, /"\s*([A-Z\s]{5,})\s*"/i) ||
+               extractLineAfterKeyword(lines, 'telah lahir', 'Kutipan');
+
+  // No Akta: format 1234/U/JS/1997 atau similar
+  const noAkta = extractByRegex(text, /(?:No\.?|Nomor)\s*[:;=]?\s*([\w\d/.-]{5,})/i) ||
+                 extractLineAfterKeyword(lines, 'No', 'Nomor', 'Akta');
+
+  const tempatLahir = extractLineAfterKeyword(lines, 'bahwa di', 'Tempat Lahir') ||
+                      extractByRegex(text, /bahwa\s*di\s*([A-Z\s]+)/i);
+
+  const tglLahir = extractLineAfterKeyword(lines, 'pada tanggal', 'Tanggal Lahir') ||
+                   extractByRegex(text, /pada\s*tanggal\s*([A-Z\d\s]{5,})/i);
+
+  // Orang tua: biasanya "dari suami isteri : NAMA AYAH dan NAMA IBU"
+  const ayah = extractByRegex(text, /suami\s*(?:isteri)?\s*[:;]?\s*([A-Z\s]{3,})\s*(?:dan|&)/i) ||
+               extractLineAfterKeyword(lines, 'suami', 'Ayah');
+               
+  const ibu = extractByRegex(text, /(?:dan|&)\s*([A-Z\s]{3,})/i) ||
+              extractLineAfterKeyword(lines, 'isteri', 'Ibu');
+
+  const anakKe = extractByRegex(text, /anak\s*ke\s*[:;]?\s*([A-Z\d \t\-()]+)/i) ||
+                 extractLineAfterKeyword(lines, 'anak ke');
+
+  return [
+    { label: 'Nama', value: nama.replace(/"/g, '').trim() },
+    { label: 'No. Akta', value: noAkta },
+    { label: 'Tempat Lahir', value: tempatLahir },
+    { label: 'Tanggal Lahir', value: tglLahir },
+    { label: 'Nama Ayah', value: ayah },
+    { label: 'Nama Ibu', value: ibu },
+    { label: 'Anak Ke', value: anakKe },
+  ];
+}
+
 // ─── Main Entry ────────────────────────────────────────────────────────────
 
 /** Parsing teks mentah hasil OCR menjadi field-field terstruktur */
@@ -455,6 +494,7 @@ export function parseOcrToFields(rawText: string, category: DocCategory): OcrFie
     case 'bpjs_kes': result = parseBpjsKes(lines, text); break;
     case 'bpjs_ket': result = parseBpjsKet(lines, text); break;
     case 'sip':    result = parseSip(lines, text); break;
+    case 'akta':   result = parseAkta(lines, text); break;
     case 'lainnya':
       return lines.slice(0, 20).map((v, i) => ({ label: `Baris ${i + 1}`, value: v }));
     default:

@@ -25,7 +25,7 @@ export const FIELD_TEMPLATES: Record<DocCategory, string[]> = {
   paspor: ['No. Paspor', 'Nama', 'Kewarganegaraan', 'Tempat/Tgl Lahir', 'Jenis Kelamin', 'Berlaku s/d'],
   kk: ['No. KK', 'Kepala Keluarga', 'Alamat', 'RT/RW', 'Kel/Desa', 'Kecamatan', 'Kabupaten/Kota', 'Provinsi'],
   ijazah: ['Nama', 'Nomor Ijazah', 'Sekolah/Universitas', 'Program Studi', 'Tahun Lulus'],
-  akta: ['Nama', 'No. Akta', 'Tempat Lahir', 'Tanggal Lahir', 'Nama Ayah', 'Nama Ibu'],
+  akta: ['Nama', 'No. Akta', 'Tempat Lahir', 'Tanggal Lahir', 'Anak Ke', 'Nama Ayah', 'Nama Ibu'],
   sertifikat: ['Nama', 'No. Sertifikat', 'Nama Sertifikat', 'Lembaga Penerbit', 'Tanggal Terbit'],
   bpjs_kes: ['No. Kartu', 'Nama', 'NIK', 'Faskes Tingkat I'],
   bpjs_ket: ['No. Peserta', 'Nama', 'NIK', 'Nama Perusahaan'],

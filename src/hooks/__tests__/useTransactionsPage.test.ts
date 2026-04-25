@@ -1,19 +1,19 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useTransactionsPage } from './useTransactionsPage';
-import { useTransactions } from './useTransactions';
-import { useAuthStore } from '../store/useAuthStore';
+import { useTransactionsPage } from '../useTransactionsPage';
+import { useTransactions } from '../useTransactions';
+import { useAuthStore } from '../../store/useAuthStore';
 
 // Mock dependencies
-vi.mock('./useTransactions', () => ({
+vi.mock('../useTransactions', () => ({
   useTransactions: vi.fn()
 }));
 
-vi.mock('../store/useAuthStore', () => ({
+vi.mock('../../store/useAuthStore', () => ({
   useAuthStore: vi.fn()
 }));
 
-vi.mock('../store/useConfirmStore', () => ({
+vi.mock('../../store/useConfirmStore', () => ({
   useConfirmStore: vi.fn(() => ({
     confirm: vi.fn(),
     close: vi.fn(),

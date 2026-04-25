@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
-import { useDashboardStats } from './useDashboardStats';
-import { Transaction } from '../types';
+import { useDashboardStats } from '../useDashboardStats';
+import { Transaction } from '../../types';
 
 describe('useDashboardStats', () => {
   it('seharusnya menghitung total pemasukan, pengeluaran, dan saldo dengan benar untuk bulan yang aktif', () => {

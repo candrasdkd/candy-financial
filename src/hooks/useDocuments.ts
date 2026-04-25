@@ -5,6 +5,10 @@ import { storage, db } from '../firebase';
 import { useAuthStore } from '../store/useAuthStore';
 import { FamilyDocument, DocCategory, OcrField } from '../types/document';
 import { compressImage, preprocessForOcr, parseOcrToFields } from '../utils/document';
+import { jsPDF } from 'jspdf';
+import { format } from 'date-fns';
+import { CATEGORY_INFO } from '../constants/document';
+import { useConfirmStore } from '../store/useConfirmStore';
 
 export * from '../types/document';
 export * from '../constants/document';
@@ -17,6 +21,20 @@ export function useDocuments() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [ocrLoading, setOcrLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // UI States
+  const [showUpload, setShowUpload] = useState(false);
+  const [selected, setSelected] = useState<FamilyDocument | null>(null);
+  const [activeCat, setActiveCat] = useState<DocCategory | 'all'>('all');
+  const [activePartner, setActivePartner] = useState<string | 'all'>('all');
+  const [showCatDropdown, setShowCatDropdown] = useState(false);
+
+  // Selection States
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const { confirm } = useConfirmStore();
 
   useEffect(() => {
     if (!userProfile?.coupleId) return;
@@ -185,6 +203,109 @@ export function useDocuments() {
     }
   }, []);
 
+  // Derived States
+  const partners = Array.from(new Set(documents.map(d => d.uploadedBy).filter(Boolean)));
+  const filtered = documents.filter(d => {
+    const catOk = activeCat === 'all' || d.category === activeCat;
+    const partnerOk = activePartner === 'all' || d.uploadedBy === activePartner;
+    return catOk && partnerOk;
+  });
+  const activeLabel = activeCat === 'all' ? 'Semua Dokumen' : CATEGORY_INFO[activeCat].label;
+
+  // Actions
+  const toggleDocSelection = (id: string) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+  };
+
+  const getBase64Image = async (url: string): Promise<string> => {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+
+  const handleExportPDF = async () => {
+    if (selectedIds.length === 0) return;
+    setIsExporting(true);
+    try {
+      const doc = new jsPDF();
+      const docsToExport = documents.filter(d => selectedIds.includes(d.id));
+      let pageAdded = false;
+
+      for (const item of docsToExport) {
+        const urls = item.imageUrls || [item.imageUrl!];
+        for (const imgUrl of urls) {
+          if (!imgUrl) continue;
+          try {
+            const dataUrl = await getBase64Image(imgUrl);
+            const imgProps = doc.getImageProperties(dataUrl);
+            const imgOrientation = imgProps.width > imgProps.height ? 'l' : 'p';
+            
+            if (!pageAdded) {
+              doc.deletePage(1);
+              doc.addPage(undefined, imgOrientation);
+            } else {
+              doc.addPage(undefined, imgOrientation);
+            }
+
+            const pdfWidth = doc.internal.pageSize.getWidth();
+            const pdfHeight = doc.internal.pageSize.getHeight();
+            const imgAspect = imgProps.width / imgProps.height;
+            const pdfAspect = pdfWidth / pdfHeight;
+
+            let finalWidth, finalHeight;
+            if (imgAspect > pdfAspect) {
+              finalWidth = pdfWidth - 20;
+              finalHeight = finalWidth / imgAspect;
+            } else {
+              finalHeight = pdfHeight - 20;
+              finalWidth = finalHeight * imgAspect;
+            }
+
+            doc.addImage(dataUrl, 'JPEG', (pdfWidth - finalWidth) / 2, (pdfHeight - finalHeight) / 2, finalWidth, finalHeight);
+            pageAdded = true;
+          } catch (e) {
+            console.error('Gagal memuat gambar:', imgUrl, e);
+          }
+        }
+      }
+
+      if (!pageAdded) throw new Error('Tidak ada gambar yang berhasil dimuat.');
+
+      doc.save(`CandyNest_Export_${format(new Date(), 'yyyyMMdd_HHmm')}.pdf`);
+      setSelectedIds([]);
+      setIsSelectMode(false);
+    } catch (err: any) {
+      console.error('Export Error:', err);
+      alert('Gagal export PDF: ' + err.message);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleDelete = (docItem: FamilyDocument) => {
+    confirm({
+      title: 'Hapus Dokumen?',
+      message: `Apakah kamu yakin ingin menghapus "${docItem.name}"? File di cloud akan dihapus permanen.`,
+      confirmText: 'Ya, Hapus',
+      variant: 'danger',
+      onConfirm: async () => {
+        try {
+          await deleteDocument(docItem);
+          setSelected(null);
+        } catch (err: any) {
+          alert('Gagal menghapus: ' + err.message);
+        }
+      }
+    });
+  };
+
+  const getInitials = (name: string) => name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+
   return {
     documents,
     loading,
@@ -192,11 +313,26 @@ export function useDocuments() {
     uploadProgress,
     ocrLoading,
     error,
+    showUpload, setShowUpload,
+    selected, setSelected,
+    activeCat, setActiveCat,
+    activePartner, setActivePartner,
+    showCatDropdown, setShowCatDropdown,
+    isSelectMode, setIsSelectMode,
+    selectedIds, setSelectedIds,
+    isExporting,
+    partners,
+    filtered,
+    activeLabel,
     scanDocument,
     rescanDocument,
     uploadAndSave,
     deleteDocument,
     updateDocument,
+    toggleDocSelection,
+    handleExportPDF,
+    handleDelete,
+    getInitials,
     compress: compressImage
   };
 }

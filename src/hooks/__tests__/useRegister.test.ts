@@ -1,10 +1,10 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useRegister } from './useRegister';
-import { useAuthStore } from '../store/useAuthStore';
+import { useRegister } from '../useRegister';
+import { useAuthStore } from '../../store/useAuthStore';
 import { useNavigate } from 'react-router-dom';
 
-vi.mock('../store/useAuthStore', () => ({
+vi.mock('../../store/useAuthStore', () => ({
   useAuthStore: vi.fn(),
 }));
 
