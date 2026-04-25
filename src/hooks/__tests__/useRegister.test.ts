@@ -33,7 +33,7 @@ describe('useRegister', () => {
     });
 
     await act(async () => {
-      await result.current.handleSubmit({ preventDefault: vi.fn() } as any);
+      result.current.handleSubmit({ preventDefault: vi.fn() } as any);
     });
 
     expect(result.current.step).toBe(2);
@@ -45,12 +45,21 @@ describe('useRegister', () => {
     });
 
     await act(async () => {
-      await result.current.handleSubmit({ preventDefault: vi.fn() } as any);
+      result.current.handleSubmit({ preventDefault: vi.fn() } as any);
+    });
+
+    // Harus menampilkan captcha dulu
+    expect(result.current.showCaptcha).toBe(true);
+
+    // Simulasi captcha sukses
+    await act(async () => {
+      await result.current.handleVerified();
     });
 
     expect(mockRegister).toHaveBeenCalledWith('test@example.com', 'password123', 'Test User', 'male');
     expect(mockNavigate).toHaveBeenCalledWith('/');
     expect(result.current.loading).toBe(false);
+    expect(result.current.showCaptcha).toBe(false);
   });
 
   it('seharusnya menangkap error jika registrasi gagal', async () => {
@@ -65,11 +74,20 @@ describe('useRegister', () => {
     });
 
     await act(async () => {
-      await result.current.handleSubmit({ preventDefault: vi.fn() } as any);
+      result.current.handleSubmit({ preventDefault: vi.fn() } as any);
+    });
+
+    // Harus menampilkan captcha dulu
+    expect(result.current.showCaptcha).toBe(true);
+
+    // Simulasi captcha sukses tapi registrasi gagal
+    await act(async () => {
+      await result.current.handleVerified();
     });
 
     expect(result.current.error).toBe('Email sudah terdaftar. Silakan gunakan email lain.');
     expect(result.current.loading).toBe(false);
+    expect(result.current.showCaptcha).toBe(false);
   });
 
 });

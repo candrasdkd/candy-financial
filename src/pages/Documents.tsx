@@ -138,8 +138,8 @@ export default function Documents() {
             <button
               onClick={() => setActivePartnerId('all')}
               className={`px-3 py-1.5 rounded-full text-[10px] font-bold transition-all border ${activePartnerId === 'all'
-                  ? 'bg-sage-900 text-white border-sage-900 shadow-sm'
-                  : 'bg-white text-sage-500 border-sage-100 hover:border-sage-200'
+                ? 'bg-sage-900 text-white border-sage-900 shadow-sm'
+                : 'bg-white text-sage-500 border-sage-100 hover:border-sage-200'
                 }`}
             >
               Semua
@@ -149,8 +149,8 @@ export default function Documents() {
                 key={p.id}
                 onClick={() => setActivePartnerId(activePartnerId === p.id ? 'all' : p.id)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold transition-all border ${activePartnerId === p.id
-                    ? 'bg-sage-900 text-white border-sage-900 shadow-sm'
-                    : 'bg-white text-sage-600 border-sage-100 hover:border-sage-200'
+                  ? 'bg-sage-900 text-white border-sage-900 shadow-sm'
+                  : 'bg-white text-sage-600 border-sage-100 hover:border-sage-200'
                   }`}
               >
                 <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-black ${activePartnerId === p.id ? 'bg-white/20' : 'bg-sage-100'
