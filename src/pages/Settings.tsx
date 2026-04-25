@@ -1,25 +1,22 @@
-import { useState } from 'react';
-import { 
-  Copy, 
-  Check, 
-  Heart, 
-  LogOut, 
-  Shield, 
-  Smartphone, 
-  Info, 
+import {
+  Copy,
+  Check,
+  Heart,
+  LogOut,
+  Shield,
+  Smartphone,
+  Info,
   ChevronRight,
   Camera,
   HeartHandshake,
   Mail,
   Link2
 } from 'lucide-react';
-import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { useAuthStore } from '../store/useAuthStore';
-import { useConfirmStore } from '../store/useConfirmStore';
+import { motion, Variants } from 'framer-motion';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
-  visible: { 
+  visible: {
     opacity: 1,
     transition: { staggerChildren: 0.1 }
   }
@@ -58,7 +55,7 @@ export default function Settings() {
 
 
   return (
-    <motion.div 
+    <motion.div
       initial="hidden"
       animate="visible"
       variants={containerVariants}
@@ -67,7 +64,7 @@ export default function Settings() {
       {/* Header Profile Section */}
       <motion.div variants={itemVariants} className="relative">
         <div className="absolute inset-0 bg-gradient-to-r from-sage-600/10 to-rose-400/10 blur-3xl -z-10 rounded-[3rem]" />
-        
+
         <div className="bg-white/80 backdrop-blur-xl border border-white/60 rounded-[2.5rem] p-8 shadow-2xl shadow-sage-900/5 overflow-hidden relative">
           <div className="absolute top-0 right-0 p-8">
             <button
@@ -76,11 +73,10 @@ export default function Settings() {
                 else setIsEditing(true);
               }}
               disabled={saving}
-              className={`text-sm font-bold px-6 py-2.5 rounded-2xl transition-all shadow-sm ${
-                isEditing 
-                  ? 'bg-sage-800 text-white hover:bg-sage-900' 
+              className={`text-sm font-bold px-6 py-2.5 rounded-2xl transition-all shadow-sm ${isEditing
+                  ? 'bg-sage-800 text-white hover:bg-sage-900'
                   : 'bg-white/90 text-sage-700 hover:bg-white border border-sage-100'
-              }`}
+                }`}
             >
               {saving ? '...' : isEditing ? 'Simpan' : 'Ubah Profil'}
             </button>
@@ -124,11 +120,10 @@ export default function Settings() {
                         <button
                           key={opt.value}
                           onClick={() => setEditGender(opt.value as any)}
-                          className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
-                            editGender === opt.value
+                          className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${editGender === opt.value
                               ? 'bg-sage-800 text-white shadow-md'
                               : 'text-sage-400 hover:text-sage-600'
-                          }`}
+                            }`}
                         >
                           {opt.label}
                         </button>
@@ -166,7 +161,7 @@ export default function Settings() {
           <h3 className="text-xs font-bold text-sage-400 uppercase tracking-[0.2em] px-2 flex items-center gap-2">
             <HeartHandshake className="w-4 h-4" /> Hubungan
           </h3>
-          
+
           <div className="bg-white rounded-[2rem] border border-sage-100 p-8 shadow-xl shadow-sage-900/[0.03] relative overflow-hidden group min-h-[260px] flex flex-col justify-center">
             <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700">
               <Heart className="w-24 h-24 text-rose-400 fill-rose-400" />
@@ -247,7 +242,7 @@ export default function Settings() {
           <h3 className="text-xs font-bold text-sage-400 uppercase tracking-[0.2em] px-2 flex items-center gap-2">
             <Smartphone className="w-4 h-4" /> Preferensi & Info
           </h3>
-          
+
           <div className="bg-white rounded-[2rem] border border-sage-100 divide-y divide-sage-50 shadow-xl shadow-sage-900/[0.03] overflow-hidden">
             {[
               { icon: Shield, label: 'Keamanan Data', value: 'Enkripsi Aktif', color: 'text-blue-500', bg: 'bg-blue-50' },
@@ -266,7 +261,7 @@ export default function Settings() {
                 <ChevronRight className="w-4 h-4 text-sage-300 group-hover:translate-x-1 transition-transform" />
               </div>
             ))}
-            
+
             <button
               onClick={handleLogout}
               className="w-full flex items-center justify-between p-5 hover:bg-rose-50 transition-colors group text-left"

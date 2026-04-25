@@ -19,25 +19,11 @@ export default function Register() {
     setGender,
     loading,
     error,
-    handleSubmit
+    showCaptcha,
+    setShowCaptcha,
+    handleSubmit,
+    handleVerified
   } = useRegister();
-
-  const [showCaptcha, setShowCaptcha] = useState(false);
-
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (step === 1) {
-      handleSubmit(e);
-    } else {
-      setShowCaptcha(true);
-    }
-  };
-
-  const handleVerified = () => {
-    setShowCaptcha(false);
-    const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
-    handleSubmit(fakeEvent);
-  };
 
   return (
     <div className="min-h-screen bg-sage-950 flex relative overflow-hidden">
@@ -140,7 +126,7 @@ export default function Register() {
               </p>
             </div>
 
-            <form onSubmit={handleFormSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <AnimatePresence mode="wait">
                 {step === 1 ? (
                   <motion.div

@@ -1,11 +1,9 @@
-import { useState, useMemo } from 'react';
-import { 
-  Plus, 
-  Search, 
-  Trash2, 
-  Filter, 
-  AlertTriangle, 
-  Calendar, 
+import {
+  Plus,
+  Search,
+  Trash2,
+  AlertTriangle,
+  Calendar,
   Inbox,
   ArrowUpDown,
   ChevronRight,
@@ -14,17 +12,14 @@ import {
   X
 } from 'lucide-react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { format, parseISO, startOfMonth, endOfMonth } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { id } from 'date-fns/locale';
-import { useAuthStore } from '../store/useAuthStore';
-import { useTransactions } from '../hooks/useTransactions';
-import { useConfirmStore } from '../store/useConfirmStore';
-import { formatRupiah, getCategoryInfo, TransactionType } from '../types';
+import { formatRupiah, getCategoryInfo } from '../types';
 import TransactionModal from '../components/TransactionModal';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
-  visible: { 
+  visible: {
     opacity: 1,
     transition: { staggerChildren: 0.05 }
   }
@@ -58,8 +53,6 @@ export default function Transactions() {
     handleDelete
   } = useTransactionsPage();
 
-
-
   return (
     <motion.div
       initial="hidden"
@@ -76,7 +69,7 @@ export default function Transactions() {
           </div>
           <h1 className="font-display text-4xl text-sage-900 tracking-tight">Semua Transaksi</h1>
         </div>
-        
+
         <button
           onClick={() => setShowModal(true)}
           className="flex items-center justify-center gap-3 px-8 py-4 bg-sage-800 text-white rounded-[2rem] font-bold hover:bg-sage-900 transition-all shadow-2xl shadow-sage-900/10 active:scale-95"
@@ -100,7 +93,7 @@ export default function Transactions() {
               className="w-full pl-12 pr-4 py-4 bg-sage-50/50 border border-sage-100 rounded-[1.5rem] text-sage-900 focus:outline-none focus:ring-2 focus:ring-sage-500/20 focus:border-sage-500/30 transition-all text-sm font-medium"
             />
             {search && (
-              <button 
+              <button
                 onClick={() => setSearch('')}
                 className="absolute right-4 top-1/2 -translate-y-1/2 p-1 text-sage-400 hover:text-sage-600"
               >
@@ -115,11 +108,10 @@ export default function Transactions() {
               <button
                 key={t}
                 onClick={() => setFilterType(t)}
-                className={`flex-1 py-3 rounded-2xl text-[10px] font-bold uppercase tracking-wider transition-all ${
-                  filterType === t 
-                    ? 'bg-white text-sage-900 shadow-sm' 
+                className={`flex-1 py-3 rounded-2xl text-[10px] font-bold uppercase tracking-wider transition-all ${filterType === t
+                    ? 'bg-white text-sage-900 shadow-sm'
                     : 'text-sage-400 hover:text-sage-600'
-                }`}
+                  }`}
               >
                 {t === 'all' ? 'Semua' : t === 'income' ? 'Masuk' : 'Keluar'}
               </button>
@@ -235,18 +227,18 @@ export default function Transactions() {
                     const isMine = tx.addedBy === userProfile?.displayName;
 
                     return (
-                      <motion.div 
-                        key={tx.id} 
+                      <motion.div
+                        key={tx.id}
                         whileHover={{ scale: 1.01, x: 5 }}
                         className="group bg-white rounded-[2rem] p-5 lg:p-6 border border-sage-50 shadow-sm hover:shadow-xl hover:shadow-sage-900/[0.03] transition-all flex items-center gap-5 relative overflow-hidden"
                       >
                         {/* Status Accent */}
                         <div className={`absolute left-0 top-0 bottom-0 w-1 ${tx.type === 'income' ? 'bg-emerald-400' : 'bg-rose-400'}`} />
-                        
+
                         <div className="w-14 h-14 rounded-2xl bg-sage-50 flex items-center justify-center text-3xl flex-shrink-0 group-hover:scale-110 transition-transform duration-500">
                           <cat.icon className="w-7 h-7 text-sage-500 group-hover:text-sage-700" />
                         </div>
-                        
+
                         <div className="flex-1 min-w-0 py-1">
                           <div className="flex items-center gap-1.5 mb-1.5">
                             <h4 className="font-bold text-sage-900 text-sm md:text-base lg:text-lg truncate tracking-tight">
@@ -254,13 +246,12 @@ export default function Transactions() {
                             </h4>
                             <ChevronRight className="w-3.5 h-3.5 text-sage-200 group-hover:text-sage-400 shrink-0" />
                           </div>
-                          
+
                           <div className="flex items-center gap-2 md:gap-3">
                             <span className="text-[9px] md:text-[10px] font-bold text-sage-400 uppercase tracking-widest shrink-0">{cat.label}</span>
                             <div className="w-1 h-1 rounded-full bg-sage-100 shrink-0" />
-                            <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] md:text-[9px] font-bold tracking-tight uppercase ${
-                              isMine ? 'bg-sage-50 text-sage-600' : 'bg-rose-50 text-rose-500'
-                            }`}>
+                            <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] md:text-[9px] font-bold tracking-tight uppercase ${isMine ? 'bg-sage-50 text-sage-600' : 'bg-rose-50 text-rose-500'
+                              }`}>
                               {isMine ? 'SAYA' : (userProfile?.partnerName?.toUpperCase() || 'PASANGAN')}
                             </div>
                           </div>

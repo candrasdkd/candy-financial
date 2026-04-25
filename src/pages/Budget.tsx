@@ -1,10 +1,8 @@
-import { format, parseISO } from 'date-fns';
-import { id } from 'date-fns/locale';
-import { 
-  PiggyBank, 
-  Plus, 
-  Edit2, 
-  Trash2, 
+import {
+  PiggyBank,
+  Plus,
+  Edit2,
+  Trash2,
   AlertTriangle,
   Sparkles,
   PieChart,
@@ -17,7 +15,7 @@ import { getCategoryInfo, formatRupiah, Category } from '../types';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
-  visible: { 
+  visible: {
     opacity: 1,
     transition: { staggerChildren: 0.05 }
   }
@@ -54,7 +52,7 @@ export default function Budget() {
   } = useBudgetPage();
 
   return (
-    <motion.div 
+    <motion.div
       initial="hidden"
       animate="visible"
       variants={containerVariants}
@@ -69,7 +67,7 @@ export default function Budget() {
           </div>
           <h1 className="font-display text-4xl text-sage-900 tracking-tight">Atur Anggaran</h1>
         </div>
-        
+
         <div className="flex items-center gap-3 bg-white/80 backdrop-blur-xl border border-white/60 p-2 rounded-[2rem] shadow-xl shadow-sage-900/5">
           <input
             type="month"
@@ -94,7 +92,7 @@ export default function Budget() {
       <motion.div variants={itemVariants} className="bg-gradient-to-br from-sage-800 to-sage-950 rounded-[3rem] p-10 text-white relative overflow-hidden shadow-2xl shadow-sage-900/20">
         <div className="absolute -right-20 -top-20 w-80 h-80 bg-white/5 rounded-full blur-[100px]" />
         <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-rose-400/10 rounded-full blur-[60px]" />
-        
+
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
           <div className="space-y-6 text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start gap-2">
@@ -108,10 +106,10 @@ export default function Budget() {
               </p>
             </div>
           </div>
-          
+
           <div className="space-y-4">
             <div className="h-4 bg-white/10 rounded-full overflow-hidden border border-white/10 p-1">
-              <motion.div 
+              <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${totalPct}%` }}
                 transition={{ duration: 1, ease: "easeOut" }}
@@ -129,7 +127,7 @@ export default function Budget() {
 
       <AnimatePresence>
         {addingNew && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
@@ -141,7 +139,7 @@ export default function Budget() {
                 <X className="w-6 h-6 text-sage-400" />
               </button>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               <div className="space-y-2">
                 <label className="text-[10px] font-bold text-sage-400 uppercase tracking-widest px-1">Pilih Kategori</label>
@@ -174,7 +172,7 @@ export default function Budget() {
                 </div>
               </div>
             </div>
-            
+
             <div className="flex gap-4">
               <button
                 onClick={() => handleSave(newCategory)}
@@ -219,21 +217,19 @@ export default function Budget() {
               const isEditing = editing === budget.category;
 
               return (
-                <motion.div 
-                  key={budget.id} 
+                <motion.div
+                  key={budget.id}
                   variants={itemVariants}
                   whileHover={{ y: -5 }}
-                  className={`bg-white rounded-[2.5rem] p-8 border transition-all duration-500 shadow-sm hover:shadow-2xl ${
-                    over ? 'border-rose-100 shadow-rose-900/[0.05]' : 
-                    nearLimit ? 'border-amber-100 shadow-amber-900/[0.05]' : 
-                    'border-sage-50 shadow-sage-900/[0.03]'
-                  }`}
+                  className={`bg-white rounded-[2.5rem] p-8 border transition-all duration-500 shadow-sm hover:shadow-2xl ${over ? 'border-rose-100 shadow-rose-900/[0.05]' :
+                      nearLimit ? 'border-amber-100 shadow-amber-900/[0.05]' :
+                        'border-sage-50 shadow-sage-900/[0.03]'
+                    }`}
                 >
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
                     <div className="flex items-center gap-5">
-                      <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center text-3xl shadow-inner ${
-                        over ? 'bg-rose-50 text-rose-500' : 'bg-sage-50 text-sage-500'
-                      }`}>
+                      <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center text-3xl shadow-inner ${over ? 'bg-rose-50 text-rose-500' : 'bg-sage-50 text-sage-500'
+                        }`}>
                         <cat.icon className="w-8 h-8" />
                       </div>
                       <div>
@@ -247,7 +243,7 @@ export default function Budget() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-3 bg-sage-50/50 p-1.5 rounded-2xl border border-sage-50">
                       <button
                         onClick={() => { setEditing(budget.category); setLimitInput(budget.limit.toLocaleString('id-ID')); }}
@@ -267,7 +263,7 @@ export default function Budget() {
 
                   <AnimatePresence>
                     {isEditing && (
-                      <motion.div 
+                      <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
@@ -309,11 +305,10 @@ export default function Budget() {
                         initial={{ width: 0 }}
                         animate={{ width: `${pct}%` }}
                         transition={{ duration: 1, ease: "easeOut" }}
-                        className={`h-full rounded-full transition-all duration-1000 ${
-                          over ? 'bg-gradient-to-r from-rose-400 to-rose-600' : 
-                          nearLimit ? 'bg-gradient-to-r from-amber-300 to-amber-500' : 
-                          'bg-gradient-to-r from-emerald-400 to-emerald-600'
-                        }`}
+                        className={`h-full rounded-full transition-all duration-1000 ${over ? 'bg-gradient-to-r from-rose-400 to-rose-600' :
+                            nearLimit ? 'bg-gradient-to-r from-amber-300 to-amber-500' :
+                              'bg-gradient-to-r from-emerald-400 to-emerald-600'
+                          }`}
                       />
                     </div>
                     <div className="flex items-center justify-between">

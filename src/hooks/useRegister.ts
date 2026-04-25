@@ -11,6 +11,7 @@ export function useRegister() {
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [gender, setGender] = useState<'male' | 'female'>('male');
+  const [showCaptcha, setShowCaptcha] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -30,18 +31,21 @@ export function useRegister() {
     setError('');
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // If on step 1, just go to step 2
     if (step === 1) {
       nextStep();
-      return;
+    } else {
+      setShowCaptcha(true);
     }
-    
-    // Final registration
+  };
+
+  const handleVerified = async () => {
+    setShowCaptcha(false);
     setError('');
     setLoading(true);
+    
     try {
       await registerStore(email, password, displayName, gender);
       navigate('/');
@@ -70,7 +74,10 @@ export function useRegister() {
     setGender,
     loading,
     error,
+    showCaptcha,
+    setShowCaptcha,
     handleSubmit,
+    handleVerified,
     nextStep,
     prevStep
   };

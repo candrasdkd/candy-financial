@@ -1,7 +1,6 @@
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { Upload, FileText, ChevronDown, FolderOpen, Loader2, Filter, X, CheckCircle2, Download, User, AlertCircle } from 'lucide-react';
-import { useDocuments, CATEGORY_INFO, DocCategory, FamilyDocument } from '../hooks/useDocuments';
-import { useAuthStore } from '../store/useAuthStore';
+import { useDocuments, CATEGORY_INFO, DocCategory } from '../hooks/useDocuments';
 import DocumentUploadModal from '../components/DocumentUploadModal';
 import DocumentDetailModal from '../components/DocumentDetailModal';
 
@@ -14,7 +13,6 @@ const iv: Variants = {
 const CATS = Object.entries(CATEGORY_INFO) as [DocCategory, typeof CATEGORY_INFO[DocCategory]][];
 
 export default function Documents() {
-  const { userProfile } = useAuthStore();
   const {
     documents, loading, error, updateDocument,
     showUpload, setShowUpload,
@@ -101,29 +99,29 @@ export default function Documents() {
                   <motion.div initial={{ opacity: 0, y: 100, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 100, scale: 0.95 }}
                     className="w-full md:w-[480px] bg-white border-t md:border border-sage-100 rounded-t-[2.5rem] md:rounded-[2.5rem] shadow-2xl p-6 pb-10 md:pb-8 md:p-8 overflow-hidden max-h-[85vh] flex flex-col pointer-events-auto"
                   >
-                  <div className="flex items-center justify-between mb-6 flex-shrink-0">
-                    <p className="text-[10px] font-bold text-sage-400 uppercase tracking-[0.15em] ml-1">Pilih Jenis Dokumen</p>
-                    <button onClick={() => setShowCatDropdown(false)} className="md:hidden w-8 h-8 rounded-full bg-sage-50 flex items-center justify-center">
-                      <X className="w-4 h-4 text-sage-400" />
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-3 gap-3 md:gap-4 overflow-y-auto pr-1 scrollbar-hide flex-1">
-                    <button onClick={() => { setActiveCat('all'); setShowCatDropdown(false); }}
-                      className={`flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border transition-all ${activeCat === 'all' ? 'bg-sage-900 border-sage-900 text-white shadow-xl' : 'bg-white border-sage-100 text-sage-600 hover:bg-sage-50'}`}
-                    >
-                      <div className="text-2xl mb-1">📂</div>
-                      <div className="text-[10px] font-bold text-center leading-tight">Semua</div>
-                    </button>
-                    {CATS.map(([key, info]) => (
-                      <button key={key} onClick={() => { setActiveCat(key); setShowCatDropdown(false); }}
-                        className={`flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border transition-all ${activeCat === key ? 'bg-sage-900 border-sage-900 text-white shadow-xl' : 'bg-white border-sage-100 text-sage-600 hover:bg-sage-50'}`}
-                      >
-                        <div className="text-2xl mb-1">{info.emoji}</div>
-                        <div className="text-[10px] font-bold text-center leading-tight">{info.label}</div>
+                    <div className="flex items-center justify-between mb-6 flex-shrink-0">
+                      <p className="text-[10px] font-bold text-sage-400 uppercase tracking-[0.15em] ml-1">Pilih Jenis Dokumen</p>
+                      <button onClick={() => setShowCatDropdown(false)} className="md:hidden w-8 h-8 rounded-full bg-sage-50 flex items-center justify-center">
+                        <X className="w-4 h-4 text-sage-400" />
                       </button>
-                    ))}
-                  </div>
-                </motion.div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3 md:gap-4 overflow-y-auto pr-1 scrollbar-hide flex-1">
+                      <button onClick={() => { setActiveCat('all'); setShowCatDropdown(false); }}
+                        className={`flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border transition-all ${activeCat === 'all' ? 'bg-sage-900 border-sage-900 text-white shadow-xl' : 'bg-white border-sage-100 text-sage-600 hover:bg-sage-50'}`}
+                      >
+                        <div className="text-2xl mb-1">📂</div>
+                        <div className="text-[10px] font-bold text-center leading-tight">Semua</div>
+                      </button>
+                      {CATS.map(([key, info]) => (
+                        <button key={key} onClick={() => { setActiveCat(key); setShowCatDropdown(false); }}
+                          className={`flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border transition-all ${activeCat === key ? 'bg-sage-900 border-sage-900 text-white shadow-xl' : 'bg-white border-sage-100 text-sage-600 hover:bg-sage-50'}`}
+                        >
+                          <div className="text-2xl mb-1">{info.emoji}</div>
+                          <div className="text-[10px] font-bold text-center leading-tight">{info.label}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
                 </div>
               </>
             )}
@@ -139,11 +137,10 @@ export default function Documents() {
             </div>
             <button
               onClick={() => setActivePartnerId('all')}
-              className={`px-3 py-1.5 rounded-full text-[10px] font-bold transition-all border ${
-                activePartnerId === 'all'
+              className={`px-3 py-1.5 rounded-full text-[10px] font-bold transition-all border ${activePartnerId === 'all'
                   ? 'bg-sage-900 text-white border-sage-900 shadow-sm'
                   : 'bg-white text-sage-500 border-sage-100 hover:border-sage-200'
-              }`}
+                }`}
             >
               Semua
             </button>
@@ -151,15 +148,13 @@ export default function Documents() {
               <button
                 key={p.id}
                 onClick={() => setActivePartnerId(activePartnerId === p.id ? 'all' : p.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold transition-all border ${
-                  activePartnerId === p.id
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold transition-all border ${activePartnerId === p.id
                     ? 'bg-sage-900 text-white border-sage-900 shadow-sm'
                     : 'bg-white text-sage-600 border-sage-100 hover:border-sage-200'
-                }`}
+                  }`}
               >
-                <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-black ${
-                  activePartnerId === p.id ? 'bg-white/20' : 'bg-sage-100'
-                }`}>
+                <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-black ${activePartnerId === p.id ? 'bg-white/20' : 'bg-sage-100'
+                  }`}>
                   {getInitials(p.name)}
                 </div>
                 <span className="max-w-[80px] truncate">{p.name.split(' ')[0]}</span>

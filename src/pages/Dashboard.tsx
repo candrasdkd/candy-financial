@@ -1,8 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import {
-  TrendingUp,
-  TrendingDown,
-  Wallet,
   Plus,
   ArrowRight,
   Heart,
@@ -12,7 +9,7 @@ import {
   History
 } from 'lucide-react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 import {
   ResponsiveContainer,
