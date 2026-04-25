@@ -197,12 +197,15 @@ export default function Documents() {
                 const info = CATEGORY_INFO[doc.category];
                 const safeUrls = doc.imageUrls || [doc.imageUrl!];
                 const isSelected = selectedIds.includes(doc.id);
+                const uploaderName = getUploaderName(doc);
+                const initials = getInitials(uploaderName);
 
                 return (
                   <motion.div
                     key={doc.id}
                     variants={iv}
                     layout
+                    whileHover={{ y: -6, transition: { duration: 0.2 } }}
                     onClick={() => {
                       if (isSelectMode) {
                         toggleDocSelection(doc.id);
@@ -210,47 +213,78 @@ export default function Documents() {
                         setSelected(doc);
                       }
                     }}
-                    className={`group bg-white rounded-[1.5rem] md:rounded-[2rem] overflow-hidden border transition-all duration-300 cursor-pointer relative ${isSelected ? 'border-sage-900 shadow-xl shadow-sage-900/10 scale-[1.02]' : 'border-sage-100 shadow-sm hover:shadow-xl hover:shadow-sage-900/[0.04]'}`}
+                    className={`group bg-white rounded-[1.75rem] overflow-hidden border transition-all duration-300 cursor-pointer relative ${
+                      isSelected 
+                        ? 'border-sage-900 shadow-2xl shadow-sage-900/20 ring-2 ring-sage-900/10' 
+                        : 'border-sage-100/80 shadow-md hover:shadow-2xl hover:shadow-sage-900/10 hover:border-sage-200'
+                    }`}
                   >
-                    <div className="relative h-32 md:h-36 bg-sage-50 overflow-hidden">
-                      <img src={safeUrls[0]} alt={doc.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-
-                      {/* Selection Overlay */}
-                      <div className={`absolute inset-0 bg-sage-900/10 transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0'}`} />
+                    <div className="relative h-36 md:h-44 bg-sage-50 overflow-hidden">
+                      {/* Image with smooth zoom on hover */}
+                      <img 
+                        src={safeUrls[0]} 
+                        alt={doc.name} 
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" 
+                      />
+                      
+                      {/* Gradient Overlays for better contrast */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-sage-900/60 via-sage-900/5 to-sage-900/30 opacity-80 group-hover:opacity-60 transition-opacity duration-500" />
+                      
+                      {/* Selection Overlay Tint */}
+                      <div className={`absolute inset-0 bg-sage-900/20 backdrop-blur-[2px] transition-all duration-300 ${isSelected ? 'opacity-100' : 'opacity-0'}`} />
 
                       {/* Select Indicator */}
                       {isSelectMode && (
                         <div className="absolute top-3 right-3 z-10">
-                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'bg-sage-900 border-sage-900 text-white' : 'bg-white/50 backdrop-blur-md border-white'}`}>
+                          <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all shadow-lg ${
+                            isSelected ? 'bg-sage-900 border-sage-900 text-white scale-110' : 'bg-white/30 backdrop-blur-md border-white/80 text-white hover:bg-white/50'
+                          }`}>
                             {isSelected && <CheckCircle2 className="w-4 h-4" />}
                           </div>
                         </div>
                       )}
 
-                      <div className="absolute top-2 md:top-4 left-2 md:left-4">
-                        <span className={`inline-flex items-center gap-1.5 px-2 py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl text-[8px] md:text-[10px] font-bold border bg-white/90 backdrop-blur-sm ${info.color.replace('bg-', 'text-')}`}>
-                          {info.emoji} <span className="hidden xs:inline">{info.label}</span>
+                      {/* Category Badge - Modern Glassmorphism */}
+                      <div className="absolute top-3 left-3">
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold border bg-white/95 backdrop-blur-md shadow-sm ${info.color.replace('bg-', 'text-')}`}>
+                          <span className="text-sm leading-none">{info.emoji}</span>
+                          <span className="hidden xs:inline tracking-wide">{info.label}</span>
                         </span>
                       </div>
+
+                      {/* Multi-page indicator */}
                       {safeUrls.length > 1 && (
-                        <div className="absolute bottom-2 md:bottom-4 right-2 md:right-4 bg-black/60 backdrop-blur-md px-1.5 py-0.5 md:px-2 md:py-1 rounded-md md:rounded-lg text-[8px] md:text-[9px] text-white font-bold">
-                          {safeUrls.length} Pgs
+                        <div className="absolute bottom-3 right-3 bg-black/50 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] text-white font-bold border border-white/20 shadow-sm">
+                          {safeUrls.length} hal
                         </div>
                       )}
                     </div>
-                    <div className="p-3 md:p-5 space-y-2 md:space-y-3">
-                      <h3 className="font-bold text-sage-900 text-[11px] md:text-sm line-clamp-1">{doc.name}</h3>
-                      <div className="flex items-center justify-between pt-2 md:pt-3 border-t border-sage-50">
-                        <div className="flex items-center gap-1.5">
-                          <FileText className="w-3 md:w-3.5 h-3 md:h-3.5 text-sage-300" />
-                          <span className="text-[8px] md:text-[10px] font-bold text-sage-400 uppercase tracking-widest">{doc.fields?.length || 0} Data</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 px-2 py-1 bg-sage-50/50 rounded-lg border border-sage-100/50">
-                          <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-sage-100 flex items-center justify-center text-[6px] md:text-[8px] font-black text-sage-600">
-                            {getInitials(getUploaderName(doc))}
+                    
+                    {/* Card Body */}
+                    <div className="p-4 md:p-5 space-y-3 bg-white relative z-10">
+                      <h3 className="font-bold text-sage-900 text-sm md:text-base line-clamp-1 group-hover:text-sage-700 transition-colors">{doc.name}</h3>
+                      
+                      <div className="flex items-center justify-between pt-3 border-t border-sage-50/80">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-lg bg-sage-50 flex items-center justify-center border border-sage-100/50">
+                            <FileText className="w-3 h-3 text-sage-400" />
                           </div>
-                          <span className="text-[8px] md:text-[9px] font-bold text-sage-500 truncate max-w-[50px]">{getUploaderName(doc).split(' ')[0]}</span>
+                          <span className="text-[10px] font-bold text-sage-500 uppercase tracking-widest">{doc.fields?.length || 0} Data</span>
                         </div>
+                        
+                        {(() => {
+                          const isMine = uploaderName === 'Saya';
+                          return (
+                            <div className={`flex items-center gap-1.5 px-2 py-1.5 rounded-xl border ${isMine ? 'bg-sage-50/80 border-sage-100/50' : 'bg-rose-50/80 border-rose-100/50'}`}>
+                              <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-black border ${isMine ? 'bg-sage-200/50 text-sage-700 border-sage-200' : 'bg-rose-200/50 text-rose-700 border-rose-200'}`}>
+                                {initials}
+                              </div>
+                              <span className={`text-[9px] font-bold truncate max-w-[50px] ${isMine ? 'text-sage-600' : 'text-rose-600'}`}>
+                                {uploaderName.split(' ')[0]}
+                              </span>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
                   </motion.div>
