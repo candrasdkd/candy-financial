@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, User, Mail, Lock, ArrowRight, Sparkles, ChevronRight, ChevronLeft, Loader2 } from 'lucide-react';
 import { useRegister } from '../hooks/useRegister';
 import { motion, AnimatePresence } from 'framer-motion';
+import PuzzleCaptcha from '../components/PuzzleCaptcha';
 
 export default function Register() {
   const {
@@ -19,6 +21,23 @@ export default function Register() {
     error,
     handleSubmit
   } = useRegister();
+
+  const [showCaptcha, setShowCaptcha] = useState(false);
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (step === 1) {
+      handleSubmit(e);
+    } else {
+      setShowCaptcha(true);
+    }
+  };
+
+  const handleVerified = () => {
+    setShowCaptcha(false);
+    const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
+    handleSubmit(fakeEvent);
+  };
 
   return (
     <div className="min-h-screen bg-sage-950 flex relative overflow-hidden">
@@ -121,7 +140,7 @@ export default function Register() {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleFormSubmit} className="space-y-6">
               <AnimatePresence mode="wait">
                 {step === 1 ? (
                   <motion.div
@@ -268,6 +287,15 @@ export default function Register() {
           <p className="text-center mt-10 text-[10px] font-bold text-sage-600 uppercase tracking-[0.4em]">CandyNest • Built for Family</p>
         </motion.div>
       </div>
+      
+      <AnimatePresence>
+        {showCaptcha && (
+          <PuzzleCaptcha 
+            onSuccess={handleVerified} 
+            onClose={() => setShowCaptcha(false)} 
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
