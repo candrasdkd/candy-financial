@@ -14,9 +14,9 @@ export default defineConfig({
         enabled: true
       },
       manifest: {
-        name: 'Candy Finance',
-        short_name: 'Candy',
-        description: 'Manajemen Keuangan Pasutri',
+        name: 'CandyNest',
+        short_name: 'CandyNest',
+        description: 'Manajemen Keluarga — Keuangan, Dokumen & Lebih',
         theme_color: '#ffffff',
         background_color: '#ffffff',
         display: 'standalone',

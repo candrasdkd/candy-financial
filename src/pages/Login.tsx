@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Heart, Coins, Mail, Lock, ArrowRight, Shield, Smartphone, Loader2 } from 'lucide-react';
+import { Heart, Users, Mail, Lock, ArrowRight, Shield, Smartphone, Loader2 } from 'lucide-react';
 import { useLogin } from '../hooks/useLogin';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -60,18 +60,18 @@ export default function Login() {
             <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20 shadow-xl">
               <Heart className="w-6 h-6 text-rose-400 fill-rose-400" />
             </div>
-            <span className="font-display text-2xl text-cream-50 tracking-tight">Candy Finance</span>
+            <span className="font-display text-2xl text-cream-50 tracking-tight">CandyNest</span>
           </div>
 
           <h1 className="font-display text-7xl text-cream-50 leading-[1.1] mb-8">
-            Keuangan<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-sage-400 to-rose-300 italic">Harmonis</span><br />
-            Dimulai Di Sini.
+            Kelola Keluarga<br />
+            Dengan Cara<br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-sage-400 to-rose-300 italic">Harmonis.</span>
           </h1>
 
           <p className="text-sage-300 text-xl leading-relaxed max-w-lg font-light">
-            Transparansi finansial untuk hubungan yang lebih kuat.
-            Kelola budget, tabungan, dan impian bersama pasangan dalam satu sentuhan.
+            Satu tempat untuk keuangan, dokumen, dan semua kebutuhan keluargamu.
+            Dikelola bersama, hidup lebih teratur.
           </p>
         </motion.div>
 
@@ -83,7 +83,7 @@ export default function Login() {
         >
           {[
             { label: 'Aman', icon: Shield },
-            { label: 'Real-time', icon: Coins },
+            { label: 'Keluarga', icon: Users },
             { label: 'PWA Ready', icon: Smartphone },
           ].map(item => (
             <div key={item.label} className="flex items-center gap-3">
@@ -109,7 +109,7 @@ export default function Login() {
             {/* Mobile Branding */}
             <div className="lg:hidden flex items-center justify-center gap-2 mb-10">
               <Heart className="w-6 h-6 text-rose-400 fill-rose-400" />
-              <span className="font-display text-xl text-cream-50">Candy Finance</span>
+              <span className="font-display text-xl text-cream-50">CandyNest</span>
             </div>
 
             <div className="mb-10 text-center lg:text-left">
@@ -193,7 +193,7 @@ export default function Login() {
             </div>
           </div>
 
-          <p className="text-center mt-10 text-[10px] font-bold text-sage-600 uppercase tracking-[0.4em]">Candy Finance • Built for Love</p>
+          <p className="text-center mt-10 text-[10px] font-bold text-sage-600 uppercase tracking-[0.4em]">CandyNest • Built for Family</p>
         </motion.div>
       </div>
     </div>

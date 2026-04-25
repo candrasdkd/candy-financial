@@ -285,7 +285,7 @@ export default function Settings() {
           </div>
 
           <div className="text-center pt-4">
-            <p className="text-[10px] font-bold text-sage-300 uppercase tracking-[0.3em]">Candy Finance • Made with ❤️</p>
+            <p className="text-[10px] font-bold text-sage-300 uppercase tracking-[0.3em]">CandyNest • Made with ❤️</p>
           </div>
         </motion.div>
       </div>

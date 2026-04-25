@@ -66,17 +66,17 @@ export default function Register() {
             <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20 shadow-xl">
               <Heart className="w-6 h-6 text-rose-400 fill-rose-400" />
             </div>
-            <span className="font-display text-2xl text-cream-50 tracking-tight">Candy Finance</span>
+            <span className="font-display text-2xl text-cream-50 tracking-tight">CandyNest</span>
           </div>
           
           <h1 className="font-display text-7xl text-cream-50 leading-[1.1] mb-8">
-            Langkah Awal<br />
-            Menuju Masa Depan<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-300 to-sage-400 italic">Bahagia.</span>
+            Satu Tempat<br />
+            Untuk Semua<br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-300 to-sage-400 italic">Keluarga.</span>
           </h1>
           
           <p className="text-sage-300 text-xl leading-relaxed max-w-lg font-light">
-            Bangun pondasi keuangan yang transparan dan terencana bersama orang tersayang. Karena cinta juga butuh rencana yang matang.
+            Kelola keuangan, dokumen, dan kebutuhan keluarga dalam satu aplikasi. Karena keluarga yang teratur adalah keluarga yang bahagia.
           </p>
         </motion.div>
 
@@ -90,7 +90,7 @@ export default function Register() {
             <Sparkles className="w-6 h-6 text-rose-300" />
           </div>
           <div>
-            <p className="text-cream-50 text-sm font-medium">Bergabunglah dengan ribuan pasangan lainnya yang sudah lebih harmonis.</p>
+            <p className="text-cream-50 text-sm font-medium">Bergabunglah dan mulai kelola keluargamu dengan lebih teratur dan harmonis.</p>
           </div>
         </motion.div>
       </div>
@@ -117,7 +117,7 @@ export default function Register() {
                 {step === 1 ? 'Buat Akun' : 'Lengkapi Profil'}
               </h2>
               <p className="text-sage-400 font-body text-sm">
-                {step === 1 ? 'Mulai perjalanan finansialmu hari ini' : 'Beri tahu kami sedikit tentang dirimu'}
+                {step === 1 ? 'Mulai kelola keluargamu hari ini' : 'Beri tahu kami sedikit tentang dirimu'}
               </p>
             </div>
 
@@ -265,7 +265,7 @@ export default function Register() {
             </div>
           </div>
           
-          <p className="text-center mt-10 text-[10px] font-bold text-sage-600 uppercase tracking-[0.4em]">Candy Finance • Built for Love</p>
+          <p className="text-center mt-10 text-[10px] font-bold text-sage-600 uppercase tracking-[0.4em]">CandyNest • Built for Family</p>
         </motion.div>
       </div>
     </div>

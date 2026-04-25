@@ -1,6 +1,6 @@
-# 🍬 Candy Finance (Pasutri Finance)
+# 🍬 CandyNest — Family Management App
 
-Aplikasi manajemen keuangan bergaya modern dan *premium* yang dirancang khusus untuk **pasangan suami istri (Pasutri)**. Dibangun dengan React (TypeScript), Vite, Tailwind CSS, dan Firebase.
+Aplikasi manajemen keluarga modern dan *premium* yang dirancang untuk membantu keluarga mengelola **keuangan, dokumen, dan kebutuhan rumah tangga** dalam satu tempat. Dibangun dengan React (TypeScript), Vite, Tailwind CSS, dan Firebase.
 
 ## ✨ Fitur Utama
 

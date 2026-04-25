@@ -47,9 +47,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <div className="px-6 py-8 border-b border-sage-700">
         <div className="flex items-center gap-2">
           <Heart className="w-6 h-6 text-rose-400 fill-rose-400" />
-          <span className="font-display text-xl text-cream-100">Candy</span>
+          <span className="font-display text-xl text-cream-100">CandyNest</span>
         </div>
-        <p className="text-sage-400 text-xs mt-1 font-body">Finance</p>
+        <p className="text-sage-400 text-xs mt-1 font-body">Family</p>
       </div>
 
       {/* User info */}
@@ -134,7 +134,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </button>
           <div className="flex items-center gap-2">
             <Heart className="w-5 h-5 text-rose-400 fill-rose-400" />
-            <span className="font-display text-lg text-sage-800">Candy</span>
+            <span className="font-display text-lg text-sage-800">CandyNest</span>
           </div>
           <div className="w-9" />
         </header>

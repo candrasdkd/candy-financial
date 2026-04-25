@@ -107,7 +107,7 @@ export default function Dashboard() {
         </motion.div>
         <h2 className="font-display text-3xl text-sage-900 mb-4 tracking-tight">Hubungkan Cintamu</h2>
         <p className="text-sage-500 mb-8 max-w-sm leading-relaxed">
-          Candy Finance bekerja paling manis saat kamu menggunakannya bersama pasangan. Hubungkan akunmu sekarang!
+          CandyNest bekerja paling baik saat kamu menggunakannya bersama pasangan. Hubungkan akunmu sekarang!
         </p>
         <Link
           to="/settings"
