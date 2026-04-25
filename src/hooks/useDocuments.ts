@@ -9,6 +9,12 @@ import { jsPDF } from 'jspdf';
 import { format } from 'date-fns';
 import { CATEGORY_INFO } from '../constants/document';
 import { useConfirmStore } from '../store/useConfirmStore';
+import { FirebaseError } from 'firebase/app';
+import { useMemo } from 'react';
+
+const MIN_FILE_SIZE = 100 * 1024; // 100KB
+const MAX_FILE_SIZE = 500 * 1024; // 500KB
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 export * from '../types/document';
 export * from '../constants/document';
@@ -26,7 +32,7 @@ export function useDocuments() {
   const [showUpload, setShowUpload] = useState(false);
   const [selected, setSelected] = useState<FamilyDocument | null>(null);
   const [activeCat, setActiveCat] = useState<DocCategory | 'all'>('all');
-  const [activePartner, setActivePartner] = useState<string | 'all'>('all');
+  const [activePartnerId, setActivePartnerId] = useState<string | 'all'>('all');
   const [showCatDropdown, setShowCatDropdown] = useState(false);
 
   // Selection States
@@ -60,6 +66,12 @@ export function useDocuments() {
     setError(null);
     setOcrLoading(true);
     try {
+      for (const file of files) {
+        if (file.size < MIN_FILE_SIZE) throw new Error(`File "${file.name}" terlalu kecil (min 100KB).`);
+        if (file.size > MAX_FILE_SIZE) throw new Error(`File "${file.name}" terlalu besar (maks 500KB).`);
+        if (!ALLOWED_TYPES.includes(file.type)) throw new Error(`Format file "${file.name}" tidak didukung.`);
+      }
+
       const { createWorker } = await import('tesseract.js');
       const worker = await createWorker('ind+eng', 1, { logger: () => {} });
       
@@ -130,6 +142,12 @@ export function useDocuments() {
     setUploadProgress(0);
 
     try {
+      for (const file of params.files) {
+        if (file.size < MIN_FILE_SIZE) throw new Error(`File "${file.name}" terlalu kecil (min 100KB).`);
+        if (file.size > MAX_FILE_SIZE) throw new Error(`File "${file.name}" terlalu besar (maks 500KB).`);
+        if (!ALLOWED_TYPES.includes(file.type)) throw new Error(`Format file "${file.name}" tidak didukung.`);
+      }
+
       const imageUrls: string[] = [];
       const storagePaths: string[] = [];
       
@@ -169,14 +187,22 @@ export function useDocuments() {
         storagePaths,
         fields: params.fields,
         extractedText: params.rawText,
-        uploadedBy: userProfile.displayName,
+        uploadedBy: userProfile.displayName, // Tetap simpan buat fallback data lama
+        uploadedById: userProfile.uid,       // ID buat sinkronisasi real-time
         coupleId: userProfile.coupleId,
         createdAt: serverTimestamp(),
       });
       setUploading(false);
     } catch (err: any) {
       setUploading(false);
-      setError(err.message ?? 'Gagal menyimpan dokumen.');
+      let msg = 'Gagal menyimpan dokumen.';
+      if (err instanceof FirebaseError) {
+        if (err.code === 'storage/unauthorized') msg = 'Anda tidak memiliki izin untuk mengunggah file.';
+        else if (err.code === 'storage/quota-exceeded') msg = 'Kapasitas penyimpanan penuh.';
+      } else {
+        msg = err.message || msg;
+      }
+      setError(msg);
       throw err;
     }
   }, [userProfile]);
@@ -196,18 +222,43 @@ export function useDocuments() {
   const updateDocument = useCallback(async (id: string, updates: Partial<FamilyDocument>) => {
     try {
       const docRef = doc(db, 'family_documents', id);
-      await updateDoc(docRef, updates);
+      
+      // Auto-migrate: Jika dokumen lama belum punya ID dan nama pengupload cocok dengan user sekarang
+      const original = documents.find(d => d.id === id);
+      const finalUpdates = { ...updates };
+      
+      const currentName = userProfile?.displayName?.toLowerCase().trim();
+      const uploaderName = original?.uploadedBy?.toLowerCase().trim();
+      
+      if (original && !original.uploadedById && uploaderName === currentName) {
+        finalUpdates.uploadedById = userProfile?.uid;
+      }
+
+      await updateDoc(docRef, finalUpdates);
     } catch (err: any) {
       setError(err.message ?? 'Gagal memperbarui dokumen.');
       throw err;
     }
-  }, []);
+  }, [documents, userProfile]);
 
   // Derived States
-  const partners = Array.from(new Set(documents.map(d => d.uploadedBy).filter(Boolean)));
+  const partners = useMemo(() => {
+    return [
+      { id: 'me', name: 'Saya' },
+      { id: 'partner', name: 'Pasangan' }
+    ];
+  }, []);
+
   const filtered = documents.filter(d => {
     const catOk = activeCat === 'all' || d.category === activeCat;
-    const partnerOk = activePartner === 'all' || d.uploadedBy === activePartner;
+    
+    let partnerOk = activePartnerId === 'all';
+    if (!partnerOk) {
+      const isMine = d.uploadedById === userProfile?.uid || d.uploadedBy === userProfile?.displayName;
+      if (activePartnerId === 'me') partnerOk = isMine;
+      if (activePartnerId === 'partner') partnerOk = !isMine;
+    }
+    
     return catOk && partnerOk;
   });
   const activeLabel = activeCat === 'all' ? 'Semua Dokumen' : CATEGORY_INFO[activeCat].label;
@@ -304,6 +355,12 @@ export function useDocuments() {
     });
   };
 
+  const getUploaderName = (docItem: FamilyDocument) => {
+    const isMine = (docItem.uploadedById && docItem.uploadedById === userProfile?.uid) || 
+                   (!docItem.uploadedById && docItem.uploadedBy && docItem.uploadedBy === userProfile?.displayName);
+    return isMine ? 'Saya' : 'Pasangan';
+  };
+
   const getInitials = (name: string) => name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
   return {
@@ -316,7 +373,7 @@ export function useDocuments() {
     showUpload, setShowUpload,
     selected, setSelected,
     activeCat, setActiveCat,
-    activePartner, setActivePartner,
+    activePartnerId, setActivePartnerId,
     showCatDropdown, setShowCatDropdown,
     isSelectMode, setIsSelectMode,
     selectedIds, setSelectedIds,
@@ -333,6 +390,7 @@ export function useDocuments() {
     handleExportPDF,
     handleDelete,
     getInitials,
+    getUploaderName,
     compress: compressImage
   };
 }

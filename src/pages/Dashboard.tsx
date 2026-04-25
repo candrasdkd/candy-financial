@@ -341,7 +341,7 @@ export default function Dashboard() {
             ) : (
               recentTx.slice(0, 4).map(tx => {
                 const cat = getCategoryInfo(tx.category);
-                const isMine = tx.addedBy === userProfile.displayName;
+                const isMine = tx.userId === userProfile?.uid || (tx.addedBy === userProfile?.displayName && !tx.userId);
 
                 return (
                   <div key={tx.id} className="group flex items-center gap-4">
@@ -354,7 +354,7 @@ export default function Dashboard() {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter ${isMine ? 'bg-sage-100 text-sage-700' : 'bg-rose-100 text-rose-600'}`}>
-                          {isMine ? 'Saya' : (userProfile?.partnerName || 'Pasangan')}
+                          {isMine ? 'Saya' : (userProfile?.partnerName || tx.addedBy || 'Pasangan')}
                         </span>
                         <span className="text-[10px] text-sage-300 font-medium uppercase tracking-widest">{cat.label}</span>
                       </div>

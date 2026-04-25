@@ -1,4 +1,4 @@
-export type DocCategory = 'ktp' | 'sim' | 'npwp' | 'nikah' | 'ijazah' | 'akta' | 'paspor' | 'kk' | 'sertifikat' | 'bpjs_kes' | 'bpjs_ket' | 'asuransi' | 'sip' | 'lainnya';
+export type DocCategory = 'ktp' | 'sim' | 'npwp' | 'nikah' | 'ijazah' | 'transkrip' | 'akta' | 'paspor' | 'kk' | 'sertifikat' | 'bpjs_kes' | 'bpjs_ket' | 'asuransi' | 'sip' | 'lainnya';
 
 export interface OcrField {
   label: string;
@@ -16,6 +16,7 @@ export interface FamilyDocument {
   extractedText: string;
   fields: OcrField[];
   uploadedBy: string;
+  uploadedById?: string;
   createdAt: Date;
   coupleId: string;
 }

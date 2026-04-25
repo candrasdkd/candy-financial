@@ -66,7 +66,8 @@ export const useDataStore = create<DataState>((set, get) => ({
         set({ transactions: data, txLoading: false, txError: null });
       },
       (err) => {
-        set({ txError: err.message, txLoading: false });
+        console.error('Firestore Error:', err);
+        set({ txError: 'Gagal memuat data transaksi.', txLoading: false });
       }
     );
 
@@ -96,7 +97,8 @@ export const useDataStore = create<DataState>((set, get) => ({
         set({ budgets: data, budgetLoading: false, budgetError: null });
       },
       (err) => {
-        set({ budgetError: err.message, budgetLoading: false });
+        console.error('Firestore Error:', err);
+        set({ budgetError: 'Gagal memuat data anggaran.', budgetLoading: false });
       }
     );
 

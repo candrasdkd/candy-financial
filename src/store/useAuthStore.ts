@@ -17,7 +17,8 @@ import {
   where, 
   getDocs,
   addDoc,
-  onSnapshot
+  onSnapshot,
+  limit
 } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { UserProfile } from '../types';
@@ -71,7 +72,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             if (profile.partnerEmail && !partnerUnsub) {
               const q = query(
                 collection(db, 'users'), 
-                where('email', '==', profile.partnerEmail)
+                where('email', '==', profile.partnerEmail),
+                limit(1)
               );
               partnerUnsub = onSnapshot(q, (partnerSnap) => {
                 if (!partnerSnap.empty) {
@@ -143,7 +145,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (userProfile.coupleId) throw new Error('Sudah terhubung dengan pasangan');
 
     // Find partner
-    const q = query(collection(db, 'users'), where('inviteCode', '==', inviteCode));
+    const q = query(collection(db, 'users'), where('inviteCode', '==', inviteCode), limit(1));
     const snap = await getDocs(q);
     if (snap.empty) throw new Error('Kode undangan tidak ditemukan');
 
@@ -192,7 +194,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         try {
           const q = query(
             collection(db, 'users'), 
-            where('email', '==', userProfile.partnerEmail)
+            where('email', '==', userProfile.partnerEmail),
+            limit(1)
           );
           const snap = await getDocs(q);
           if (!snap.empty) {

@@ -20,7 +20,7 @@ export default function Documents() {
     showUpload, setShowUpload,
     selected, setSelected,
     activeCat, setActiveCat,
-    activePartner, setActivePartner,
+    activePartnerId, setActivePartnerId,
     showCatDropdown, setShowCatDropdown,
     isSelectMode, setIsSelectMode,
     selectedIds, setSelectedIds,
@@ -31,7 +31,8 @@ export default function Documents() {
     toggleDocSelection,
     handleExportPDF,
     handleDelete,
-    getInitials
+    getInitials,
+    getUploaderName
   } = useDocuments();
 
   if (loading) {
@@ -137,31 +138,31 @@ export default function Documents() {
               <span className="hidden md:inline">Pemilik</span>
             </div>
             <button
-              onClick={() => setActivePartner('all')}
+              onClick={() => setActivePartnerId('all')}
               className={`px-3 py-1.5 rounded-full text-[10px] font-bold transition-all border ${
-                activePartner === 'all'
+                activePartnerId === 'all'
                   ? 'bg-sage-900 text-white border-sage-900 shadow-sm'
                   : 'bg-white text-sage-500 border-sage-100 hover:border-sage-200'
               }`}
             >
               Semua
             </button>
-            {partners.map(name => (
+            {partners.map(p => (
               <button
-                key={name}
-                onClick={() => setActivePartner(activePartner === name ? 'all' : name)}
+                key={p.id}
+                onClick={() => setActivePartnerId(activePartnerId === p.id ? 'all' : p.id)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold transition-all border ${
-                  activePartner === name
+                  activePartnerId === p.id
                     ? 'bg-sage-900 text-white border-sage-900 shadow-sm'
                     : 'bg-white text-sage-600 border-sage-100 hover:border-sage-200'
                 }`}
               >
                 <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-black ${
-                  activePartner === name ? 'bg-white/20' : 'bg-sage-100'
+                  activePartnerId === p.id ? 'bg-white/20' : 'bg-sage-100'
                 }`}>
-                  {getInitials(name)}
+                  {getInitials(p.name)}
                 </div>
-                <span className="max-w-[80px] truncate">{name.split(' ')[0]}</span>
+                <span className="max-w-[80px] truncate">{p.name.split(' ')[0]}</span>
               </button>
             ))}
           </div>
@@ -251,9 +252,9 @@ export default function Documents() {
                         </div>
                         <div className="flex items-center gap-1.5 px-2 py-1 bg-sage-50/50 rounded-lg border border-sage-100/50">
                           <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-sage-100 flex items-center justify-center text-[6px] md:text-[8px] font-black text-sage-600">
-                            {getInitials(doc.uploadedBy)}
+                            {getInitials(getUploaderName(doc))}
                           </div>
-                          <span className="text-[8px] md:text-[9px] font-bold text-sage-500 truncate max-w-[50px]">{doc.uploadedBy.split(' ')[0]}</span>
+                          <span className="text-[8px] md:text-[9px] font-bold text-sage-500 truncate max-w-[50px]">{getUploaderName(doc).split(' ')[0]}</span>
                         </div>
                       </div>
                     </div>

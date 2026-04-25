@@ -186,7 +186,7 @@ export default function DocumentDetailModal({ doc, onClose, onDelete, onUpdate }
                   <h2 className="font-display text-xl text-sage-900 leading-tight truncate">{savedName}</h2>
                 )}
                 <p className="text-[10px] text-sage-400 font-bold uppercase tracking-widest mt-1">
-                  {doc.uploadedBy} • {format(doc.createdAt, 'dd MMM yyyy', { locale: id })}
+                  {format(doc.createdAt, 'dd MMM yyyy', { locale: id })}
                 </p>
               </div>
             </div>
