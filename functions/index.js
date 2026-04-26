@@ -1,12 +1,3 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * const {onCall} = require("firebase-functions/v2/https");
- * const {onDocumentWritten} = require("firebase-functions/v2/firestore");
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
-
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const axios = require("axios");
@@ -14,11 +5,13 @@ const axios = require("axios");
 admin.initializeApp();
 const db = admin.firestore();
 
-// --- KONFIGURASI DARI ENV ---
+// Ambil config dari environment variables Firebase
+// Jalankan ini di terminal untuk set:
+// firebase functions:config:set fonnte.token="TOKEN_ANDA" fonnte.targets="628xxx,628xxx"
 const FONNTE_TOKEN = process.env.FONNTE_TOKEN;
 const TARGET_NUMBERS = process.env.TARGET_NUMBERS;
 
-// --- JADWAL: SETIAP HARI JAM 20:00 WIB ---
+// --- JADWAL: JAM 12:00 dan 19:00 WIB ---
 exports.dailyReminderWA = functions.pubsub
     .schedule("0 12,19 * * *")
     .timeZone("Asia/Jakarta")
@@ -27,11 +20,6 @@ exports.dailyReminderWA = functions.pubsub
       const today = new Date().toLocaleDateString("en-CA", {timeZone: "Asia/Jakarta"});
 
       // 2. Cek apakah HARI INI sudah ada pengeluaran yang dicatat di DB
-      // Karena kita tidak menyimpan detail per couple id di sini,
-      // pastikan logika ini mengambil setidaknya 1 transaksi hari ini di seluruh apps.
-      // Jika ada yang catat, akan gagal mengirim reminder ke semua.
-      // Agar lebih spesifik, sebaiknya kita query per pengguna/couple.
-      // Tapi untuk penggunaan pribadi (berdua), ini sudah cukup.
       const txSnapshot = await db.collection("transactions")
           .where("date", "==", today)
           .limit(1)
@@ -43,8 +31,25 @@ exports.dailyReminderWA = functions.pubsub
         return null;
       }
 
-      // 3. Teks Pesan Pengingat
-      const message = "Halo! 👋 Jangan lupa catat keuangan kita hari ini di Candy Financial ya! 🍬 Biar nggak kelupaan besok.";
+      // 3. Tentukan pesan berdasarkan jam (Siang atau Malam)
+      const jakartaHour = parseInt(new Date().toLocaleString("en-US", {
+        timeZone: "Asia/Jakarta",
+        hour: "numeric",
+        hour12: false,
+      }));
+
+      let message = "";
+      let pushTitle = "";
+
+      if (jakartaHour <= 15) {
+      // Opsi Siang
+        message = "Halo! 👋 Jajan apa hari ini? Jangan lupa catat pengeluaranmu di Candy Financial ya, biar tabungan kamu tetap manis! 🍬";
+        pushTitle = "Waktunya Jajan? 🍬";
+      } else {
+      // Opsi Malam
+        message = "Sudah mau istirahat? Yuk, luangkan waktu 1 menit buat rekap keuangan hari ini di Candy Financial. Biar besok bangun dengan tenang! 🍭";
+        pushTitle = "Rekap Hari Ini 🍭";
+      }
 
       // 4. Tembak Fonnte API untuk mengirim WA sekaligus
       try {
@@ -53,7 +58,7 @@ exports.dailyReminderWA = functions.pubsub
             {
               target: TARGET_NUMBERS,
               message: message,
-              countryCode: "62", // Format bawaan agar otomatis menggunakan kode ID +62
+              countryCode: "62",
             },
             {
               headers: {
@@ -83,12 +88,11 @@ exports.dailyReminderWA = functions.pubsub
           const uniqueTokens = [...new Set(allTokens)]; // Remove duplicates
           const payload = {
             notification: {
-              title: "Pengingat Keuangan 🍬",
-              body: "Halo! Jangan lupa catat transaksi hari ini ya agar keuangan tetap terpantau rapi.",
+              title: pushTitle,
+              body: message,
             },
           };
 
-          // multicast send
           const multicastPayload = {
             tokens: uniqueTokens,
             ...payload,
