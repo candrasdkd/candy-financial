@@ -8,7 +8,7 @@ type Step = 'select' | 'processing' | 'review';
 const CATS = Object.entries(CATEGORY_INFO) as [DocCategory, typeof CATEGORY_INFO[DocCategory]][];
 
 export default function DocumentUploadModal({ onClose }: { onClose: () => void }) {
-  const { compress, scanDocument, uploadAndSave, uploading, uploadProgress, ocrLoading, error: hookError } = useDocuments();
+  const { compress, uploadAndSave, uploading, uploadProgress, error: hookError } = useDocuments();
 
   const [step, setStep] = useState<Step>('select');
   const [files, setFiles] = useState<File[]>([]);
@@ -16,9 +16,7 @@ export default function DocumentUploadModal({ onClose }: { onClose: () => void }
   const [category, setCategory] = useState<DocCategory>('ktp');
   const [customName, setCustomName] = useState('');
   const [fields, setFields] = useState<OcrField[]>([]);
-  const [scanData, setScanData] = useState<{ rawText: string } | null>(null);
   const [saving, setSaving] = useState(false);
-  const [shouldScan, setShouldScan] = useState(true);
   const [localError, setLocalError] = useState<string | null>(null);
   const [isCompressing, setIsCompressing] = useState(false);
   const [done, setDone] = useState(false);
@@ -47,36 +45,12 @@ export default function DocumentUploadModal({ onClose }: { onClose: () => void }
     setPreviews(prev => [...prev, URL.createObjectURL(processedFile)]);
   };
 
-  const handleScan = async () => {
+  const handleContinue = async () => {
     if (files.length === 0) return;
     
-    if (!shouldScan) {
-      const templates = FIELD_TEMPLATES[category];
-      setFields(templates.map(label => ({ label, value: '' })));
-      setScanData(null);
-      setStep('review');
-      return;
-    }
-
-    setStep('processing');
-    try {
-      const result = await scanDocument(files, category);
-      const templates = FIELD_TEMPLATES[category];
-      const merged: OcrField[] = templates.length
-        ? templates.map(label => ({ label, value: result.fields.find(f => f.label === label)?.value ?? '' }))
-        : result.fields;
-      setFields(merged.length ? merged : [{ label: 'Teks', value: result.rawText }]);
-      setScanData({ rawText: result.rawText });
-      
-      // Auto-suggest name if user hasn't set one
-      if (!customName && result.suggestedName) {
-        setCustomName(result.suggestedName);
-      }
-      
-      setStep('review');
-    } catch {
-      setStep('select');
-    }
+    const templates = FIELD_TEMPLATES[category];
+    setFields(templates.map(label => ({ label, value: '' })));
+    setStep('review');
   };
 
   const handleSave = async () => {
@@ -88,7 +62,7 @@ export default function DocumentUploadModal({ onClose }: { onClose: () => void }
         name: customName || `${CATEGORY_INFO[category].label} — ${new Date().toLocaleDateString('id-ID')}`,
         category,
         fields,
-        rawText: scanData?.rawText || '',
+        rawText: '',
       });
       setDone(true);
       setTimeout(onClose, 1000);
@@ -114,7 +88,9 @@ export default function DocumentUploadModal({ onClose }: { onClose: () => void }
         exit={{ y: '100%', opacity: 0 }}
         transition={{ type: 'tween', duration: 0.2, ease: 'easeOut' }}
         style={{ willChange: 'transform, opacity' }}
-        className="relative bg-white w-full sm:max-w-lg sm:rounded-[2.5rem] rounded-t-[2.5rem] sm:shadow-2xl flex flex-col max-h-[85vh] sm:max-h-[90vh] overflow-hidden border border-white/20 mt-auto sm:my-auto"
+        className={`relative bg-white w-full sm:rounded-[2.5rem] rounded-t-[2.5rem] sm:shadow-2xl flex flex-col max-h-[85vh] sm:max-h-[90vh] overflow-hidden border border-white/20 mt-auto sm:my-auto transition-all duration-500 ${
+          step === 'review' ? 'sm:max-w-4xl' : 'sm:max-w-lg'
+        }`}
       >
         {/* Header (Sticky) */}
         <div className="flex-shrink-0 px-6 pt-6 pb-4 border-b border-sage-50 bg-white">
@@ -123,11 +99,11 @@ export default function DocumentUploadModal({ onClose }: { onClose: () => void }
               <div className="flex items-center gap-2 text-rose-400">
                 <Sparkles className="w-3 h-3 fill-rose-400" />
                 <span className="text-[9px] font-bold uppercase tracking-[0.3em]">
-                  {step === 'select' ? 'Unggah Berkas' : step === 'processing' ? 'Proses Scan' : 'Verifikasi Data'}
+                  {step === 'select' ? 'Unggah Berkas' : 'Verifikasi Data'}
                 </span>
               </div>
               <h2 className="font-display text-2xl text-sage-900 tracking-tight leading-none">
-                {step === 'select' ? 'Tambah Dokumen' : step === 'processing' ? 'Menganalisis...' : 'Simpan Dokumen'}
+                {step === 'select' ? 'Tambah Dokumen' : 'Simpan Dokumen'}
               </h2>
             </div>
             <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-xl bg-sage-50 text-sage-400 hover:bg-sage-100 transition-all">
@@ -136,8 +112,8 @@ export default function DocumentUploadModal({ onClose }: { onClose: () => void }
           </div>
           
           <div className="flex gap-1 mt-4">
-            {(['select', 'processing', 'review'] as Step[]).map((s, i) => (
-              <div key={s} className={`h-1 rounded-full transition-all duration-500 ${step === s ? 'w-8 bg-sage-700' : (['select', 'processing', 'review'] as Step[]).indexOf(step) > i ? 'w-4 bg-sage-400' : 'w-4 bg-sage-100'}`} />
+            {(['select', 'review'] as Step[]).map((s, i) => (
+              <div key={s} className={`h-1 rounded-full transition-all duration-500 ${step === s ? 'w-8 bg-sage-700' : 'w-4 bg-sage-100'}`} />
             ))}
           </div>
         </div>
@@ -163,12 +139,6 @@ export default function DocumentUploadModal({ onClose }: { onClose: () => void }
                 <div className="space-y-4">
                   <div className="flex items-center justify-between px-1">
                     <label className="text-[9px] font-bold text-sage-400 uppercase tracking-widest block">Nama Dokumen (Opsional)</label>
-                    {customName && scanData && (
-                      <div className="flex items-center gap-1 text-[9px] font-bold text-rose-400 uppercase tracking-tight animate-pulse">
-                        <Sparkles className="w-2.5 h-2.5" />
-                        AI Suggestion
-                      </div>
-                    )}
                   </div>
                   <input type="text" value={customName} onChange={e => setCustomName(e.target.value)} placeholder={`${CATEGORY_INFO[category].label} — ${new Date().toLocaleDateString('id-ID')}`}
                     className="w-full px-5 py-4 bg-sage-50 border border-sage-100 rounded-2xl text-sage-900 focus:outline-none transition-all font-bold text-sm" />
@@ -199,52 +169,54 @@ export default function DocumentUploadModal({ onClose }: { onClose: () => void }
                     <AlertCircle className="w-4 h-4 flex-shrink-0" /> {error}
                   </div>
                 )}
-
-                <div className="p-4 rounded-3xl bg-sage-50/50 border border-sage-100 flex items-center justify-between group cursor-pointer" onClick={() => setShouldScan(!shouldScan)}>
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${shouldScan ? 'bg-sage-900 text-white shadow-lg' : 'bg-white text-sage-300 border border-sage-100'}`}>
-                      <ScanLine className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-sage-900">Scan & Ekstrak Data</p>
-                      <p className="text-[10px] text-sage-400 font-medium">{shouldScan ? 'Baca teks otomatis' : 'Hanya simpan foto'}</p>
-                    </div>
-                  </div>
-                  <button className={`w-10 h-6 rounded-full relative transition-all ${shouldScan ? 'bg-sage-900' : 'bg-sage-200'}`}>
-                    <motion.div animate={{ x: shouldScan ? 18 : 4 }} className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm" />
-                  </button>
-                </div>
-              </motion.div>
-            )}
-
-            {step === 'processing' && (
-              <motion.div key="processing" className="py-20 flex flex-col items-center justify-center space-y-6">
-                <div className="relative">
-                  <motion.div animate={{ rotate: 360 }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }} className="w-24 h-24 rounded-full border-4 border-dashed border-sage-200" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <ScanLine className="w-10 h-10 text-sage-900 animate-pulse" />
-                  </div>
-                </div>
-                <div className="text-center">
-                  <h3 className="font-display text-xl text-sage-900 mb-2">Menganalisis Dokumen</h3>
-                  <p className="text-sm text-sage-400 font-medium">Mesin AI sedang membaca teks dokumen kamu...</p>
-                </div>
               </motion.div>
             )}
 
             {step === 'review' && (
-              <motion.div key="review" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
-                <div className="space-y-3">
-                  <label className="text-[9px] font-bold text-sage-400 uppercase tracking-widest px-1">Review Hasil Scan</label>
-                  <div className="space-y-3">
-                    {fields.map((f, i) => (
-                      <div key={i} className="space-y-1.5">
-                        <label className="text-[9px] font-bold text-sage-400 uppercase tracking-wider px-1 ml-1">{f.label}</label>
-                        <input type="text" value={f.value} onChange={e => {
-                          const n = [...fields]; n[i].value = e.target.value; setFields(n);
-                        }} className="w-full px-5 py-3.5 bg-sage-50 border border-sage-100 rounded-xl text-sage-900 font-bold text-sm focus:outline-none" />
+              <motion.div key="review" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                {/* Image Column - Sticky on Desktop */}
+                <div className="lg:sticky lg:top-0 space-y-4">
+                  <label className="text-[9px] font-bold text-sage-400 uppercase tracking-widest px-1 block">Foto Dokumen</label>
+                  <div className="relative group aspect-[3/4] rounded-3xl overflow-hidden border border-sage-100 bg-sage-50 shadow-inner">
+                    <img src={previews[0]} className="w-full h-full object-contain" />
+                    {previews.length > 1 && (
+                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 px-3 py-1.5 rounded-full text-[10px] text-white font-bold backdrop-blur-md border border-white/10">
+                        + {previews.length - 1} Foto Lainnya
                       </div>
-                    ))}
+                    )}
+                  </div>
+                </div>
+
+                {/* Data Entry Column */}
+                <div className="space-y-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between px-1">
+                      <label className="text-[9px] font-bold text-sage-400 uppercase tracking-widest">Verifikasi Data</label>
+                      <span className="text-[8px] font-black text-rose-400 uppercase tracking-tighter bg-rose-50 px-2 py-0.5 rounded-full border border-rose-100">Manual Entry</span>
+                    </div>
+                    <div className="space-y-4">
+                      {fields.map((f, i) => (
+                        <div key={i} className="space-y-1.5 group">
+                          <label className="text-[9px] font-bold text-sage-400 uppercase tracking-wider px-1 ml-1 transition-colors group-focus-within:text-sage-900">{f.label}</label>
+                          <input 
+                            type="text" 
+                            value={f.value} 
+                            placeholder={`Masukkan ${f.label}...`}
+                            onChange={e => {
+                              const n = [...fields]; n[i].value = e.target.value; setFields(n);
+                            }} 
+                            className="w-full px-5 py-4 bg-sage-50 border border-sage-100 rounded-2xl text-sage-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-sage-900/5 focus:bg-white focus:border-sage-300 transition-all" 
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-blue-50/50 border border-blue-100 flex items-start gap-3">
+                    <div className="w-5 h-5 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <AlertCircle className="w-3 h-3 text-blue-600" />
+                    </div>
+                    <p className="text-[10px] text-blue-600 font-bold leading-relaxed uppercase tracking-wide">Pastikan data yang diinput sudah sesuai dengan foto dokumen.</p>
                   </div>
                 </div>
               </motion.div>
@@ -255,10 +227,10 @@ export default function DocumentUploadModal({ onClose }: { onClose: () => void }
         {/* Footer (Sticky) */}
         <div className="flex-shrink-0 p-6 pb-12 sm:pb-6 border-t border-sage-50 bg-white">
           {step === 'select' ? (
-            <button disabled={files.length === 0 || isCompressing} onClick={handleScan}
+            <button disabled={files.length === 0 || isCompressing} onClick={handleContinue}
               className="w-full py-4 bg-sage-900 text-white rounded-2xl font-bold shadow-xl shadow-sage-900/20 hover:bg-black transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3"
             >
-              {shouldScan ? <><ScanLine className="w-4 h-4" /> Analisis Dokumen</> : <><ImageIcon className="w-4 h-4" /> Lanjut Simpan Foto</>}
+              <ImageIcon className="w-4 h-4" /> Lanjut Isi Data
             </button>
           ) : step === 'review' ? (
             <button disabled={saving} onClick={handleSave}

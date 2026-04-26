@@ -1,16 +1,12 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const axios = require("axios");
-const vision = require("@google-cloud/vision");
 
 admin.initializeApp();
 const db = admin.firestore();
-const visionClient = new vision.ImageAnnotatorClient();
 
 const FONNTE_TOKEN = process.env.FONNTE_TOKEN;
 const TARGET_NUMBERS = process.env.TARGET_NUMBERS;
-
-const MONTHLY_SCAN_LIMIT = 950;
 
 // --- JADWAL: JAM 12:00 dan 19:00 WIB ---
 exports.dailyReminderWA = functions.pubsub
@@ -127,55 +123,3 @@ exports.dailyReminderWA = functions.pubsub
 
       return null;
     });
-
-// --- FUNGSI OCR: GOOGLE CLOUD VISION DENGAN LIMITER ---
-exports.processOCR = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError("unauthenticated", "Login dulu ya!");
-  }
-
-  const userDoc = await db.collection("users").doc(context.auth.uid).get();
-  const coupleId = userDoc.data()?.coupleId || "standalone_" + context.auth.uid;
-  const currentMonth = new Date().toLocaleDateString("en-CA", {timeZone: "Asia/Jakarta"}).slice(0, 7);
-
-  const usageRef = db.collection("usage_stats").doc(`${coupleId}_${currentMonth}`);
-
-  const usageDoc = await usageRef.get();
-  const currentCount = usageDoc.exists ? usageDoc.data().scanCount : 0;
-
-  if (currentCount >= MONTHLY_SCAN_LIMIT) {
-    throw new functions.https.HttpsError(
-        "resource-exhausted",
-        "Waduh! Jatah scan gratis bulan ini sudah habis (Limit 950). Coba lagi bulan depan ya! 🍬",
-    );
-  }
-
-  const {imageBase64} = data;
-  if (!imageBase64) {
-    throw new functions.https.HttpsError("invalid-argument", "Gambar wajib ada.");
-  }
-
-  try {
-    const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, "");
-    const buffer = Buffer.from(base64Data, "base64");
-
-    const [result] = await visionClient.textDetection(buffer);
-    const detections = result.textAnnotations;
-
-    await usageRef.set({
-      scanCount: admin.firestore.FieldValue.increment(1),
-      lastScan: admin.firestore.FieldValue.serverTimestamp(),
-      coupleId: coupleId,
-      month: currentMonth,
-    }, {merge: true});
-
-    if (!detections || detections.length === 0) {
-      return {text: ""};
-    }
-
-    return {text: detections[0].description};
-  } catch (error) {
-    console.error("OCR Error:", error);
-    throw new functions.https.HttpsError("internal", "Gagal memproses gambar: " + error.message);
-  }
-});

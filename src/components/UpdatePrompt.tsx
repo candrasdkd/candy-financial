@@ -36,16 +36,31 @@ export default function UpdatePrompt() {
   };
 
   const handleUpdate = async () => {
-    if (hasReloaded.current) return; // guard double reload
+    if (isUpdating) return;
     setIsUpdating(true);
+
     try {
-      hasReloaded.current = true;
+      // Catat waktu update untuk cooldown
       localStorage.setItem(UPDATE_COOLDOWN_KEY, String(Date.now()));
-      await updateServiceWorker(true);
+      
+      // Panggil updateServiceWorker(true) yang akan mengirim SKIP_WAITING
+      // dan mencoba reload otomatis via vite-plugin-pwa logic.
+      const updatePromise = updateServiceWorker(true);
+
+      // Safety timeout: Jika dalam 2 detik tidak reload otomatis, kita paksa reload.
+      // Ini sering terjadi jika event controllerchange tidak tertangkap.
+      const safetyTimeout = setTimeout(() => {
+        console.log('Force reloading after timeout...');
+        window.location.reload();
+      }, 2000);
+
+      await updatePromise;
+      clearTimeout(safetyTimeout);
       window.location.reload();
-    } catch {
-      hasReloaded.current = false;
-      setIsUpdating(false);
+    } catch (error) {
+      console.error('Failed to update service worker:', error);
+      // Jika gagal pun, coba reload saja untuk reset state
+      window.location.reload();
     }
   };
 
