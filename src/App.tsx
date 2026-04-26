@@ -65,6 +65,16 @@ export default function App() {
     return () => unsub();
   }, [init]);
 
+  const { currentUser } = useAuthStore();
+  
+  useEffect(() => {
+    if (currentUser?.uid) {
+      import('./utils/notifications').then(({ requestNotificationPermission }) => {
+        requestNotificationPermission(currentUser.uid);
+      });
+    }
+  }, [currentUser?.uid]);
+
   return (
     <BrowserRouter>
       <AppRoutes />

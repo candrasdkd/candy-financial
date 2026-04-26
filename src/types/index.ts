@@ -65,6 +65,7 @@ export interface UserProfile {
   partnerName: string | null;
   inviteCode: string;
   gender: 'male' | 'female' | null;
+  fcmTokens?: string[];
 }
 
 export interface CoupleData {

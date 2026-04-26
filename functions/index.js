@@ -62,9 +62,45 @@ exports.dailyReminderWA = functions.pubsub
             },
         );
 
-        console.log("[SUKSES] Pesan terkirim. Respon Fonnte:", response.data);
+        console.log("[SUKSES] Pesan WA terkirim. Respon Fonnte:", response.data);
       } catch (error) {
-        console.error("[GAGAL] Tidak bisa mengirim via Fonnte:", error.response?.data || error.message);
+        console.error("[GAGAL] Tidak bisa mengirim WA via Fonnte:", error.response?.data || error.message);
+      }
+
+      // 5. Kirim Web Push Notification via FCM
+      try {
+        const usersSnapshot = await db.collection("users").get();
+        const allTokens = [];
+
+        usersSnapshot.forEach((doc) => {
+          const userData = doc.data();
+          if (userData.fcmTokens && Array.isArray(userData.fcmTokens)) {
+            allTokens.push(...userData.fcmTokens);
+          }
+        });
+
+        if (allTokens.length > 0) {
+          const uniqueTokens = [...new Set(allTokens)]; // Remove duplicates
+          const payload = {
+            notification: {
+              title: "Pengingat Keuangan 🍬",
+              body: "Halo! Jangan lupa catat transaksi hari ini ya agar keuangan tetap terpantau rapi.",
+            },
+          };
+
+          // multicast send
+          const multicastPayload = {
+            tokens: uniqueTokens,
+            ...payload,
+          };
+
+          const fcmResponse = await admin.messaging().sendEachForMulticast(multicastPayload);
+          console.log(`[SUKSES] FCM dikirim: ${fcmResponse.successCount} berhasil, ${fcmResponse.failureCount} gagal.`);
+        } else {
+          console.log("Tidak ada FCM Token yang ditemukan.");
+        }
+      } catch (error) {
+        console.error("[GAGAL] Tidak bisa mengirim FCM:", error.message);
       }
 
       return null;
