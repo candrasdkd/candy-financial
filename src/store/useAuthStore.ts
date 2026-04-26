@@ -1,24 +1,25 @@
 import { create } from 'zustand';
-import { 
-  User, 
+import {
+  User,
   onAuthStateChanged,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
   updateProfile
 } from 'firebase/auth';
-import { 
-  doc, 
-  getDoc, 
-  setDoc, 
-  updateDoc, 
-  collection, 
-  query, 
-  where, 
+import {
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  collection,
+  query,
+  where,
   getDocs,
   addDoc,
   onSnapshot,
-  limit
+  limit,
+  writeBatch
 } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { UserProfile } from '../types';
@@ -29,7 +30,7 @@ interface AuthState {
   userProfile: UserProfile | null;
   loading: boolean;
   initialized: boolean;
-  
+
   // Actions
   init: () => () => void;
   register: (email: string, password: string, displayName: string, gender: 'male' | 'female') => Promise<void>;
@@ -56,7 +57,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     const authUnsub = onAuthStateChanged(auth, async (user) => {
       set({ currentUser: user, initialized: true });
-      
+
       if (profileUnsub) profileUnsub();
       if (partnerUnsub) partnerUnsub();
       profileUnsub = null;
@@ -71,7 +72,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             // If linked to a partner, listen to partner's profile for real-time name/avatar sync
             if (profile.partnerEmail && !partnerUnsub) {
               const q = query(
-                collection(db, 'users'), 
+                collection(db, 'users'),
                 where('email', '==', profile.partnerEmail),
                 limit(1)
               );
@@ -105,7 +106,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   register: async (email, password, displayName, gender) => {
     const { user } = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(user, { displayName });
-    
+
     const inviteCode = generateInviteCode();
     const profile: UserProfile = {
       uid: user.uid,
@@ -117,7 +118,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       inviteCode,
       gender,
     };
-    
+
     await setDoc(doc(db, 'users', user.uid), profile);
     set({ userProfile: profile });
   },
@@ -161,20 +162,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       createdAt: new Date().toISOString(),
     });
 
-    // Update current user
-    await updateDoc(doc(db, 'users', currentUser.uid), {
+    const batch = writeBatch(db);
+    batch.update(doc(db, 'users', currentUser.uid), {
       coupleId: coupleRef.id,
       partnerEmail: partnerData.email,
       partnerName: partnerData.displayName
     });
-
-    // Update partner
-    await updateDoc(doc(db, 'users', partnerData.uid), {
+    batch.update(doc(db, 'users', partnerData.uid), {
       coupleId: coupleRef.id,
       partnerEmail: currentUser.email,
       partnerName: userProfile.displayName
     });
-
+    await batch.commit();
     await refreshProfile();
   },
 
@@ -193,7 +192,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (userProfile.partnerEmail) {
         try {
           const q = query(
-            collection(db, 'users'), 
+            collection(db, 'users'),
             where('email', '==', userProfile.partnerEmail),
             limit(1)
           );

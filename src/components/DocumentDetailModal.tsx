@@ -170,8 +170,9 @@ export default function DocumentDetailModal({ doc, onClose, onDelete, onUpdate }
         initial={{ y: '100%', opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: '100%', opacity: 0 }}
-        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-        className="relative bg-white w-full sm:max-w-2xl sm:rounded-[2.5rem] rounded-t-[2.5rem] shadow-2xl flex flex-col max-h-[85vh] sm:max-h-[90vh] overflow-hidden border border-white/20 mt-auto sm:my-auto"
+        transition={{ type: 'tween', duration: 0.2, ease: 'easeOut' }}
+        style={{ willChange: 'transform, opacity' }}
+        className="relative bg-white w-full sm:max-w-2xl sm:rounded-[2.5rem] rounded-t-[2.5rem] sm:shadow-2xl flex flex-col max-h-[85vh] sm:max-h-[90vh] overflow-hidden border border-white/20 mt-auto sm:my-auto"
       >
         {/* Header (Sticky) */}
         <div className="flex-shrink-0 px-6 pt-6 pb-4 border-b border-sage-50 bg-white">
@@ -208,7 +209,7 @@ export default function DocumentDetailModal({ doc, onClose, onDelete, onUpdate }
             <div ref={scrollRef} onScroll={onScroll} className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2 scroll-smooth relative">
               {(doc.imageUrls || [doc.imageUrl!]).map((url, i) => (
                 <div key={i} className="relative flex-shrink-0 w-full snap-center px-1 cursor-zoom-in group/img" onClick={() => setFullscreenImg(url)}>
-                  <img src={url} alt={`${doc.name} ${i+1}`} className="w-full h-auto max-h-[40vh] object-contain rounded-3xl bg-sage-50 border border-sage-100 shadow-sm transition-transform group-hover/img:scale-[1.01]" />
+                  <img src={url} alt={`${doc.name} ${i+1}`} loading="lazy" decoding="async" className="w-full h-auto max-h-[40vh] object-contain rounded-3xl bg-sage-50 border border-sage-100 shadow-sm transition-transform group-hover/img:scale-[1.01]" />
                   <div className="absolute inset-0 m-1 rounded-3xl bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
                     <div className="bg-black/50 p-3 rounded-full text-white">
                       <Maximize2 className="w-6 h-6" />
