@@ -12,6 +12,7 @@ Aplikasi manajemen keluarga modern dan *premium* yang dirancang untuk membantu k
 - 📊 **Smart Budgeting** — Atur batas pengeluaran bulanan per kategori. Indikator visual dinamis akan memperingatkan jika kamu sudah mendekati atau melewati batas anggaran.
 - 📱 **Native-Feel Navigation** — Navigasi cerdas yang beradaptasi: **Dark Sidebar** yang profesional untuk desktop, dan **Premium Bottom Bar** yang ergonomis untuk pengalaman mobile terbaik.
 - ⚡ **Instalasi PWA** — Dapat di-install langsung ke layar utama (Home Screen) Android maupun iOS seperti aplikasi native dari App Store.
+- 💬 **WhatsApp Smart Reminder** — Pengingat otomatis via WhatsApp yang dikirimkan ke Anda dan pasangan setiap jam 12:00 & 19:00 WIB jika belum ada catatan transaksi hari ini.
 
 ---
 
@@ -24,9 +25,11 @@ CandyNest dibangun menggunakan teknologi mutakhir untuk memastikan kecepatan dan
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/) (Custom Design System, Glassmorphism, Responsive)
 - **Animations**: [Framer Motion](https://www.framer.com/motion/) (Smooth springs & transitions)
 - **Backend**: [Firebase](https://firebase.google.com/) (Auth, Cloud Firestore Real-time, Storage)
+- **Background Tasks**: [Firebase Cloud Functions](https://firebase.google.com/docs/functions) (Scheduled/Cron Jobs)
+- **WhatsApp Gateway**: [Fonnte API](https://fonnte.com/)
 - **AI/OCR Engine**: [Tesseract.js](https://tesseract.projectnaptha.com/) (Client-side Document Scanning)
 - **Icons**: [Lucide React](https://lucide.dev/)
-- **Deployment**: [Vercel](https://vercel.com/)
+- **Deployment**: [Vercel](https://vercel.com/) (Frontend) & [Firebase](https://firebase.google.com/) (Functions)
 
 ---
 
@@ -43,14 +46,27 @@ VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 VITE_FIREBASE_APP_ID=your_app_id
 ```
 
-### 2. Instalasi & Menjalankan Proyek
+### 2. Persiapan WhatsApp Reminder (Backend)
+Masuk ke folder `functions`, buat file `.env` dan isi dengan token Fonnte:
+```env
+FONNTE_TOKEN=your_fonnte_token
+TARGET_NUMBERS=number1,number2
+```
+
+### 3. Instalasi & Menjalankan Proyek
 Proyek ini menggunakan **npm** (atau yarn/pnpm).
 ```bash
-# Install dependencies
+# Install frontend dependencies
 npm install
+
+# Install functions dependencies
+cd functions && npm install && cd ..
 
 # Jalankan server development
 npm run dev
+
+# Deploy Cloud Functions
+firebase deploy --only functions
 ```
 Aplikasi akan berjalan di [http://localhost:5173](http://localhost:5173).
 
@@ -59,14 +75,18 @@ Aplikasi akan berjalan di [http://localhost:5173](http://localhost:5173).
 ## 📁 Struktur Folder Utama
 
 ```text
-src/
-├── components/     # Komponen UI Reusable (Modal, Layout, Navigasi)
-├── store/          # Zustand Stores (Auth, Confirmation State)
-├── hooks/          # Custom Hooks (Transactions, Documents, Budget Logic)
-├── pages/          # Halaman Aplikasi (Dashboard, Transactions, Docs, Settings)
-├── types/          # Type Definitions untuk Document & Financial Data
-├── utils/          # Helper (OCR Parsing, Image Compression, Formatting)
-└── firebase.ts      # Konfigurasi Firebase SDK
+├── src/
+│   ├── components/     # Komponen UI Reusable (Modal, Layout, Navigasi)
+│   ├── store/          # Zustand Stores (Auth, Transactions, Savings, Budget)
+│   ├── hooks/          # Custom Hooks (Logic Bisnis & integrasi Store)
+│   ├── pages/          # Halaman Aplikasi (Dashboard, Transactions, Docs, Pots)
+│   ├── types/          # Type Definitions (TypeScript interfaces)
+│   ├── utils/          # Helper (OCR Engine, Formatter, Image Compression)
+│   └── firebase.ts      # Inisialisasi & Konfigurasi Firebase SDK
+├── functions/          # Backend (Firebase Cloud Functions + Fonnte API)
+├── firebase.json       # Konfigurasi Firebase Functions
+├── vercel.json         # Konfigurasi Deployment Vercel (Frontend)
+└── README.md
 ```
 
 ---
