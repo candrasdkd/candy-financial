@@ -33,6 +33,10 @@ export default function UpdatePrompt() {
     setIsUpdating(true);
     try {
       await updateServiceWorker(true);
+      // Jika auto-refresh dari plugin gagal, kita paksa refresh setelah 1.5 detik
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
     } catch {
       setIsUpdating(false);
     }
