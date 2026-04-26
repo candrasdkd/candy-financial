@@ -1,10 +1,14 @@
-import { useState } from 'react';
+// src/components/UpdatePrompt.tsx
+import { useState, useRef } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, X, Sparkles } from 'lucide-react';
 
+const UPDATE_COOLDOWN_KEY = 'pwa_last_updated';
+
 export default function UpdatePrompt() {
   const [isUpdating, setIsUpdating] = useState(false);
+  const hasReloaded = useRef(false);
 
   const {
     offlineReady: [offlineReady, setOfflineReady],
@@ -15,14 +19,16 @@ export default function UpdatePrompt() {
       console.error('SW registration error', error);
     },
     onRegistered(r) {
-      // Periksa update setiap 60 detik (bukan 30 — terlalu agresif)
       if (r) {
-        setInterval(() => {
-          r.update();
-        }, 60 * 1000);
+        // Naikan interval — 5 menit cukup, tidak perlu 60 detik
+        setInterval(() => r.update(), 5 * 60 * 1000);
       }
     },
   });
+
+  // Cek cooldown — jangan tampil kalau baru saja update (dalam 10 detik)
+  const lastUpdated = localStorage.getItem(UPDATE_COOLDOWN_KEY);
+  const justUpdated = lastUpdated && Date.now() - Number(lastUpdated) < 10_000;
 
   const close = () => {
     setOfflineReady(false);
@@ -30,15 +36,21 @@ export default function UpdatePrompt() {
   };
 
   const handleUpdate = async () => {
+    if (hasReloaded.current) return; // guard double reload
     setIsUpdating(true);
     try {
+      hasReloaded.current = true;
+      localStorage.setItem(UPDATE_COOLDOWN_KEY, String(Date.now()));
       await updateServiceWorker(true);
-      // HAPUS setTimeout reload - menyebabkan double reload
-      // SW yang baru dengan clientsClaim() sudah otomatis handle ini
+      window.location.reload();
     } catch {
+      hasReloaded.current = false;
       setIsUpdating(false);
     }
   };
+
+  // Jangan tampil kalau baru saja reload dari update
+  if (justUpdated) return null;
 
   return (
     <AnimatePresence>
@@ -51,7 +63,6 @@ export default function UpdatePrompt() {
             className="bg-sage-900 text-white p-5 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/10 flex items-center gap-4"
           >
             <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center shrink-0">
-              {/* Spin hanya saat proses update aktif berjalan */}
               <RefreshCw className={`w-6 h-6 text-rose-300 ${isUpdating ? 'animate-spin' : ''}`} />
             </div>
 
@@ -74,7 +85,7 @@ export default function UpdatePrompt() {
                 <button
                   onClick={handleUpdate}
                   disabled={isUpdating}
-                  className="px-4 py-2 bg-white text-sage-900 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-white text-sage-900 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all disabled:opacity-60"
                 >
                   {isUpdating ? 'Updating...' : 'Update'}
                 </button>
