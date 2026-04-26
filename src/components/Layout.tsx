@@ -170,14 +170,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/60"
               onClick={() => setMobileOpen(false)}
             />
             <motion.div
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              transition={{ type: 'tween', ease: 'easeOut', duration: 0.2 }}
               className="absolute left-0 top-0 bottom-0 w-72"
             >
               <DesktopSidebar />
@@ -185,11 +185,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </div>
         )}
       </AnimatePresence>
-
+ 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col relative overflow-hidden">
         {/* Mobile Top Header */}
-        <header className="md:hidden h-16 bg-white/80 backdrop-blur-xl border-b border-sage-100 px-6 flex items-center justify-between sticky top-0 z-[90]">
+        <header className="md:hidden h-16 bg-white border-b border-sage-100 px-6 flex items-center justify-between sticky top-0 z-[90]">
           <div className="flex items-center gap-2">
             <Heart className="w-5 h-5 text-rose-400 fill-rose-400" />
             <span className="font-display text-lg text-sage-900">CandyNest</span>

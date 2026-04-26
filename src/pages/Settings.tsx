@@ -49,7 +49,10 @@ export default function Settings() {
     copyCode,
     handleLink,
     handleUpdateProfile,
-    handleLogout
+    handleLogout,
+    handleInstallApp,
+    isInstalled,
+    canInstall
   } = useSettingsPage();
 
 
@@ -261,6 +264,27 @@ export default function Settings() {
                 <ChevronRight className="w-4 h-4 text-sage-300 group-hover:translate-x-1 transition-transform" />
               </div>
             ))}
+
+            {canInstall && (
+              <button
+                onClick={handleInstallApp}
+                className="w-full flex items-center justify-between p-5 hover:bg-emerald-50 transition-colors group text-left"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Smartphone className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-emerald-700">Install Aplikasi</div>
+                    <div className="text-[10px] text-emerald-400 font-medium uppercase tracking-wider">Simpan di layar utama HP</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[8px] font-black bg-emerald-500 text-white px-2 py-1 rounded-lg uppercase tracking-widest">Premium</span>
+                  <ChevronRight className="w-4 h-4 text-emerald-300 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </button>
+            )}
 
             <button
               onClick={handleLogout}

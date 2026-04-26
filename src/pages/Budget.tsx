@@ -68,7 +68,7 @@ export default function Budget() {
           <h1 className="font-display text-4xl text-sage-900 tracking-tight">Atur Anggaran</h1>
         </div>
 
-        <div className="flex items-center gap-3 bg-white/80 backdrop-blur-xl border border-white/60 p-2 rounded-[2rem] shadow-xl shadow-sage-900/5">
+        <div className="flex items-center gap-3 bg-white border border-sage-100 p-2 rounded-[2rem] shadow-xl shadow-sage-900/5">
           <input
             type="month"
             value={month}
@@ -89,7 +89,7 @@ export default function Budget() {
       </motion.div>
 
       {/* Hero Budget Summary */}
-      <motion.div variants={itemVariants} className="bg-gradient-to-br from-sage-800 to-sage-950 rounded-[3rem] p-10 text-white relative overflow-hidden shadow-2xl shadow-sage-900/20">
+      <motion.div variants={itemVariants} className="bg-gradient-to-br from-sage-800 to-sage-950 rounded-[3rem] p-10 text-white relative overflow-hidden shadow-2xl">
         <div className="absolute -right-20 -top-20 w-80 h-80 bg-white/5 rounded-full blur-[100px]" />
         <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-rose-400/10 rounded-full blur-[60px]" />
 
@@ -128,10 +128,12 @@ export default function Budget() {
       <AnimatePresence>
         {addingNew && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="bg-white/80 backdrop-blur-xl border-2 border-sage-200 rounded-[2.5rem] p-8 shadow-2xl shadow-sage-900/10"
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ type: 'tween', duration: 0.2, ease: 'easeOut' }}
+            style={{ willChange: 'transform, opacity' }}
+            className="bg-white border-2 border-sage-200 rounded-[2.5rem] p-8 shadow-2xl shadow-sage-900/10"
           >
             <div className="flex items-center justify-between mb-8">
               <h3 className="font-display text-2xl text-sage-900">Atur Anggaran Baru</h3>
