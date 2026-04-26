@@ -8,10 +8,14 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
       registerType: 'prompt',
       includeAssets: ['apple-touch-icon.png', 'logo.png'],
       devOptions: {
-        enabled: true
+        enabled: true,
+        type: 'module'
       },
       manifest: {
         name: 'CandyNest',
@@ -23,7 +27,6 @@ export default defineConfig({
         dir: 'ltr',
         orientation: 'portrait-primary',
         display: 'standalone',
-        // window-controls-overlay = judul bar lebih luas di desktop PWA
         display_override: ['window-controls-overlay', 'standalone', 'browser'],
         start_url: '/?source=pwa',
         scope: '/',
@@ -107,90 +110,9 @@ export default defineConfig({
           }
         }
       },
-      workbox: {
+      injectManifest: {
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // 10 MB
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        // Gunakan '/' sebagai fallback — '/offline' bisa infinite loop jika tidak ter-cache
-        navigateFallback: '/',
-        navigateFallbackDenylist: [/^\/api\//],
-        runtimeCaching: [
-          // Google Fonts CSS (stylesheet) — revalidate di background
-          {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler: 'StaleWhileRevalidate',
-            options: {
-              cacheName: 'google-fonts-stylesheets',
-              expiration: {
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 tahun
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          // Google Fonts files (woff2, ttf, dll) — jarang berubah, cache lama
-          {
-            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'google-fonts-webfonts',
-              expiration: {
-                maxEntries: 20,
-                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 tahun
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          // Firestore REST API — NetworkFirst dengan timeout 5s, fallback ke cache
-          {
-            urlPattern: /^https:\/\/firestore\.googleapis\.com\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'firestore-cache',
-              networkTimeoutSeconds: 5,
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 // 24 jam
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          // Firebase Storage (foto dokumen yang diupload user)
-          {
-            urlPattern: /^https:\/\/firebasestorage\.googleapis\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'firebase-storage-cache',
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 * 7 // 7 hari
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          // DiceBear avatars — statis per seed, aman di-cache lama
-          {
-            urlPattern: /^https:\/\/api\.dicebear\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'dicebear-avatars',
-              expiration: {
-                maxEntries: 20,
-                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 hari
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          }
-        ]
       }
     })
   ],
