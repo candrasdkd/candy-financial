@@ -10,6 +10,7 @@ import Budget from './pages/Budget';
 import Settings from './pages/Settings';
 import Documents from './pages/Documents';
 import SavingsPots from './pages/SavingsPots';
+import Notes from './pages/Notes';
 import OfflineFallback from './pages/OfflineFallback';
 import InstallPrompt from './components/InstallPrompt';
 import UpdatePrompt from './components/UpdatePrompt';
@@ -50,6 +51,7 @@ function AppRoutes() {
       <Route path="/budget" element={<ProtectedRoute><Budget /></ProtectedRoute>} />
       <Route path="/savings" element={<ProtectedRoute><SavingsPots /></ProtectedRoute>} />
       <Route path="/documents" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
+      <Route path="/notes" element={<ProtectedRoute><Notes /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       <Route path="/offline" element={<OfflineFallback />} />
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -14,6 +14,7 @@ import {
   X,
   User,
   WifiOff,
+  StickyNote,
 } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { useConfirmStore } from '../store/useConfirmStore';
@@ -25,6 +26,7 @@ const navItems = [
   { to: '/budget', icon: PiggyBank, label: 'Anggaran' },
   { to: '/savings', icon: Wallet, label: 'Pos' },
   { to: '/documents', icon: FileText, label: 'Dokumen' },
+  { to: '/notes', icon: StickyNote, label: 'Catatan' },
   { to: '/settings', icon: Settings, label: 'Pengaturan' },
 ];
 
