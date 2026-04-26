@@ -106,8 +106,9 @@ export default function DocumentUploadModal({ onClose }: { onClose: () => void }
         initial={{ y: '100%', opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: '100%', opacity: 0 }}
-        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-        className="relative bg-white w-full sm:max-w-lg sm:rounded-[2.5rem] rounded-t-[2.5rem] shadow-2xl flex flex-col max-h-[85vh] sm:max-h-[90vh] overflow-hidden border border-white/20 mt-auto sm:my-auto"
+        transition={{ type: 'tween', duration: 0.2, ease: 'easeOut' }}
+        style={{ willChange: 'transform, opacity' }}
+        className="relative bg-white w-full sm:max-w-lg sm:rounded-[2.5rem] rounded-t-[2.5rem] sm:shadow-2xl flex flex-col max-h-[85vh] sm:max-h-[90vh] overflow-hidden border border-white/20 mt-auto sm:my-auto"
       >
         {/* Header (Sticky) */}
         <div className="flex-shrink-0 px-6 pt-6 pb-4 border-b border-sage-50 bg-white">
