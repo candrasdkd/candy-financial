@@ -64,6 +64,13 @@ export default defineConfig({
             sizes: '1024x1024',
             type: 'image/png',
             form_factor: 'narrow',
+            label: 'Manajemen Transaksi Keluarga'
+          },
+          {
+            src: 'screenshot3.png',
+            sizes: '1024x1024',
+            type: 'image/png',
+            form_factor: 'narrow',
             label: 'Manajemen Dokumen Penting'
           }
         ],
