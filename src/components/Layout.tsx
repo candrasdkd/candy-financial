@@ -127,8 +127,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   );
 
   const BottomNav = () => (
-    <nav className="fixed bottom-0 left-0 right-0 h-20 bg-white/80 backdrop-blur-2xl border-t border-sage-100 px-2 flex items-center justify-around z-[100] pb-safe">
-      {navItems.slice(0, 5).map(({ to, icon: Icon, label }) => {
+    <nav className="fixed bottom-0 left-0 right-0 h-20 bg-white/80 backdrop-blur-2xl border-t border-sage-100 px-2 flex items-center justify-around z-[100] pb-[env(safe-area-inset-bottom)]">
+      {navItems.slice(0, 4).map(({ to, icon: Icon, label }) => {
         const isActive = to === '/' ? location.pathname === '/' : location.pathname.startsWith(to);
         return (
           <NavLink
@@ -145,11 +145,24 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </NavLink>
         );
       })}
+      
+      {/* Menu Trigger for Mobile */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        className="flex flex-col items-center justify-center gap-1.5 relative group min-w-[52px]"
+      >
+        <div className={`p-2.5 rounded-xl transition-all duration-300 ${mobileOpen ? 'bg-sage-900 text-white shadow-lg shadow-sage-900/20' : 'text-sage-300'}`}>
+          <Menu className="w-4 h-4" />
+        </div>
+        <span className={`text-[9px] font-bold uppercase tracking-widest transition-colors ${mobileOpen ? 'text-sage-900' : 'text-sage-300'}`}>
+          Menu
+        </span>
+      </button>
     </nav>
   );
 
   return (
-    <div className="flex h-screen bg-sage-50/30 font-body overflow-hidden">
+    <div className="flex h-[100dvh] bg-sage-50/30 font-body overflow-hidden">
       {/* Desktop Sidebar & Mobile Drawer Overlay */}
       <div className="hidden md:flex md:w-64 lg:w-72 flex-shrink-0">
         <DesktopSidebar />
