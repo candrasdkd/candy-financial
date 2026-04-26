@@ -1,4 +1,5 @@
 export type TransactionType = 'income' | 'expense';
+export type PotTransactionType = 'deposit' | 'withdraw';
 import {
   Briefcase,
   Laptop,
@@ -44,6 +45,7 @@ export interface Transaction {
   date: string; // ISO string
   createdAt: string;
   addedBy: string; // user displayName
+  relatedPotId?: string;
 }
 
 export interface Budget {
@@ -98,6 +100,46 @@ export function getCategoryInfo(cat: Category) {
 }
 
 export const MAX_AMOUNT = 100_000_000;
+export const MAX_POTS = 10;
+
+export interface SavingsPot {
+  id: string;
+  coupleId: string;
+  name: string;
+  emoji: string;
+  color: string; // hex color
+  targetAmount?: number;
+  currentBalance: number;
+  createdAt: string;
+  order: number;
+}
+
+export interface PotTransaction {
+  id: string;
+  potId: string;
+  coupleId: string;
+  type: PotTransactionType;
+  amount: number;
+  note: string;
+  date: string;
+  addedBy: string;
+  createdAt: string;
+}
+
+export const POT_COLORS = [
+  '#4F6F52', // Sage
+  '#E6A4B4', // Rose
+  '#7A9D54', // Olive
+  '#8EACCD', // Blue
+  '#C2A83E', // Gold
+  '#9B72CF', // Purple
+  '#E07B54', // Coral
+  '#4AADA8', // Teal
+  '#D4845A', // Terracotta
+  '#5C7FA3', // Steel Blue
+];
+
+export const POT_EMOJIS = ['🍜','🎁','🏥','🚗','📚','✈️','🏠','💎','🎮','👗','💪','🐾','🎵','🌱','☕'];
 
 export function formatRupiah(amount: number): string {
   return new Intl.NumberFormat('id-ID', {

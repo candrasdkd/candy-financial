@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   ArrowLeftRight,
   PiggyBank,
+  Wallet,
   FileText,
   Settings,
   LogOut,
@@ -22,6 +23,7 @@ const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/transactions', icon: ArrowLeftRight, label: 'Transaksi' },
   { to: '/budget', icon: PiggyBank, label: 'Anggaran' },
+  { to: '/savings', icon: Wallet, label: 'Pos' },
   { to: '/documents', icon: FileText, label: 'Dokumen' },
   { to: '/settings', icon: Settings, label: 'Pengaturan' },
 ];
@@ -125,17 +127,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   );
 
   const BottomNav = () => (
-    <nav className="fixed bottom-0 left-0 right-0 h-20 bg-white/80 backdrop-blur-2xl border-t border-sage-100 px-6 flex items-center justify-between z-[100] pb-safe">
-      {navItems.slice(0, 4).map(({ to, icon: Icon, label }) => {
+    <nav className="fixed bottom-0 left-0 right-0 h-20 bg-white/80 backdrop-blur-2xl border-t border-sage-100 px-2 flex items-center justify-around z-[100] pb-safe">
+      {navItems.slice(0, 5).map(({ to, icon: Icon, label }) => {
         const isActive = to === '/' ? location.pathname === '/' : location.pathname.startsWith(to);
         return (
           <NavLink
             key={to}
             to={to}
-            className="flex flex-col items-center justify-center gap-1.5 relative group min-w-[64px]"
+            className="flex flex-col items-center justify-center gap-1.5 relative group min-w-[52px]"
           >
             <div className={`p-2.5 rounded-xl transition-all duration-300 ${isActive ? 'bg-sage-900 text-white shadow-lg shadow-sage-900/20' : 'text-sage-300'}`}>
-              <Icon className="w-5 h-5" />
+              <Icon className="w-4 h-4" />
             </div>
             <span className={`text-[9px] font-bold uppercase tracking-widest transition-colors ${isActive ? 'text-sage-900' : 'text-sage-300'}`}>
               {label === 'Dashboard' ? 'Home' : label}
@@ -143,19 +145,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </NavLink>
         );
       })}
-
-      {/* Menu Trigger for Mobile */}
-      <button
-        onClick={() => setMobileOpen(true)}
-        className="flex flex-col items-center justify-center gap-1.5 relative group min-w-[64px]"
-      >
-        <div className={`p-2.5 rounded-xl transition-all duration-300 ${mobileOpen ? 'bg-sage-900 text-white shadow-lg shadow-sage-900/20' : 'text-sage-300'}`}>
-          <Menu className="w-5 h-5" />
-        </div>
-        <span className={`text-[9px] font-bold uppercase tracking-widest transition-colors ${mobileOpen ? 'text-sage-900' : 'text-sage-300'}`}>
-          Menu
-        </span>
-      </button>
     </nav>
   );
 

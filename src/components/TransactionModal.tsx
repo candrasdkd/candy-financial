@@ -1,4 +1,4 @@
-import { X, TrendingUp, TrendingDown, AlertTriangle, Loader2, Calendar, Type, Sparkles } from 'lucide-react';
+import { X, TrendingUp, TrendingDown, AlertTriangle, Loader2, Calendar, Type, Sparkles, Wallet } from 'lucide-react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { useTransactionForm } from '../hooks/useTransactionForm';
 import { TransactionType } from '../types';
@@ -50,6 +50,9 @@ export default function TransactionModal({ onClose }: Props) {
     categories,
     isExpense,
     formatAmount,
+    selectedPotId,
+    setSelectedPotId,
+    pots,
     handleSubmit
   } = useTransactionForm(onClose);
 
@@ -199,6 +202,27 @@ export default function TransactionModal({ onClose }: Props) {
                   className="w-full px-5 py-3.5 bg-sage-50 border border-sage-100 rounded-xl text-sage-900 focus:outline-none transition-all font-bold cursor-pointer text-sm"
                 />
               </div>
+
+              {pots.length > 0 && (
+                <div className="space-y-1.5">
+                  <label className="flex items-center gap-2 text-[9px] font-bold text-sage-400 uppercase tracking-widest px-1">
+                    <Wallet className="w-3 h-3" /> Tautkan ke Pos (Opsional)
+                  </label>
+                  <select
+                    value={selectedPotId}
+                    disabled={loading}
+                    onChange={(e) => setSelectedPotId(e.target.value)}
+                    className="w-full px-4 py-3.5 bg-sage-50 border border-sage-100 rounded-xl text-sage-900 focus:outline-none transition-all font-bold cursor-pointer text-sm appearance-none"
+                  >
+                    <option value="">Tidak ditautkan</option>
+                    {pots.map(pot => (
+                      <option key={pot.id} value={pot.id}>
+                        {pot.emoji} {pot.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
           </div>
 
