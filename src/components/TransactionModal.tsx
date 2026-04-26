@@ -9,9 +9,9 @@ const containerVariants: Variants = {
     y: 0, 
     opacity: 1,
     transition: { 
-      type: 'spring', 
-      damping: 25, 
-      stiffness: 200,
+      type: 'tween', 
+      duration: 0.2,
+      ease: 'easeOut',
       staggerChildren: 0.05,
       delayChildren: 0.1
     }
@@ -19,7 +19,7 @@ const containerVariants: Variants = {
   exit: { 
     y: '100%', 
     opacity: 0,
-    transition: { ease: 'easeInOut', duration: 0.3 }
+    transition: { type: 'tween', ease: 'easeIn', duration: 0.2 }
   }
 };
 
@@ -78,7 +78,7 @@ export default function TransactionModal({ onClose }: Props) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-sage-950/60 backdrop-blur-md"
+        className="fixed inset-0 bg-sage-950/80"
         onClick={onClose}
       />
 
@@ -88,7 +88,8 @@ export default function TransactionModal({ onClose }: Props) {
         initial="hidden"
         animate="visible"
         exit="exit"
-        className="relative bg-white w-full sm:max-w-md sm:rounded-[2.5rem] rounded-t-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.3)] flex flex-col max-h-[85vh] sm:max-h-[90vh] overflow-hidden border border-white/20 mb-safe-offset-bottom"
+        style={{ willChange: 'transform, opacity' }}
+        className="relative bg-white w-full sm:max-w-md sm:rounded-[2.5rem] rounded-t-[2.5rem] sm:shadow-2xl flex flex-col max-h-[85vh] sm:max-h-[90vh] overflow-hidden border border-white/20 mb-safe-offset-bottom"
       >
         <form onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden">
           {/* Header & Amount (Sticky at top) */}
