@@ -8,11 +8,16 @@ export default function UpdatePrompt() {
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
   } = useRegisterSW({
-    onRegistered(r) {
-      console.log('SW Registered: ' + r);
-    },
     onRegisterError(error) {
       console.log('SW registration error', error);
+    },
+    onRegistered(r) {
+      // Periksa update setiap 30 detik (default browser bisa berjam-jam)
+      if (r) {
+        setInterval(() => {
+          r.update();
+        }, 30 * 1000);
+      }
     },
   });
 
@@ -34,15 +39,15 @@ export default function UpdatePrompt() {
             <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center shrink-0">
               <RefreshCw className={`w-6 h-6 text-rose-300 ${needRefresh ? 'animate-spin' : ''}`} />
             </div>
-            
+
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
                 <Sparkles className="w-3 h-3 text-rose-400 fill-rose-400" />
                 <p className="text-[10px] font-black uppercase tracking-widest text-rose-300">Update Tersedia</p>
               </div>
               <p className="text-xs font-bold text-white/90 leading-snug">
-                {needRefresh 
-                  ? 'CandyNest punya fitur baru! Yuk perbarui aplikasimu.' 
+                {needRefresh
+                  ? 'CandyNest punya fitur baru! Yuk perbarui aplikasimu.'
                   : 'Aplikasi siap digunakan secara offline!'}
               </p>
             </div>
