@@ -94,7 +94,7 @@ export default function Documents() {
             {showCatDropdown && (
               <>
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  className="fixed inset-0 bg-sage-950/60 backdrop-blur-md z-[150]" onClick={() => setShowCatDropdown(false)} />
+                  className="fixed inset-0 bg-sage-950/80 z-[150]" onClick={() => setShowCatDropdown(false)} />
                 <div className="fixed inset-0 flex items-end md:items-center justify-center z-[160] pointer-events-none pb-0 md:p-4">
                   <motion.div initial={{ opacity: 0, y: 100, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 100, scale: 0.95 }}
                     className="w-full md:w-[480px] bg-white border-t md:border border-sage-100 rounded-t-[2.5rem] md:rounded-[2.5rem] shadow-2xl p-6 pb-10 md:pb-8 md:p-8 overflow-hidden max-h-[85vh] flex flex-col pointer-events-auto"
@@ -231,13 +231,13 @@ export default function Documents() {
                       <div className="absolute inset-0 bg-gradient-to-t from-sage-900/60 via-sage-900/5 to-sage-900/30 opacity-80 group-hover:opacity-60 transition-opacity duration-500" />
                       
                       {/* Selection Overlay Tint */}
-                      <div className={`absolute inset-0 bg-sage-900/20 backdrop-blur-[2px] transition-all duration-300 ${isSelected ? 'opacity-100' : 'opacity-0'}`} />
+                      <div className={`absolute inset-0 bg-sage-900/40 transition-all duration-300 ${isSelected ? 'opacity-100' : 'opacity-0'}`} />
 
                       {/* Select Indicator */}
                       {isSelectMode && (
                         <div className="absolute top-3 right-3 z-10">
                           <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all shadow-lg ${
-                            isSelected ? 'bg-sage-900 border-sage-900 text-white scale-110' : 'bg-white/30 backdrop-blur-md border-white/80 text-white hover:bg-white/50'
+                            isSelected ? 'bg-sage-900 border-sage-900 text-white scale-110' : 'bg-black/20 border-white/80 text-white hover:bg-black/40'
                           }`}>
                             {isSelected && <CheckCircle2 className="w-4 h-4" />}
                           </div>
@@ -246,7 +246,7 @@ export default function Documents() {
 
                       {/* Category Badge - Modern Glassmorphism */}
                       <div className="absolute top-3 left-3">
-                        <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold border bg-white/95 backdrop-blur-md shadow-sm ${info.color.replace('bg-', 'text-')}`}>
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold border bg-white/95 shadow-sm ${info.color.replace('bg-', 'text-')}`}>
                           <span className="text-sm leading-none">{info.emoji}</span>
                           <span className="hidden xs:inline tracking-wide">{info.label}</span>
                         </span>
@@ -254,7 +254,7 @@ export default function Documents() {
 
                       {/* Multi-page indicator */}
                       {safeUrls.length > 1 && (
-                        <div className="absolute bottom-3 right-3 bg-black/50 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] text-white font-bold border border-white/20 shadow-sm">
+                        <div className="absolute bottom-3 right-3 bg-black/60 px-2.5 py-1 rounded-lg text-[10px] text-white font-bold border border-white/20 shadow-sm">
                           {safeUrls.length} hal
                         </div>
                       )}

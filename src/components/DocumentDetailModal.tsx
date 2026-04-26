@@ -161,7 +161,7 @@ export default function DocumentDetailModal({ doc, onClose, onDelete, onUpdate }
     <div className="fixed inset-0 z-[150] flex flex-col justify-end sm:justify-center sm:items-center overflow-hidden">
       {/* Backdrop */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-sage-950/60 backdrop-blur-md"
+        className="fixed inset-0 bg-sage-950/80"
         onClick={onClose}
       />
 
@@ -210,7 +210,7 @@ export default function DocumentDetailModal({ doc, onClose, onDelete, onUpdate }
                 <div key={i} className="relative flex-shrink-0 w-full snap-center px-1 cursor-zoom-in group/img" onClick={() => setFullscreenImg(url)}>
                   <img src={url} alt={`${doc.name} ${i+1}`} className="w-full h-auto max-h-[40vh] object-contain rounded-3xl bg-sage-50 border border-sage-100 shadow-sm transition-transform group-hover/img:scale-[1.01]" />
                   <div className="absolute inset-0 m-1 rounded-3xl bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                    <div className="bg-white/20 backdrop-blur-md p-3 rounded-full text-white">
+                    <div className="bg-black/50 p-3 rounded-full text-white">
                       <Maximize2 className="w-6 h-6" />
                     </div>
                   </div>
@@ -224,14 +224,14 @@ export default function DocumentDetailModal({ doc, onClose, onDelete, onUpdate }
                 <button
                   onClick={(e) => { e.stopPropagation(); scrollToIndex(Math.max(0, activeImg - 1)); }}
                   disabled={activeImg === 0}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm border border-sage-100 flex items-center justify-center shadow-lg text-sage-600 opacity-0 group-hover/gallery:opacity-100 transition-all disabled:opacity-0 hover:bg-white hover:scale-110"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/95 border border-sage-100 flex items-center justify-center shadow-lg text-sage-600 opacity-0 group-hover/gallery:opacity-100 transition-all disabled:opacity-0 hover:bg-white hover:scale-110"
                 >
                   <ChevronLeft className="w-6 h-6" />
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); scrollToIndex(Math.min((doc.imageUrls?.length || 1) - 1, activeImg + 1)); }}
                   disabled={activeImg === (doc.imageUrls?.length || 1) - 1}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm border border-sage-100 flex items-center justify-center shadow-lg text-sage-600 opacity-0 group-hover/gallery:opacity-100 transition-all disabled:opacity-0 hover:bg-white hover:scale-110"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/95 border border-sage-100 flex items-center justify-center shadow-lg text-sage-600 opacity-0 group-hover/gallery:opacity-100 transition-all disabled:opacity-0 hover:bg-white hover:scale-110"
                 >
                   <ChevronRight className="w-6 h-6" />
                 </button>
@@ -245,7 +245,7 @@ export default function DocumentDetailModal({ doc, onClose, onDelete, onUpdate }
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="absolute inset-0 rounded-3xl bg-sage-900/60 backdrop-blur-sm flex flex-col items-center justify-center gap-3 z-10"
+                  className="absolute inset-0 rounded-3xl bg-sage-900/80 flex flex-col items-center justify-center gap-3 z-10"
                 >
                   <motion.div
                     animate={{ y: ['-40%', '40%'] }}
@@ -376,7 +376,7 @@ export default function DocumentDetailModal({ doc, onClose, onDelete, onUpdate }
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-xl flex flex-col"
+            className="fixed inset-0 z-[200] bg-black/95 flex flex-col"
             onClick={() => setFullscreenImg(null)}
           >
             <div className="flex justify-end p-6">

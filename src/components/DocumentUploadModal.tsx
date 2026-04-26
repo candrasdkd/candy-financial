@@ -97,7 +97,7 @@ export default function DocumentUploadModal({ onClose }: { onClose: () => void }
     <div className="fixed inset-0 z-[150] flex flex-col justify-end sm:justify-center sm:items-center overflow-hidden">
       {/* Backdrop */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-sage-950/60 backdrop-blur-md"
+        className="fixed inset-0 bg-sage-950/80"
         onClick={onClose}
       />
 
