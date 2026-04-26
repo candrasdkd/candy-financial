@@ -170,22 +170,46 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       <AnimatePresence>
         {mobileOpen && (
-          <div className="fixed inset-0 z-[110] md:hidden">
+          <div className="fixed inset-0 z-[110] md:hidden flex items-end">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/60"
+              className="absolute inset-0 bg-sage-950/60 backdrop-blur-sm"
               onClick={() => setMobileOpen(false)}
             />
             <motion.div
-              initial={{ x: '-100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
-              transition={{ type: 'tween', ease: 'easeOut', duration: 0.2 }}
-              className="absolute left-0 top-0 bottom-0 w-72"
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="relative w-full bg-white rounded-t-[3rem] p-8 pb-12 shadow-[0_-8px_40px_rgba(0,0,0,0.15)] border-t border-sage-100"
             >
-              <DesktopSidebar />
+              {/* Handle */}
+              <div className="w-12 h-1.5 bg-sage-200 rounded-full mx-auto mb-10" />
+              
+              <div className="grid grid-cols-4 gap-y-10">
+                {navItems.slice(4).filter(item => item.to !== '/settings').map(({ to, icon: Icon, label }) => (
+                  <button
+                    key={to}
+                    onClick={() => {
+                      navigate(to);
+                      setMobileOpen(false);
+                    }}
+                    className="flex flex-col items-center gap-3 group outline-none"
+                  >
+                    <motion.div 
+                      whileTap={{ scale: 0.9 }}
+                      className="w-16 h-16 rounded-full bg-sage-50 flex items-center justify-center text-sage-600 shadow-[0_8px_20px_rgba(0,0,0,0.04)] border border-sage-100 group-active:bg-sage-100 transition-colors"
+                    >
+                      <Icon className="w-7 h-7" />
+                    </motion.div>
+                    <span className="text-[11px] font-bold text-sage-600 tracking-tight text-center">
+                      {label}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </motion.div>
           </div>
         )}
@@ -194,21 +218,34 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col relative overflow-hidden">
         {/* Mobile Top Header */}
-        <header className="md:hidden h-16 bg-white border-b border-sage-100 px-6 flex items-center justify-between sticky top-0 z-[90]">
-          <div className="flex items-center gap-2">
-            <Heart className="w-5 h-5 text-rose-400 fill-rose-400" />
-            <span className="font-display text-lg text-sage-900">CandyNest</span>
+        <header className="md:hidden h-16 bg-white/80 backdrop-blur-md border-b border-sage-100 px-4 flex items-center justify-between sticky top-0 z-[90]">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-white p-0.5 shadow-sm border border-sage-100 overflow-hidden">
+              <img src="/logo.png" alt="CandyNest Logo" className="w-full h-full object-cover" />
+            </div>
+            <div>
+              <h1 className="font-display text-base text-sage-900 leading-none">CandyNest</h1>
+              <p className="text-[7px] text-rose-400 font-bold uppercase tracking-widest mt-0.5">Family Hub</p>
+            </div>
           </div>
-          <button
-            onClick={() => navigate('/settings')}
-            className="w-10 h-10 rounded-full bg-sage-50 flex items-center justify-center border border-sage-100 overflow-hidden"
-          >
-            <img
-              src={`https://api.dicebear.com/7.x/fun-emoji/svg?seed=${userProfile?.displayName || 'user'}`}
-              alt="avatar"
-              className="w-full h-full object-cover"
-            />
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate('/settings')}
+              className="w-10 h-10 rounded-full bg-sage-50 flex items-center justify-center border border-sage-100 overflow-hidden active:scale-95 transition-transform"
+            >
+              <img
+                src={`https://api.dicebear.com/7.x/fun-emoji/svg?seed=${userProfile?.displayName || 'user'}`}
+                alt="avatar"
+                className="w-full h-full object-cover"
+              />
+            </button>
+            <button
+              onClick={handleLogout}
+              className="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center border border-rose-100 text-rose-500 active:scale-95 transition-transform"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+          </div>
         </header>
 
         {/* Page Container */}

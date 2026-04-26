@@ -68,26 +68,10 @@ export default function Settings() {
       <motion.div variants={itemVariants} className="relative">
         <div className="absolute inset-0 bg-gradient-to-r from-sage-600/10 to-rose-400/10 blur-3xl -z-10 rounded-[3rem]" />
 
-        <div className="bg-white/80 backdrop-blur-xl border border-white/60 rounded-[2.5rem] p-8 shadow-2xl shadow-sage-900/5 overflow-hidden relative">
-          <div className="absolute top-0 right-0 p-8">
-            <button
-              onClick={() => {
-                if (isEditing) handleUpdateProfile();
-                else setIsEditing(true);
-              }}
-              disabled={saving}
-              className={`text-sm font-bold px-6 py-2.5 rounded-2xl transition-all shadow-sm ${isEditing
-                  ? 'bg-sage-800 text-white hover:bg-sage-900'
-                  : 'bg-white/90 text-sage-700 hover:bg-white border border-sage-100'
-                }`}
-            >
-              {saving ? '...' : isEditing ? 'Simpan' : 'Ubah Profil'}
-            </button>
-          </div>
-
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
+        <div className="bg-white/80 backdrop-blur-xl border border-white/60 rounded-[2.5rem] p-6 md:p-8 shadow-2xl shadow-sage-900/5 overflow-hidden relative">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-8">
             <div className="relative group">
-              <div className="w-32 h-32 bg-gradient-to-br from-sage-50 to-cream-100 rounded-[2.5rem] overflow-hidden border-4 border-white shadow-xl group-hover:scale-[1.02] transition-transform duration-500">
+              <div className="w-24 h-24 md:w-32 md:h-32 bg-gradient-to-br from-sage-50 to-cream-100 rounded-[2rem] md:rounded-[2.5rem] overflow-hidden border-4 border-white shadow-xl group-hover:scale-[1.02] transition-transform duration-500">
                 <img
                   src={`https://api.dicebear.com/7.x/fun-emoji/svg?seed=${(isEditing ? editName : userProfile?.displayName) || 'user'}`}
                   alt="avatar"
@@ -95,8 +79,8 @@ export default function Settings() {
                 />
               </div>
               {isEditing && (
-                <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-sage-800 rounded-2xl flex items-center justify-center text-white border-4 border-white shadow-lg">
-                  <Camera className="w-4 h-4" />
+                <div className="absolute -bottom-2 -right-2 w-8 h-8 md:w-10 md:h-10 bg-sage-800 rounded-xl md:rounded-2xl flex items-center justify-center text-white border-4 border-white shadow-lg">
+                  <Camera className="w-3 h-3 md:w-4 md:h-4" />
                 </div>
               )}
             </div>
@@ -142,17 +126,33 @@ export default function Settings() {
                     <Mail className="w-4 h-4" />
                     <span className="text-sm font-medium">{userProfile?.email}</span>
                   </div>
-                  <div className="flex items-center justify-center md:justify-start gap-3 mt-4">
-                    <span className="px-4 py-1.5 bg-sage-100 text-sage-700 text-[10px] font-bold rounded-full uppercase tracking-widest">
+                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mt-4">
+                    <span className="px-3 md:px-4 py-1.5 bg-sage-100 text-sage-700 text-[9px] md:text-[10px] font-bold rounded-full uppercase tracking-widest">
                       {userProfile?.gender === 'female' ? '👩 Perempuan' : '👨 Laki-laki'}
                     </span>
-                    <span className="px-4 py-1.5 bg-rose-50 text-rose-600 text-[10px] font-bold rounded-full uppercase tracking-widest flex items-center gap-1.5">
-                      <Shield className="w-3 h-3" /> Akun Terverifikasi
+                    <span className="px-3 md:px-4 py-1.5 bg-rose-50 text-rose-600 text-[9px] md:text-[10px] font-bold rounded-full uppercase tracking-widest flex items-center gap-1.5">
+                      <Shield className="w-3 h-3" /> Terverifikasi
                     </span>
+                  </div>
+
+                  <div className="pt-4 md:pt-2">
+                    <button
+                      onClick={() => {
+                        if (isEditing) handleUpdateProfile();
+                        else setIsEditing(true);
+                      }}
+                      disabled={saving}
+                      className={`text-xs font-bold px-6 py-2.5 rounded-xl transition-all shadow-sm w-full md:w-auto ${isEditing
+                        ? 'bg-sage-800 text-white hover:bg-sage-900'
+                        : 'bg-sage-50 text-sage-600 hover:bg-sage-100 border border-sage-100'
+                      }`}
+                    >
+                      {saving ? '...' : isEditing ? 'Simpan' : 'Ubah Profil'}
+                    </button>
                   </div>
                 </div>
               )}
-              {updateError && <p className="text-xs text-rose-500 font-bold mt-2">{updateError}</p>}
+              {updateError && <p className="text-xs text-rose-500 font-bold mt-2 text-center md:text-left">{updateError}</p>}
             </div>
           </div>
         </div>
