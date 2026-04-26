@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Plus,
   ArrowRight,
@@ -6,7 +6,8 @@ import {
   Inbox,
   Sparkles,
   Calendar,
-  History
+  History,
+  Share2
 } from 'lucide-react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { format } from 'date-fns';
@@ -91,6 +92,43 @@ export default function Dashboard() {
     recentTx,
   } = useDashboardStats(transactions, now);
 
+  // 1. Badging API: Tampilkan jumlah transaksi bulan ini di icon app
+  useEffect(() => {
+    if ('setAppBadge' in navigator) {
+      const count = transactions.length;
+      if (count > 0) {
+        (navigator as any).setAppBadge(count).catch(() => {});
+      } else {
+        (navigator as any).clearAppBadge().catch(() => {});
+      }
+    }
+  }, [transactions]);
+
+  const handleShareStats = async () => {
+    const text = `📊 Laporan Keuangan CandyNest (${format(now, 'MMMM yyyy', { locale: id })})\n\n` +
+      `💰 Pemasukan: ${formatRupiah(totalIncome)}\n` +
+      `💸 Pengeluaran: ${formatRupiah(totalExpense)}\n` +
+      `🏦 Saldo Bulan Ini: ${formatRupiah(balance)}\n` +
+      `✨ Total Tabungan: ${formatRupiah(allTimeBalance)}\n\n` +
+      `Ayo tetap hemat dan raih impian keluarga! ❤️`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Laporan CandyNest',
+          text: text,
+          url: window.location.origin,
+        });
+      } catch (err) {
+        console.log('Share failed', err);
+      }
+    } else {
+      // Fallback: Copy to clipboard
+      navigator.clipboard.writeText(text);
+      alert('Laporan disalin ke clipboard!');
+    }
+  };
+
   if (!userProfile?.coupleId) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[80vh] p-8 text-center relative overflow-hidden">
@@ -139,13 +177,21 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center justify-center gap-3 px-8 py-4 bg-sage-800 text-white rounded-[2rem] font-bold hover:bg-sage-900 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl shadow-sage-900/20"
-        >
-          <Plus className="w-5 h-5" />
-          <span>Tambah Transaksi</span>
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleShareStats}
+            className="w-14 h-14 flex items-center justify-center bg-white border border-sage-100 text-sage-600 rounded-[1.5rem] hover:bg-sage-50 transition-all shadow-lg shadow-sage-900/5 active:scale-95"
+          >
+            <Share2 className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center justify-center gap-3 px-8 py-4 bg-sage-800 text-white rounded-[2rem] font-bold hover:bg-sage-900 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl shadow-sage-900/20"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Tambah</span>
+          </button>
+        </div>
       </motion.div>
 
       {/* Hero Stats Grid */}

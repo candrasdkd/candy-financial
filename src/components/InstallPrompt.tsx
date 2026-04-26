@@ -1,51 +1,40 @@
 import { useState, useEffect } from 'react';
 import { Download, X, Share } from 'lucide-react';
-
-interface BeforeInstallPromptEvent extends Event {
-    readonly platforms: string[];
-    readonly userChoice: Promise<{
-        outcome: 'accepted' | 'dismissed';
-        platform: string;
-    }>;
-    prompt(): Promise<void>;
-}
+import { usePWAStore } from '../store/usePWAStore';
 
 export default function InstallPrompt() {
-    const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+    const { deferredPrompt, setDeferredPrompt, isInstalled, setIsInstalled } = usePWAStore();
     const [isIOS, setIsIOS] = useState(false);
-    const [isStandalone, setIsStandalone] = useState(false);
     const [isVisible, setIsVisible] = useState(true);
 
     useEffect(() => {
-        // Check if app is already installed
-        const isAppInstalled = window.matchMedia('(display-mode: standalone)').matches ||
-            (window.navigator as any).standalone === true;
-        setIsStandalone(isAppInstalled);
-
-        if (isAppInstalled) return;
-
-        // Detect iOS (case-insensitive)
+        // Detect iOS
         const userAgent = window.navigator.userAgent || window.navigator.vendor || (window as any).opera;
         const isIosDevice = /iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream;
         setIsIOS(isIosDevice);
 
         const handleBeforeInstallPrompt = (e: Event) => {
-            // Prevent the mini-infobar from appearing on mobile
             e.preventDefault();
-            // Stash the event so it can be triggered later.
-            setDeferredPrompt(e as BeforeInstallPromptEvent);
+            setDeferredPrompt(e as any);
+        };
+
+        const handleAppInstalled = () => {
+            setIsInstalled(true);
+            setDeferredPrompt(null);
         };
 
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        window.addEventListener('appinstalled', handleAppInstalled);
 
         return () => {
             window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+            window.removeEventListener('appinstalled', handleAppInstalled);
         };
-    }, []);
+    }, [setDeferredPrompt, setIsInstalled]);
 
     // If it's explicitly standalone, don't show.
     // Otherwise, always show if isVisible is true.
-    if (isStandalone || !isVisible) return null;
+    if (isInstalled || !isVisible) return null;
 
     // Show banner on Android even if we don't have the prompt event yet (e.g. user is on local HTTP)
     // We just don't show the "Install" button in that case.

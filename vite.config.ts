@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['apple-touch-icon.png', 'logo.png'],
       devOptions: {
         enabled: true
@@ -38,6 +38,22 @@ export default defineConfig({
             purpose: 'any maskable'
           }
         ],
+        screenshots: [
+          {
+            src: 'screenshot1.png',
+            sizes: '1024x1024',
+            type: 'image/png',
+            form_factor: 'narrow',
+            label: 'Dashboard Keuangan Keluarga'
+          },
+          {
+            src: 'screenshot2.png',
+            sizes: '1024x1024',
+            type: 'image/png',
+            form_factor: 'narrow',
+            label: 'Manajemen Dokumen Penting'
+          }
+        ],
         shortcuts: [
           {
             name: 'Catat Transaksi',
@@ -53,10 +69,20 @@ export default defineConfig({
             url: '/documents?action=upload',
             icons: [{ src: 'pwa-192x192.png', sizes: '192x192' }]
           }
-        ]
+        ],
+        share_target: {
+          action: '/documents?action=upload',
+          method: 'GET',
+          params: {
+            title: 'title',
+            text: 'text',
+            url: 'url'
+          }
+        }
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        navigateFallback: '/offline',
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

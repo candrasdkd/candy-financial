@@ -1,44 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '../store/useAuthStore';
 import { useConfirmStore } from '../store/useConfirmStore';
-
-// Define a type for the beforeinstallprompt event
-interface BeforeInstallPromptEvent extends Event {
-  readonly platforms: string[];
-  readonly userChoice: Promise<{
-    outcome: 'accepted' | 'dismissed';
-    platform: string;
-  }>;
-  prompt(): Promise<void>;
-}
+import { usePWAStore } from '../store/usePWAStore';
 
 export function useSettingsPage() {
   const { userProfile, logout, linkCouple, updateUserProfile } = useAuthStore();
   const { confirm, close, setLoading: setConfirmLoading } = useConfirmStore();
-
-  // PWA Install State
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [isInstalled, setIsInstalled] = useState(false);
-
-  useEffect(() => {
-    // Check if already installed
-    if (window.matchMedia('(display-mode: standalone)').matches || 
-        (window.navigator as any).standalone === true) {
-      setIsInstalled(true);
-    }
-
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
-    };
-
-    window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
-  }, []);
+  const { deferredPrompt, setDeferredPrompt, isInstalled, setIsInstalled } = usePWAStore();
 
   const handleInstallApp = async () => {
     if (!deferredPrompt) {
-      // Logic for iOS or others where prompt isn't supported
       if (!isInstalled) {
         alert('Untuk menginstall CandyNest:\n1. Klik tombol Share di browser\n2. Pilih "Add to Home Screen"');
       }

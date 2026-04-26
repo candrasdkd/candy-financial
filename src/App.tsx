@@ -9,7 +9,9 @@ import Transactions from './pages/Transactions';
 import Budget from './pages/Budget';
 import Settings from './pages/Settings';
 import Documents from './pages/Documents';
+import OfflineFallback from './pages/OfflineFallback';
 import InstallPrompt from './components/InstallPrompt';
+import UpdatePrompt from './components/UpdatePrompt';
 import ConfirmModal from './components/ConfirmModal';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -47,6 +49,7 @@ function AppRoutes() {
       <Route path="/budget" element={<ProtectedRoute><Budget /></ProtectedRoute>} />
       <Route path="/documents" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+      <Route path="/offline" element={<OfflineFallback />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
@@ -64,6 +67,7 @@ export default function App() {
     <BrowserRouter>
       <AppRoutes />
       <InstallPrompt />
+      <UpdatePrompt />
       <ConfirmModal />
     </BrowserRouter>
   );
