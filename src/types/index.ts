@@ -108,7 +108,7 @@ export interface SavingsPot {
   name: string;
   emoji: string;
   color: string; // hex color
-  targetAmount?: number;
+  targetAmount?: number | null;
   currentBalance: number;
   createdAt: string;
   order: number;

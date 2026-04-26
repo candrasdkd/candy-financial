@@ -123,77 +123,88 @@ export default function SavingsPots() {
               ? Math.min(100, (pot.currentBalance / pot.targetAmount) * 100) : null;
             return (
               <motion.div key={pot.id} variants={item}
-                className="group relative rounded-[2.5rem] overflow-hidden bg-white border border-sage-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-500 hover:-translate-y-1">
-                {/* Glowing Background Blob */}
-                <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-[50px] opacity-20 group-hover:opacity-40 transition-opacity duration-500" style={{ background: pot.color }} />
+                className="group relative rounded-[2.5rem] bg-white border border-sage-100/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-500 hover:-translate-y-1 flex flex-col justify-between overflow-hidden">
                 
-                <div className="relative p-7 space-y-6">
-                  {/* Top row */}
+                {/* Dynamic Header Background */}
+                <div className="absolute top-0 left-0 right-0 h-32 opacity-[0.15] transition-opacity duration-500 group-hover:opacity-25"
+                  style={{ background: `linear-gradient(to bottom, ${pot.color}, transparent)` }} />
+                
+                {/* Large Background Emoji */}
+                <div className="absolute -right-4 -bottom-4 text-9xl opacity-5 rotate-[-15deg] pointer-events-none transition-all duration-500 group-hover:scale-110 group-hover:-rotate-[25deg]">
+                  {pot.emoji}
+                </div>
+
+                <div className="relative p-7 flex-1 flex flex-col gap-6">
+                  {/* Header Row */}
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 rounded-[1.25rem] flex items-center justify-center text-3xl shadow-sm border border-white/50 backdrop-blur-sm"
-                        style={{ background: `linear-gradient(135deg, ${pot.color}15, ${pot.color}30)` }}>
+                      <div className="w-14 h-14 rounded-[1.25rem] flex items-center justify-center text-2xl shadow-sm bg-white/80 backdrop-blur-md border border-white ring-1 ring-black/5"
+                        style={{ color: pot.color }}>
                         {pot.emoji}
                       </div>
-                      <div className="space-y-1">
-                        <h3 className="font-display font-bold text-sage-900 text-xl leading-tight">{pot.name}</h3>
+                      <div>
+                        <h3 className="font-display font-bold text-sage-900 text-xl tracking-tight leading-none mb-1.5">{pot.name}</h3>
                         {pot.targetAmount ? (
-                          <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md" style={{ background: `${pot.color}15`, color: pot.color }}>
-                            <Target className="w-3.5 h-3.5" />
-                            <span className="text-[10px] font-bold uppercase tracking-widest">{formatRupiah(pot.targetAmount)}</span>
-                          </div>
+                          <p className="text-[10px] font-bold text-sage-500 uppercase tracking-widest">
+                            Target {formatRupiah(pot.targetAmount)}
+                          </p>
                         ) : (
-                          <div className="text-[10px] text-sage-400 font-bold uppercase tracking-widest">Tanpa Target</div>
+                          <p className="text-[10px] font-bold text-sage-400 uppercase tracking-widest">Tanpa Target</p>
                         )}
                       </div>
                     </div>
-                    <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {/* Context Menu / Actions (Always visible for mobile UX) */}
+                    <div className="flex gap-1 bg-white/80 backdrop-blur-md rounded-xl p-1 shadow-sm ring-1 ring-black/5">
                       <button onClick={() => s.openEdit(pot.id)}
-                        className="w-8 h-8 flex items-center justify-center rounded-xl bg-sage-50 text-sage-400 hover:text-sage-700 hover:bg-sage-100 transition-all">
+                        className="w-8 h-8 flex items-center justify-center rounded-lg text-sage-400 hover:text-sage-700 hover:bg-sage-50 transition-all">
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
                       <button onClick={() => s.openDeleteConfirm(pot.id)}
-                        className="w-8 h-8 flex items-center justify-center rounded-xl bg-rose-50 text-rose-300 hover:text-rose-600 hover:bg-rose-100 transition-all">
+                        className="w-8 h-8 flex items-center justify-center rounded-lg text-rose-300 hover:text-rose-600 hover:bg-rose-50 transition-all">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
 
-                  {/* Balance */}
-                  <div>
-                    <p className="text-[9px] font-bold text-sage-400 uppercase tracking-widest mb-1.5">Total Terkumpul</p>
-                    <p className="font-mono text-3xl font-black text-sage-900 tracking-tight">{formatRupiah(pot.currentBalance)}</p>
-                  </div>
-
-                  {/* Progress Bar */}
-                  {progress !== null && (
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-[10px] font-bold text-sage-400 uppercase tracking-widest">
-                        <span>Progress</span><span>{progress.toFixed(0)}%</span>
-                      </div>
-                      <div className="h-2.5 bg-sage-50 rounded-full overflow-hidden shadow-inner">
-                        <motion.div initial={{ width: 0 }} animate={{ width: `${progress}%` }}
-                          transition={{ duration: 1, ease: 'easeOut' }}
-                          className="h-full rounded-full" style={{ background: pot.color }} />
-                      </div>
+                  {/* Balance & Progress */}
+                  <div className="mt-auto space-y-5 pt-2">
+                    <div>
+                      <p className="text-[10px] font-bold text-sage-400 uppercase tracking-widest mb-1.5">Total Terkumpul</p>
+                      <p className="font-mono text-4xl font-black text-sage-900 tracking-tighter">{formatRupiah(pot.currentBalance)}</p>
                     </div>
-                  )}
 
-                  {/* Action Buttons */}
-                  <div className="flex gap-3 pt-2 border-t border-sage-50">
-                    <button onClick={() => s.openDeposit(pot.id)}
-                      className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-xs text-emerald-600 bg-emerald-50/80 hover:bg-emerald-100 transition-all active:scale-95 group-hover:shadow-inner">
-                      <ArrowDownCircle className="w-4 h-4" /> Masuk
-                    </button>
-                    <button onClick={() => s.openWithdraw(pot.id)}
-                      className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-xs text-rose-500 bg-rose-50/80 hover:bg-rose-100 transition-all active:scale-95 group-hover:shadow-inner">
-                      <ArrowUpCircle className="w-4 h-4" /> Pakai
-                    </button>
-                    <button onClick={() => s.openHistory(pot.id)}
-                      className="w-12 flex items-center justify-center rounded-2xl font-bold text-sage-400 bg-sage-50/80 hover:bg-sage-100 hover:text-sage-600 transition-all active:scale-95">
-                      <History className="w-4 h-4" />
-                    </button>
+                    {progress !== null && (
+                      <div className="space-y-2">
+                        <div className="h-2.5 bg-sage-100/50 rounded-full overflow-hidden ring-1 ring-inset ring-black/5">
+                          <motion.div initial={{ width: 0 }} animate={{ width: `${progress}%` }}
+                            transition={{ duration: 1, ease: 'easeOut', delay: 0.1 }}
+                            className="h-full rounded-full relative" 
+                            style={{ backgroundColor: pot.color }} />
+                        </div>
+                        <div className="flex justify-between text-[10px] font-bold text-sage-500">
+                          <span>{progress.toFixed(0)}%</span>
+                          <span>Sisa {formatRupiah(Math.max(0, pot.targetAmount! - pot.currentBalance))}</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
+                </div>
+
+                {/* Bottom Actions */}
+                <div className="relative p-2 mx-5 mb-5 bg-sage-50/50 rounded-2xl flex gap-2">
+                  <button onClick={() => s.openDeposit(pot.id)}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-xs text-white shadow-sm transition-all hover:opacity-90 active:scale-95"
+                    style={{ backgroundColor: pot.color }}>
+                    <ArrowDownCircle className="w-4 h-4" /> Masuk
+                  </button>
+                  <button onClick={() => s.openWithdraw(pot.id)}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-xs bg-white text-sage-700 shadow-sm ring-1 ring-sage-200/50 hover:bg-sage-50 transition-all active:scale-95">
+                    <ArrowUpCircle className="w-4 h-4" /> Pakai
+                  </button>
+                  <button onClick={() => s.openHistory(pot.id)}
+                    className="w-12 flex items-center justify-center rounded-xl bg-white text-sage-400 shadow-sm ring-1 ring-sage-200/50 hover:bg-sage-50 hover:text-sage-700 transition-all active:scale-95">
+                    <History className="w-4 h-4" />
+                  </button>
                 </div>
               </motion.div>
             );

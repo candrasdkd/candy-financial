@@ -29,7 +29,7 @@ interface SavingsState {
   clearPots: () => void;
 
   // Pot CRUD
-  addPot: (data: { name: string; emoji: string; color: string; targetAmount?: number }) => Promise<void>;
+  addPot: (data: { name: string; emoji: string; color: string; targetAmount?: number | null }) => Promise<void>;
   updatePot: (id: string, data: Partial<Pick<SavingsPot, 'name' | 'emoji' | 'color' | 'targetAmount'>>) => Promise<void>;
   deletePot: (id: string) => Promise<void>;
 

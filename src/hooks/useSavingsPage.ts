@@ -127,14 +127,14 @@ export function useSavingsPage() {
           name: potName,
           emoji: potEmoji,
           color: potColor,
-          targetAmount: potTarget ? parseRupiah(potTarget) : undefined,
+          targetAmount: potTarget ? parseRupiah(potTarget) : null,
         });
       } else if (modal.type === 'edit_pot') {
         await updatePot(modal.potId, {
           name: potName,
           emoji: potEmoji,
           color: potColor,
-          targetAmount: potTarget ? parseRupiah(potTarget) : undefined,
+          targetAmount: potTarget ? parseRupiah(potTarget) : null,
         });
       }
       closeModal();
