@@ -109,8 +109,8 @@ export default function Transactions() {
                 key={t}
                 onClick={() => setFilterType(t)}
                 className={`flex-1 py-3 rounded-2xl text-[10px] font-bold uppercase tracking-wider transition-all ${filterType === t
-                    ? 'bg-white text-sage-900 shadow-sm'
-                    : 'text-sage-400 hover:text-sage-600'
+                  ? 'bg-white text-sage-900 shadow-sm'
+                  : 'text-sage-400 hover:text-sage-600'
                   }`}
               >
                 {t === 'all' ? 'Semua' : t === 'income' ? 'Masuk' : 'Keluar'}
@@ -224,7 +224,8 @@ export default function Transactions() {
                 <div className="grid grid-cols-1 gap-3">
                   {txs.map(tx => {
                     const cat = getCategoryInfo(tx.category);
-                    const isMine = tx.addedBy === userProfile?.displayName;
+
+                    const isMine = tx.userId === userProfile?.uid;
 
                     return (
                       <motion.div
@@ -252,7 +253,7 @@ export default function Transactions() {
                             <div className="w-1 h-1 rounded-full bg-sage-100 shrink-0" />
                             <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] md:text-[9px] font-bold tracking-tight uppercase ${isMine ? 'bg-sage-50 text-sage-600' : 'bg-rose-50 text-rose-500'
                               }`}>
-                              {isMine ? 'SAYA' : (userProfile?.partnerName?.toUpperCase() || 'PASANGAN')}
+                              {isMine ? 'SAYA' : 'PASANGAN'}
                             </div>
                           </div>
                         </div>
