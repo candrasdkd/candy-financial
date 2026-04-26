@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { useNetworkStatus } from '../hooks/useNetworkStatus';
 import {
   LayoutDashboard,
   ArrowLeftRight,
@@ -11,6 +12,7 @@ import {
   Menu,
   X,
   User,
+  WifiOff,
 } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { useConfirmStore } from '../store/useConfirmStore';
@@ -30,6 +32,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { confirm, close } = useConfirmStore();
+  const { isOnline } = useNetworkStatus();
 
   async function handleLogout() {
     confirm({
@@ -208,6 +211,23 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
         {/* Page Container */}
         <main className="flex-1 overflow-y-auto scroll-smooth">
+          {/* Offline Banner */}
+          <AnimatePresence>
+            {!isOnline && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="overflow-hidden"
+              >
+                <div className="bg-rose-500 text-white px-4 py-2.5 flex items-center justify-center gap-2 text-xs font-bold">
+                  <WifiOff className="w-3.5 h-3.5 shrink-0" />
+                  <span>Kamu sedang offline — data baru tidak akan tersimpan</span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
           {children}
         </main>
 

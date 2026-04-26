@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Download, X, Share } from 'lucide-react';
-import { usePWAStore } from '../store/usePWAStore';
+import { usePWAStore, getInstallDismissed, setInstallDismissed } from '../store/usePWAStore';
 
 export default function InstallPrompt() {
     const { deferredPrompt, setDeferredPrompt, isInstalled, setIsInstalled } = usePWAStore();
     const [isIOS, setIsIOS] = useState(false);
-    const [isVisible, setIsVisible] = useState(true);
+    // Persist dismiss state — banner tidak muncul lagi setelah user tutup
+    const [isVisible, setIsVisible] = useState(() => !getInstallDismissed());
 
     useEffect(() => {
-        // Detect iOS
         const userAgent = window.navigator.userAgent || window.navigator.vendor || (window as any).opera;
         const isIosDevice = /iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream;
         setIsIOS(isIosDevice);
@@ -32,12 +32,7 @@ export default function InstallPrompt() {
         };
     }, [setDeferredPrompt, setIsInstalled]);
 
-    // If it's explicitly standalone, don't show.
-    // Otherwise, always show if isVisible is true.
     if (isInstalled || !isVisible) return null;
-
-    // Show banner on Android even if we don't have the prompt event yet (e.g. user is on local HTTP)
-    // We just don't show the "Install" button in that case.
 
     const handleInstallClick = async () => {
         if (deferredPrompt) {
@@ -47,6 +42,11 @@ export default function InstallPrompt() {
                 setDeferredPrompt(null);
             }
         }
+    };
+
+    const handleDismiss = () => {
+        setInstallDismissed();
+        setIsVisible(false);
     };
 
     return (
@@ -80,7 +80,7 @@ export default function InstallPrompt() {
                         </button>
                     )}
                     <button
-                        onClick={() => setIsVisible(false)}
+                        onClick={handleDismiss}
                         className="p-1 -mr-2 -mt-1 text-cream-200 hover:text-white transition-colors"
                     >
                         <X className="w-5 h-5" />

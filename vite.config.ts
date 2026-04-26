@@ -17,9 +17,16 @@ export default defineConfig({
         name: 'CandyNest',
         short_name: 'CandyNest',
         description: 'Manajemen Keluarga — Keuangan, Dokumen & Lebih',
-        theme_color: '#ffffff',
+        theme_color: '#1a2e1a',
         background_color: '#ffffff',
+        lang: 'id',
+        dir: 'ltr',
+        orientation: 'portrait-primary',
         display: 'standalone',
+        // window-controls-overlay = judul bar lebih luas di desktop PWA
+        display_override: ['window-controls-overlay', 'standalone', 'browser'],
+        start_url: '/?source=pwa',
+        scope: '/',
         icons: [
           {
             src: 'pwa-192x192.png',
@@ -35,7 +42,13 @@ export default defineConfig({
             src: 'pwa-512x512.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any maskable'
+            purpose: 'maskable'
+          },
+          {
+            src: 'pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any'
           }
         ],
         screenshots: [
@@ -72,26 +85,97 @@ export default defineConfig({
         ],
         share_target: {
           action: '/documents?action=upload',
-          method: 'GET',
+          method: 'POST',
+          enctype: 'multipart/form-data',
           params: {
             title: 'title',
             text: 'text',
-            url: 'url'
+            url: 'url',
+            files: [
+              {
+                name: 'file',
+                accept: ['image/*', 'application/pdf']
+              }
+            ]
           }
         }
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        navigateFallback: '/offline',
+        // Gunakan '/' sebagai fallback — '/offline' bisa infinite loop jika tidak ter-cache
+        navigateFallback: '/',
+        navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
+          // Google Fonts CSS (stylesheet) — revalidate di background
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler: 'CacheFirst',
+            handler: 'StaleWhileRevalidate',
             options: {
-              cacheName: 'google-fonts-cache',
+              cacheName: 'google-fonts-stylesheets',
               expiration: {
                 maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
+                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 tahun
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          // Google Fonts files (woff2, ttf, dll) — jarang berubah, cache lama
+          {
+            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-webfonts',
+              expiration: {
+                maxEntries: 20,
+                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 tahun
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          // Firestore REST API — NetworkFirst dengan timeout 5s, fallback ke cache
+          {
+            urlPattern: /^https:\/\/firestore\.googleapis\.com\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'firestore-cache',
+              networkTimeoutSeconds: 5,
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 // 24 jam
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          // Firebase Storage (foto dokumen yang diupload user)
+          {
+            urlPattern: /^https:\/\/firebasestorage\.googleapis\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'firebase-storage-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // 7 hari
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          // DiceBear avatars — statis per seed, aman di-cache lama
+          {
+            urlPattern: /^https:\/\/api\.dicebear\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'dicebear-avatars',
+              expiration: {
+                maxEntries: 20,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 hari
               },
               cacheableResponse: {
                 statuses: [0, 200]

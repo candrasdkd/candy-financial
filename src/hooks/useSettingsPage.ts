@@ -8,22 +8,37 @@ export function useSettingsPage() {
   const { confirm, close, setLoading: setConfirmLoading } = useConfirmStore();
   const { deferredPrompt, setDeferredPrompt, isInstalled, setIsInstalled } = usePWAStore();
 
+  // Deteksi iOS yang benar: cek iPad/iPhone/iPod, BUKAN 'Safari' (ada di Android UA juga!)
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+
   const handleInstallApp = async () => {
-    if (!deferredPrompt) {
-      if (!isInstalled) {
-        alert('Untuk menginstall CandyNest:\n1. Klik tombol Share di browser\n2. Pilih "Add to Home Screen"');
+    // Android (dan browser lain): gunakan native install prompt
+    if (deferredPrompt) {
+      await deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setDeferredPrompt(null);
+        setIsInstalled(true);
       }
       return;
     }
-    
-    await deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    
-    if (outcome === 'accepted') {
-      setDeferredPrompt(null);
-      setIsInstalled(true);
+
+    // Fallback: tampilkan panduan manual sesuai platform
+    if (!isInstalled) {
+      const message = isIOS
+        ? 'Untuk menginstall di iOS:\n1. Tap ikon Share (□↑) di browser\n2. Pilih "Add to Home Screen"\n3. Tap "Add" untuk konfirmasi'
+        : 'Untuk menginstall di Android:\n1. Buka menu browser (titik tiga ⋮)\n2. Pilih "Install app" atau "Add to Home Screen"';
+
+      confirm({
+        title: '📱 Install CandyNest',
+        message,
+        confirmText: 'Mengerti',
+        variant: 'info',
+        onConfirm: () => close(),
+      });
     }
   };
+
 
   // Invite & Link State
   const [inviteCode, setInviteCode] = useState('');
@@ -114,6 +129,8 @@ export function useSettingsPage() {
     handleLogout,
     handleInstallApp,
     isInstalled,
-    canInstall: !!deferredPrompt || (!isInstalled && /iPhone|iPad|iPod|Safari/i.test(navigator.userAgent))
+    // Tampilkan tombol install jika: ada native prompt ATAU device iOS yang belum install
+    // Android tanpa deferredPrompt = tombol tidak muncul (event belum/tidak dipicu browser)
+    canInstall: !!deferredPrompt || (isIOS && !isInstalled)
   };
 }
