@@ -1,37 +1,35 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const axios = require("axios");
+const vision = require("@google-cloud/vision");
 
 admin.initializeApp();
 const db = admin.firestore();
+const visionClient = new vision.ImageAnnotatorClient();
 
-// Ambil config dari environment variables Firebase
-// Jalankan ini di terminal untuk set:
-// firebase functions:config:set fonnte.token="TOKEN_ANDA" fonnte.targets="628xxx,628xxx"
 const FONNTE_TOKEN = process.env.FONNTE_TOKEN;
 const TARGET_NUMBERS = process.env.TARGET_NUMBERS;
+
+// Limit Scan per Bulan (Google Vision Free Tier is 1000)
+const MONTHLY_SCAN_LIMIT = 950;
 
 // --- JADWAL: JAM 12:00 dan 19:00 WIB ---
 exports.dailyReminderWA = functions.pubsub
     .schedule("0 12,19 * * *")
     .timeZone("Asia/Jakarta")
     .onRun(async (context) => {
-    // 1. Ambil tanggal hari ini (format YYYY-MM-DD sesuai zona waktu Jakarta)
       const today = new Date().toLocaleDateString("en-CA", {timeZone: "Asia/Jakarta"});
 
-      // 2. Cek apakah HARI INI sudah ada pengeluaran yang dicatat di DB
       const txSnapshot = await db.collection("transactions")
           .where("date", "==", today)
           .limit(1)
           .get();
 
-      // Jika hari ini sudah ada catatan pengeluaran, batalkan peringatan
       if (!txSnapshot.empty) {
         console.log("Sudah ada catatan transaksi hari ini. Reminder dibatalkan.");
         return null;
       }
 
-      // 3. Tentukan pesan berdasarkan jam (Siang atau Malam)
       const jakartaHour = parseInt(new Date().toLocaleString("en-US", {
         timeZone: "Asia/Jakarta",
         hour: "numeric",
@@ -42,18 +40,15 @@ exports.dailyReminderWA = functions.pubsub
       let pushTitle = "";
 
       if (jakartaHour <= 15) {
-      // Opsi Siang
         message = "Halo! 👋 Jajan apa hari ini? Jangan lupa catat pengeluaranmu di Candy Financial ya, biar tabungan kamu tetap manis! 🍬";
         pushTitle = "Waktunya Jajan? 🍬";
       } else {
-      // Opsi Malam
         message = "Sudah mau istirahat? Yuk, luangkan waktu 1 menit buat rekap keuangan hari ini di Candy Financial. Biar besok bangun dengan tenang! 🍭";
         pushTitle = "Rekap Hari Ini 🍭";
       }
 
-      // 4. Tembak Fonnte API untuk mengirim WA sekaligus
       try {
-        const response = await axios.post(
+        await axios.post(
             "https://api.fonnte.com/send",
             {
               target: TARGET_NUMBERS,
@@ -66,13 +61,10 @@ exports.dailyReminderWA = functions.pubsub
               },
             },
         );
-
-        console.log("[SUKSES] Pesan WA terkirim. Respon Fonnte:", response.data);
       } catch (error) {
-        console.error("[GAGAL] Tidak bisa mengirim WA via Fonnte:", error.response?.data || error.message);
+        console.error("[GAGAL] Tidak bisa mengirim WA via Fonnte:", error.message);
       }
 
-      // 5. Kirim Web Push Notification via FCM
       try {
         const usersSnapshot = await db.collection("users").get();
         const allTokens = [];
@@ -85,7 +77,7 @@ exports.dailyReminderWA = functions.pubsub
         });
 
         if (allTokens.length > 0) {
-          const uniqueTokens = [...new Set(allTokens)]; // Remove duplicates
+          const uniqueTokens = [...new Set(allTokens)];
           const payload = {
             notification: {
               title: pushTitle,
@@ -98,10 +90,7 @@ exports.dailyReminderWA = functions.pubsub
             ...payload,
           };
 
-          const fcmResponse = await admin.messaging().sendEachForMulticast(multicastPayload);
-          console.log(`[SUKSES] FCM dikirim: ${fcmResponse.successCount} berhasil, ${fcmResponse.failureCount} gagal.`);
-        } else {
-          console.log("Tidak ada FCM Token yang ditemukan.");
+          await admin.messaging().sendEachForMulticast(multicastPayload);
         }
       } catch (error) {
         console.error("[GAGAL] Tidak bisa mengirim FCM:", error.message);
@@ -109,3 +98,58 @@ exports.dailyReminderWA = functions.pubsub
 
       return null;
     });
+
+// --- FUNGSI OCR: GOOGLE CLOUD VISION DENGAN LIMITER ---
+exports.processOCR = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("unauthenticated", "Login dulu ya!");
+  }
+
+  // 1. Dapatkan Couple ID & Bulan Sekarang
+  const userDoc = await db.collection("users").doc(context.auth.uid).get();
+  const coupleId = userDoc.data()?.coupleId || "standalone_" + context.auth.uid;
+  const currentMonth = new Date().toLocaleDateString("en-CA", {timeZone: "Asia/Jakarta"}).slice(0, 7); // YYYY-MM
+
+  const usageRef = db.collection("usage_stats").doc(`${coupleId}_${currentMonth}`);
+
+  // 2. Cek Penggunaan
+  const usageDoc = await usageRef.get();
+  const currentCount = usageDoc.exists ? usageDoc.data().scanCount : 0;
+
+  if (currentCount >= MONTHLY_SCAN_LIMIT) {
+    throw new functions.https.HttpsError(
+        "resource-exhausted",
+        "Waduh! Jatah scan gratis bulan ini sudah habis (Limit 950). Coba lagi bulan depan ya! 🍬",
+    );
+  }
+
+  const {imageBase64} = data;
+  if (!imageBase64) {
+    throw new functions.https.HttpsError("invalid-argument", "Gambar wajib ada.");
+  }
+
+  try {
+    const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, "");
+    const buffer = Buffer.from(base64Data, "base64");
+
+    const [result] = await visionClient.textDetection(buffer);
+    const detections = result.textAnnotations;
+
+    // 3. Increment Counter jika sukses
+    await usageRef.set({
+      scanCount: admin.firestore.FieldValue.increment(1),
+      lastScan: admin.firestore.FieldValue.serverTimestamp(),
+      coupleId: coupleId,
+      month: currentMonth,
+    }, {merge: true});
+
+    if (!detections || detections.length === 0) {
+      return {text: ""};
+    }
+
+    return {text: detections[0].description};
+  } catch (error) {
+    console.error("OCR Error:", error);
+    throw new functions.https.HttpsError("internal", "Gagal memproses gambar: " + error.message);
+  }
+});

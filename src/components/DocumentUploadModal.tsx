@@ -67,6 +67,12 @@ export default function DocumentUploadModal({ onClose }: { onClose: () => void }
         : result.fields;
       setFields(merged.length ? merged : [{ label: 'Teks', value: result.rawText }]);
       setScanData({ rawText: result.rawText });
+      
+      // Auto-suggest name if user hasn't set one
+      if (!customName && result.suggestedName) {
+        setCustomName(result.suggestedName);
+      }
+      
       setStep('review');
     } catch {
       setStep('select');
@@ -155,7 +161,15 @@ export default function DocumentUploadModal({ onClose }: { onClose: () => void }
                 </div>
 
                 <div className="space-y-4">
-                  <label className="text-[9px] font-bold text-sage-400 uppercase tracking-widest mb-3 block px-1">Nama Dokumen (Opsional)</label>
+                  <div className="flex items-center justify-between px-1">
+                    <label className="text-[9px] font-bold text-sage-400 uppercase tracking-widest block">Nama Dokumen (Opsional)</label>
+                    {customName && scanData && (
+                      <div className="flex items-center gap-1 text-[9px] font-bold text-rose-400 uppercase tracking-tight animate-pulse">
+                        <Sparkles className="w-2.5 h-2.5" />
+                        AI Suggestion
+                      </div>
+                    )}
+                  </div>
                   <input type="text" value={customName} onChange={e => setCustomName(e.target.value)} placeholder={`${CATEGORY_INFO[category].label} — ${new Date().toLocaleDateString('id-ID')}`}
                     className="w-full px-5 py-4 bg-sage-50 border border-sage-100 rounded-2xl text-sage-900 focus:outline-none transition-all font-bold text-sm" />
                 </div>

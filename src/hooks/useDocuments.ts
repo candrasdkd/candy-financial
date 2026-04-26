@@ -1,16 +1,16 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
 import { collection, addDoc, onSnapshot, deleteDoc, updateDoc, doc, query, orderBy, serverTimestamp, where } from 'firebase/firestore';
-import { storage, db } from '../firebase';
+import { httpsCallable } from 'firebase/functions';
+import { storage, db, functions } from '../firebase';
 import { useAuthStore } from '../store/useAuthStore';
 import { FamilyDocument, DocCategory, OcrField } from '../types/document';
-import { compressImage, preprocessForOcr, parseOcrToFields } from '../utils/document';
+import { compressImage, preprocessForOcr, parseOcrToFields, suggestDocumentName } from '../utils/document';
 import { jsPDF } from 'jspdf';
 import { format } from 'date-fns';
 import { CATEGORY_INFO } from '../constants/document';
 import { useConfirmStore } from '../store/useConfirmStore';
 import { FirebaseError } from 'firebase/app';
-import { useMemo } from 'react';
 
 const MIN_FILE_SIZE = 100 * 1024; // 100KB
 const MAX_FILE_SIZE = 500 * 1024; // 500KB
@@ -61,67 +61,63 @@ export function useDocuments() {
     });
   }, [userProfile?.coupleId]);
 
-  /** Step 1: Scan Lokal Tanpa Upload */
+  /** Step 1: Scan via Cloud Vision (Google OCR) */
   const scanDocument = useCallback(async (files: File[], category: DocCategory) => {
     setError(null);
     setOcrLoading(true);
     try {
-      for (const file of files) {
-        if (!ALLOWED_TYPES.includes(file.type)) throw new Error(`Format file "${file.name}" tidak didukung.`);
-      }
-
-      const { createWorker } = await import('tesseract.js');
-      const worker = await createWorker('ind+eng', 1, { logger: () => {} });
+      const processOCR = httpsCallable<{ imageBase64: string }, { text: string }>(functions, 'processOCR');
       
       let combinedText = '';
       for (const file of files) {
+        if (!ALLOWED_TYPES.includes(file.type)) throw new Error(`Format file "${file.name}" tidak didukung.`);
+        // Preprocess tetap dilakukan untuk mengecilkan ukuran gambar sebelum dikirim ke Cloud
         const processedImageUrl = await preprocessForOcr(file);
-        const { data } = await worker.recognize(processedImageUrl);
-        combinedText += data.text.trim() + '\n';
+        const { data } = await processOCR({ imageBase64: processedImageUrl });
+        combinedText += (data.text || '').trim() + '\n';
       }
       
-      await worker.terminate();
       const fields = parseOcrToFields(combinedText, category);
+      const suggestedName = suggestDocumentName(combinedText, category);
       setOcrLoading(false);
-      return { rawText: combinedText, fields };
+      return { rawText: combinedText, fields, suggestedName };
     } catch (err: any) {
       setOcrLoading(false);
       setError('Gagal membaca dokumen. Pastikan foto cukup jelas.');
+      console.error('OCR Error:', err);
       throw err;
     }
   }, []);
 
-  /** Re-scan dari URL gambar yang sudah tersimpan di cloud */
+  /** Re-scan dari URL menggunakan Cloud Vision */
   const rescanDocument = useCallback(async (documentId: string, imageUrls: string[], category: DocCategory) => {
     setError(null);
     setOcrLoading(true);
     try {
-      const { createWorker } = await import('tesseract.js');
-      const worker = await createWorker('ind+eng', 1, { logger: () => {} });
+      const processOCR = httpsCallable<{ imageBase64: string }, { text: string }>(functions, 'processOCR');
 
       let combinedText = '';
       for (const url of imageUrls) {
-        // Fetch gambar dari URL → konversi ke File agar bisa di-preprocess
         const response = await fetch(url);
         const blob = await response.blob();
         const file = new File([blob], 'page.jpg', { type: blob.type || 'image/jpeg' });
         const processedImageUrl = await preprocessForOcr(file);
-        const { data } = await worker.recognize(processedImageUrl);
-        combinedText += data.text.trim() + '\n';
+        const { data } = await processOCR({ imageBase64: processedImageUrl });
+        combinedText += (data.text || '').trim() + '\n';
       }
 
-      await worker.terminate();
       const fields = parseOcrToFields(combinedText, category);
+      const suggestedName = suggestDocumentName(combinedText, category);
 
-      // Simpan langsung ke Firestore
       const docRef = doc(db, 'family_documents', documentId);
-      await updateDoc(docRef, { fields, extractedText: combinedText });
+      await updateDoc(docRef, { fields, extractedText: combinedText, suggestedName });
 
       setOcrLoading(false);
-      return { rawText: combinedText, fields };
+      return { rawText: combinedText, fields, suggestedName };
     } catch (err: any) {
       setOcrLoading(false);
       setError('Gagal scan ulang dokumen.');
+      console.error('OCR Error:', err);
       throw err;
     }
   }, []);

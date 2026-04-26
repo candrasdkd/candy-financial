@@ -134,7 +134,7 @@ export function extractAfterKeyword(lines: string[], ...keywords: string[]): str
         // Cari nilai setelah pemisah
         const afterKw = line.substring(line.toLowerCase().indexOf(kw.toLowerCase().substring(0, 4)));
         const match = afterKw.match(/[:;=]\s*(.+)$/) ||
-                      afterKw.match(new RegExp(`${kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*[:;=]?\\s*(.+)$`, 'i'));
+          afterKw.match(new RegExp(`${kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*[:;=]?\\s*(.+)$`, 'i'));
         if (match && match[1]) {
           return match[1].trim().replace(/^[:;=.\s]+/, '');
         }
@@ -173,38 +173,38 @@ function extractLineAfterKeyword(lines: string[], ...keywords: string[]): string
 function parseKtp(lines: string[], text: string): OcrField[] {
   // NIK: 16 digit, sering ada noise
   const nikRaw = extractByRegex(text.replace(/\s/g, ''), /(?:NIK|N1K|NIIK)[:\s]*(\d{14,17})/i) ||
-                 extractByRegex(text, /\b(\d{16})\b/) ||
-                 extractAfterKeyword(lines, 'NIK', 'N1K', 'NIIK', 'N!K');
+    extractByRegex(text, /\b(\d{16})\b/) ||
+    extractAfterKeyword(lines, 'NIK', 'N1K', 'NIIK', 'N!K');
 
   const nama = extractLineAfterKeyword(lines, 'Nama', 'NAMA', 'N AM A', 'NAM A');
-  
+
   // Tempat lahir: pola "Kota, DD-MM-YYYY" atau "Kota, DD MMM YYYY"
   const ttlRaw = extractLineAfterKeyword(lines, 'Tempat/Tgl', 'Tgl Lahir', 'Lahir', 'Tempat Tgl') ||
-                 extractByRegex(text, /(?:JAKARTA|BANDUNG|SURABAYA|DEPOK|BOGOR|BEKASI|MEDAN|SEMARANG|YOGYAKARTA|MALANG)[,\s]+\d{2}[-/]\d{2}[-/]\d{4}/i);
+    extractByRegex(text, /(?:JAKARTA|BANDUNG|SURABAYA|DEPOK|BOGOR|BEKASI|MEDAN|SEMARANG|YOGYAKARTA|MALANG)[,\s]+\d{2}[-/]\d{2}[-/]\d{4}/i);
 
   const jk = extractLineAfterKeyword(lines, 'Jenis Kelamin', 'Jenis kel', 'Kelamin') ||
-             extractByRegex(text, /\b(LAKI[-\s]LAKI|PEREMPUAN|WANITA|PRIA)\b/i);
+    extractByRegex(text, /\b(LAKI[-\s]LAKI|PEREMPUAN|WANITA|PRIA)\b/i);
 
   const golDarah = extractByRegex(text, /Gol\.?\s*Darah\s*[:;=]?\s*([ABO]{1,2}[+-]?)/i) ||
-                   extractByRegex(text, /\b([ABO]{1,2}[+-]?)\b/);
+    extractByRegex(text, /\b([ABO]{1,2}[+-]?)\b/);
 
   const alamat = extractLineAfterKeyword(lines, 'Alamat', 'ALAMAT') ||
-                 extractByRegex(text, /(?:Alamat|ALAMAT)\s*[:;=]\s*(.+?)(?:\n|RT\/RW|Kel|Kec)/is);
+    extractByRegex(text, /(?:Alamat|ALAMAT)\s*[:;=]\s*(.+?)(?:\n|RT\/RW|Kel|Kec)/is);
 
   const rtrw = extractLineAfterKeyword(lines, 'RT/RW', 'RT RW') ||
-               extractByRegex(text, /\b(\d{3}\/\d{3})\b/);
+    extractByRegex(text, /\b(\d{3}\/\d{3})\b/);
 
   const keldes = extractLineAfterKeyword(lines, 'Kel/Desa', 'Kelurahan', 'Desa', 'Kel Desa');
   const kecamatan = extractLineAfterKeyword(lines, 'Kecamatan', 'Kec');
   const agama = extractLineAfterKeyword(lines, 'Agama') ||
-                extractByRegex(text, /\b(ISLAM|KRISTEN|KATOLIK|HINDU|BUDHA|BUDDHA|KONGHUCU)\b/i);
+    extractByRegex(text, /\b(ISLAM|KRISTEN|KATOLIK|HINDU|BUDHA|BUDDHA|KONGHUCU)\b/i);
   const status = extractLineAfterKeyword(lines, 'Status Perkawinan', 'Perkawinan', 'Status') ||
-                 extractByRegex(text, /\b(KAWIN|BELUM KAWIN|CERAI HIDUP|CERAI MATI)\b/i);
+    extractByRegex(text, /\b(KAWIN|BELUM KAWIN|CERAI HIDUP|CERAI MATI)\b/i);
   const pekerjaan = extractLineAfterKeyword(lines, 'Pekerjaan') ||
-                    extractByRegex(text, /\b(KARYAWAN SWASTA|PNS|WIRASWASTA|PEGAWAI NEGERI|PELAJAR|MAHASISWA|BURUH|PETANI|NELAYAN|IRT|TIDAK BEKERJA)\b/i);
+    extractByRegex(text, /\b(KARYAWAN SWASTA|PNS|WIRASWASTA|PEGAWAI NEGERI|PELAJAR|MAHASISWA|BURUH|PETANI|NELAYAN|IRT|TIDAK BEKERJA)\b/i);
   const berlaku = extractLineAfterKeyword(lines, 'Berlaku Hingga', 'Berlaku') ||
-                  extractByRegex(text, /(?:Berlaku\s*Hingga)\s*[:;=]?\s*(.+)/i) ||
-                  'SEUMUR HIDUP';
+    extractByRegex(text, /(?:Berlaku\s*Hingga)\s*[:;=]?\s*(.+)/i) ||
+    'SEUMUR HIDUP';
 
   return [
     { label: 'NIK', value: nikRaw.replace(/\D/g, '').slice(0, 16) },
@@ -232,15 +232,15 @@ function parseNpwp(lines: string[], text: string): OcrField[] {
   // Format ulang jika berhasil ekstrak 15 digit
   const digits = npwpRaw.replace(/\D/g, '');
   const npwpFormatted = digits.length === 15
-    ? `${digits.slice(0,2)}.${digits.slice(2,5)}.${digits.slice(5,8)}.${digits.slice(8,9)}-${digits.slice(9,12)}.${digits.slice(12)}`
+    ? `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}.${digits.slice(8, 9)}-${digits.slice(9, 12)}.${digits.slice(12)}`
     : npwpRaw;
 
   const nama = extractLineAfterKeyword(lines, 'CANDRA', 'Nama', 'NAMA') ||
-               // Baris yang hanya berisi nama (huruf besar semua, tanpa label)
-               lines.find(l => /^[A-Z\s]{5,}$/.test(l.trim()) && !l.includes('NPWP') && !l.includes('NIK') && !l.includes('DIREKTORAT') && !l.includes('KEMENTERIAN') && !l.includes('JENDERAL')) || '';
+    // Baris yang hanya berisi nama (huruf besar semua, tanpa label)
+    lines.find(l => /^[A-Z\s]{5,}$/.test(l.trim()) && !l.includes('NPWP') && !l.includes('NIK') && !l.includes('DIREKTORAT') && !l.includes('KEMENTERIAN') && !l.includes('JENDERAL')) || '';
 
   const nik = extractByRegex(text, /NIK\s*[:;=]?\s*(\d{16})/i) ||
-              extractByRegex(text.replace(/\s/g, ''), /NIK[:\s]*(\d{16})/i);
+    extractByRegex(text.replace(/\s/g, ''), /NIK[:\s]*(\d{16})/i);
 
   // Alamat: biasanya baris setelah nama, berisi "JL" atau "KP" atau "RT"
   const alamatIdx = lines.findIndex(l => /\b(JL|JLN|JALAN|KP|KAV|GANG|GG|NO)\b/i.test(l));
@@ -249,7 +249,7 @@ function parseNpwp(lines: string[], text: string): OcrField[] {
     : extractLineAfterKeyword(lines, 'Alamat', 'ALAMAT');
 
   const kpp = extractByRegex(text, /KPP\s+(.+)/i) ||
-              extractByRegex(text, /(KPP\s+PRATAMA\s+[A-Z\s]+)/i);
+    extractByRegex(text, /(KPP\s+PRATAMA\s+[A-Z\s]+)/i);
 
   return [
     { label: 'NPWP', value: npwpFormatted },
@@ -264,20 +264,20 @@ function parseKk(lines: string[], text: string): OcrField[] {
   // No. KK: Prioritaskan dari 10 baris pertama karena No KK selalu ada di atas (header).
   // Menghapus spasi penting karena kadang OCR membaca angka dengan spasi (misal: 3276 021...).
   const topTextClean = lines.slice(0, 10).join('').replace(/\s/g, '');
-  
+
   // Nomor KK/NIK di Indonesia selalu diawali dengan kode provinsi (11-94), jadi tidak mungkin diawali angka 0.
   // Kita cari 16 digit yang diawali angka 1-9.
   const noKk = extractByRegex(topTextClean, /(?:NO\.|NOMOR|KK|N0|MO|NA)[:;]*([1-9]\d{15})/i) ||
-               extractByRegex(topTextClean, /([1-9]\d{15})/) ||
-               extractByRegex(text.replace(/\s/g, ''), /([1-9]\d{15})/);
+    extractByRegex(topTextClean, /([1-9]\d{15})/) ||
+    extractByRegex(text.replace(/\s/g, ''), /([1-9]\d{15})/);
 
   const kepala = extractLineAfterKeyword(lines, 'Kepala Keluarga', 'Nama Kepala', 'Kepala') ||
-                 // Baris pertama yang all caps dan panjang > 5 setelah baris "KARTU KELUARGA"
-                 lines.find(l => /^[A-Z\s]{5,}$/.test(l.trim()) && !l.includes('KARTU') && !l.includes('KELUARGA') && !l.includes('REPUBLIK') && l.trim().length > 5) || '';
+    // Baris pertama yang all caps dan panjang > 5 setelah baris "KARTU KELUARGA"
+    lines.find(l => /^[A-Z\s]{5,}$/.test(l.trim()) && !l.includes('KARTU') && !l.includes('KELUARGA') && !l.includes('REPUBLIK') && l.trim().length > 5) || '';
 
   const alamat = extractLineAfterKeyword(lines, 'Alamat', 'ALAMAT', 'Jl.', 'JL.', 'Jalan');
   const rtrw = extractLineAfterKeyword(lines, 'RT/RW', 'RT RW') ||
-               extractByRegex(text, /\b(\d{3}\/\d{3})\b/);
+    extractByRegex(text, /\b(\d{3}\/\d{3})\b/);
   const keldes = extractLineAfterKeyword(lines, 'Desa/Kelurahan', 'Kelurahan', 'Desa', 'Kel/Desa');
   const kecamatan = extractLineAfterKeyword(lines, 'Kecamatan', 'Kec');
   const kabkota = extractLineAfterKeyword(lines, 'Kabupaten/Kota', 'Kab/Kota', 'Kabupaten', 'Kota');
@@ -298,26 +298,26 @@ function parseKk(lines: string[], text: string): OcrField[] {
 function parseIjazah(lines: string[], text: string): OcrField[] {
   // Nama: biasanya setelah "kepada" atau "memberikan ijazah kepada"
   const nama = extractLineAfterKeyword(lines, 'kepada', 'Memberikan') ||
-               // Baris yang berisi nama (bold/italic di ijazah, OCR sering all caps atau Title Case)
-               lines.find(l => {
-                 const t = l.trim();
-                 return t.length > 5 && /^[A-Z][a-z]/.test(t) && !t.includes('Universitas') &&
-                        !t.includes('Program') && !t.includes('Memberikan') && !t.includes('Jakarta') &&
-                        !t.includes('Nomor') && !t.includes('Tempat');
-               }) || '';
+    // Baris yang berisi nama (bold/italic di ijazah, OCR sering all caps atau Title Case)
+    lines.find(l => {
+      const t = l.trim();
+      return t.length > 5 && /^[A-Z][a-z]/.test(t) && !t.includes('Universitas') &&
+        !t.includes('Program') && !t.includes('Memberikan') && !t.includes('Jakarta') &&
+        !t.includes('Nomor') && !t.includes('Tempat');
+    }) || '';
 
   // Nomor Ijazah: format "262012020003941" atau "262..." biasanya di header/footer
   const noIjazah = extractLineAfterKeyword(lines, 'Nomor Ijazah', 'Ijazah Nasional', 'No. Ijazah') ||
-                   extractByRegex(text, /(?:Nomor\s+Ijazah\s+Nasional|No\.?\s*Ijazah)\s*[:;=]?\s*([\w\d-]+)/i);
+    extractByRegex(text, /(?:Nomor\s+Ijazah\s+Nasional|No\.?\s*Ijazah)\s*[:;=]?\s*([\w\d-]+)/i);
 
   const univ = extractLineAfterKeyword(lines, 'Universitas', 'Institut', 'Sekolah Tinggi', 'Politeknik', 'Akademi') ||
-               lines.find(l => /universitas|institut|sekolah tinggi|politeknik/i.test(l))?.trim() || '';
+    lines.find(l => /universitas|institut|sekolah tinggi|politeknik/i.test(l))?.trim() || '';
 
   const prodi = extractLineAfterKeyword(lines, 'Program Studi', 'Jurusan', 'Prodi') ||
-                extractByRegex(text, /(?:Program Studi|Jurusan)\s*[:;=]\s*(.+)/i);
+    extractByRegex(text, /(?:Program Studi|Jurusan)\s*[:;=]\s*(.+)/i);
 
   const tahun = extractByRegex(text, /(?:tahun|lulus|tanggal)[^0-9]*(\d{4})/i) ||
-                extractByRegex(text, /\b(20\d{2}|19\d{2})\b/);
+    extractByRegex(text, /\b(20\d{2}|19\d{2})\b/);
 
   return [
     { label: 'Nama', value: nama },
@@ -330,21 +330,21 @@ function parseIjazah(lines: string[], text: string): OcrField[] {
 
 function parseTranskrip(lines: string[], text: string): OcrField[] {
   const nama = extractLineAfterKeyword(lines, 'Nama', 'NAMA', 'Name') ||
-               lines.find(l => /^[A-Z][a-z]/.test(l.trim()) && !l.includes('Universitas') && !l.includes('Program') && l.length > 5) || '';
-               
+    lines.find(l => /^[A-Z][a-z]/.test(l.trim()) && !l.includes('Universitas') && !l.includes('Program') && l.length > 5) || '';
+
   const nim = extractLineAfterKeyword(lines, 'NIM', 'NPM', 'Nomor Induk Mahasiswa', 'Nomor Pokok') ||
-              extractByRegex(text, /(?:NIM|NPM|Nomor Induk Mahasiswa)\s*[:;=]\s*([A-Z0-9.\-]+)/i) ||
-              extractByRegex(text, /\b([0-9]{8,15})\b/);
-              
+    extractByRegex(text, /(?:NIM|NPM|Nomor Induk Mahasiswa)\s*[:;=]\s*([A-Z0-9.\-]+)/i) ||
+    extractByRegex(text, /\b([0-9]{8,15})\b/);
+
   const univ = extractLineAfterKeyword(lines, 'Universitas', 'Institut', 'Sekolah Tinggi', 'Politeknik', 'Akademi') ||
-               lines.find(l => /universitas|institut|sekolah tinggi|politeknik/i.test(l))?.trim() || '';
-               
+    lines.find(l => /universitas|institut|sekolah tinggi|politeknik/i.test(l))?.trim() || '';
+
   const prodi = extractLineAfterKeyword(lines, 'Program Studi', 'Jurusan', 'Prodi') ||
-                extractByRegex(text, /(?:Program Studi|Jurusan)\s*[:;=]\s*(.+)/i);
-                
+    extractByRegex(text, /(?:Program Studi|Jurusan)\s*[:;=]\s*(.+)/i);
+
   const ipk = extractLineAfterKeyword(lines, 'Indeks Prestasi Kumulatif', 'IPK', 'Cumulative Grade') ||
-              extractByRegex(text, /IPK\s*[:;=]?\s*([0-4][.,]\d{1,2})/i) ||
-              extractByRegex(text, /(?:Indeks Prestasi Kumulatif|IPK)[^0-4]*([0-4][.,]\d{1,2})/i);
+    extractByRegex(text, /IPK\s*[:;=]?\s*([0-4][.,]\d{1,2})/i) ||
+    extractByRegex(text, /(?:Indeks Prestasi Kumulatif|IPK)[^0-4]*([0-4][.,]\d{1,2})/i);
 
   return [
     { label: 'Nama', value: nama },
@@ -361,7 +361,7 @@ function parseSim(lines: string[], text: string): OcrField[] {
   const ttl = extractLineAfterKeyword(lines, 'Tempat', 'Tgl Lahir', 'Lahir');
   const alamat = extractLineAfterKeyword(lines, 'Alamat', 'ALAMAT');
   const berlaku = extractLineAfterKeyword(lines, 'Berlaku', 'Exp') ||
-                  extractByRegex(text, /\d{2}-\d{2}-\d{4}/);
+    extractByRegex(text, /\d{2}-\d{2}-\d{4}/);
   return [
     { label: 'Nomor SIM', value: simNum },
     { label: 'Nama', value: nama },
@@ -376,7 +376,7 @@ function parseNikah(lines: string[], text: string): OcrField[] {
   const suami = extractLineAfterKeyword(lines, 'Suami', 'Pria', 'Calon Suami');
   const istri = extractLineAfterKeyword(lines, 'Istri', 'Wanita', 'Calon Istri');
   const tglNikah = extractLineAfterKeyword(lines, 'Tanggal', 'Akad', 'Tgl Nikah') ||
-                   extractByRegex(text, /\d{1,2}\s+\w+\s+\d{4}/);
+    extractByRegex(text, /\d{1,2}\s+\w+\s+\d{4}/);
   const kua = extractLineAfterKeyword(lines, 'KUA', 'Kantor Urusan', 'Kecamatan');
   return [
     { label: 'No. Buku Nikah', value: noBuku },
@@ -390,7 +390,7 @@ function parseNikah(lines: string[], text: string): OcrField[] {
 function parsePaspor(lines: string[], text: string): OcrField[] {
   // No. Paspor: biasanya A/B + 7 digit atau format MRZ
   const noPaspor = extractByRegex(text, /\b([A-Z]\d{7,8})\b/) ||
-                   extractLineAfterKeyword(lines, 'No.', 'Passport', 'Paspor');
+    extractLineAfterKeyword(lines, 'No.', 'Passport', 'Paspor');
   const nama = extractLineAfterKeyword(lines, 'Surname', 'Given', 'Nama', 'Name');
   const kewarganegaraan = extractByRegex(text, /(?:Nationality|Kewarganegaraan)[:\s]+(\w+)/i) || 'INDONESIA';
   const ttl = extractLineAfterKeyword(lines, 'Date of birth', 'Tgl Lahir', 'Lahir', 'Birth');
@@ -408,7 +408,7 @@ function parsePaspor(lines: string[], text: string): OcrField[] {
 
 function parseBpjsKes(lines: string[], text: string): OcrField[] {
   const noKartu = extractByRegex(text, /\b(\d{13})\b/) ||
-                  extractLineAfterKeyword(lines, 'No.', 'Nomor', 'Kartu');
+    extractLineAfterKeyword(lines, 'No.', 'Nomor', 'Kartu');
   const nama = extractLineAfterKeyword(lines, 'Nama', 'NAMA');
   const nik = extractByRegex(text, /\b(\d{16})\b/);
   const faskes = extractLineAfterKeyword(lines, 'Faskes', 'FKTP', 'Puskesmas', 'Klinik');
@@ -422,21 +422,21 @@ function parseBpjsKes(lines: string[], text: string): OcrField[] {
 
 function parseBpjsKet(lines: string[], text: string): OcrField[] {
   // 1. Nomor Peserta (KPJ): Biasanya 11 digit
-  const noPeserta = extractByRegex(text.replace(/\s/g, ''), /\b(\d{11})\b/) || 
-                    extractByRegex(text, /\b(\d{11})\b/);
+  const noPeserta = extractByRegex(text.replace(/\s/g, ''), /\b(\d{11})\b/) ||
+    extractByRegex(text, /\b(\d{11})\b/);
 
   // 2. NIK: Biasanya 16 digit (bisa ada spasi kayak di contoh user)
   const nik = extractByRegex(text.replace(/\s/g, ''), /\b([1-9]\d{15})\b/) ||
-              extractByRegex(text, /\b([1-9]\d{15})\b/);
+    extractByRegex(text, /\b([1-9]\d{15})\b/);
 
   // 3. Nama: Cari baris yang ALL CAPS, panjang > 8, dan bukan header/logo
   const nama = lines.find(l => {
     const t = l.trim();
-    return /^[A-Z\s]{8,}$/.test(t) && 
-           !t.includes('BPJS') && 
-           !t.includes('KARTU') && 
-           !t.includes('PESERTA') &&
-           !t.includes('KETENAGAKERJAAN');
+    return /^[A-Z\s]{8,}$/.test(t) &&
+      !t.includes('BPJS') &&
+      !t.includes('KARTU') &&
+      !t.includes('PESERTA') &&
+      !t.includes('KETENAGAKERJAAN');
   }) || '';
 
   // 4. Tanggal Terdaftar: Pola DD-MM-YYYY
@@ -452,21 +452,21 @@ function parseBpjsKet(lines: string[], text: string): OcrField[] {
 
 function parseSip(lines: string[], text: string): OcrField[] {
   const noSip = extractLineAfterKeyword(lines, 'Nomor SIP', 'No. SIP', 'Nomor Surat Izin') ||
-                extractByRegex(text, /SIP\s*[:;]\s*([A-Z0-9.\-/]+)/i) ||
-                extractByRegex(text, /(?:Nomor|No\.)\s*[:;]?\s*(\d{2,}[\d.\-/]+)/i);
-  
+    extractByRegex(text, /SIP\s*[:;]\s*([A-Z0-9.\-/]+)/i) ||
+    extractByRegex(text, /(?:Nomor|No\.)\s*[:;]?\s*(\d{2,}[\d.\-/]+)/i);
+
   const nama = extractLineAfterKeyword(lines, 'Nama', 'Nama Lengkap', 'Diberikan kepada') ||
-               lines.find(l => /^[A-Z.,\s]{5,}$/.test(l.trim()) && !l.includes('KESEHATAN') && !l.includes('DINAS') && !l.includes('SURAT IZIN')) || '';
+    lines.find(l => /^[A-Z.,\s]{5,}$/.test(l.trim()) && !l.includes('KESEHATAN') && !l.includes('DINAS') && !l.includes('SURAT IZIN')) || '';
 
   const profesi = extractLineAfterKeyword(lines, 'Profesi', 'Sebagai', 'Pekerjaan') ||
-                  extractByRegex(text, /(Dokter|Perawat|Bidan|Apoteker|Tenaga Teknis Kefarmasian)/i);
+    extractByRegex(text, /(Dokter|Perawat|Bidan|Apoteker|Tenaga Teknis Kefarmasian)/i);
 
   const tempat = extractLineAfterKeyword(lines, 'Tempat Praktik', 'Tempat Kerja', 'Nama Fasilitas', 'Fasilitas Pelayanan') ||
-                 extractByRegex(text, /(RS\s+[A-Z\s]+|Rumah Sakit\s+[A-Z\s]+|Klinik\s+[A-Z\s]+|Puskesmas\s+[A-Z\s]+)/i);
+    extractByRegex(text, /(RS\s+[A-Z\s]+|Rumah Sakit\s+[A-Z\s]+|Klinik\s+[A-Z\s]+|Puskesmas\s+[A-Z\s]+)/i);
 
   const berlaku = extractLineAfterKeyword(lines, 'Berlaku sampai', 'Berlaku hingga', 'Berlaku s/d', 'Masa Berlaku') ||
-                  extractByRegex(text, /tanggal\s+([0-9]{1,2}\s+[A-Za-z]+\s+[0-9]{4})/i) ||
-                  extractByRegex(text, /\b(\d{2}[-/]\d{2}[-/]\d{4})\b/);
+    extractByRegex(text, /tanggal\s+([0-9]{1,2}\s+[A-Za-z]+\s+[0-9]{4})/i) ||
+    extractByRegex(text, /\b(\d{2}[-/]\d{2}[-/]\d{4})\b/);
 
   return [
     { label: 'Nomor SIP', value: noSip },
@@ -480,30 +480,30 @@ function parseSip(lines: string[], text: string): OcrField[] {
 function parseAkta(lines: string[], text: string): OcrField[] {
   // Nama: Di akta kelahiran model lama/baru biasanya setelah kalimat "telah lahir:"
   const nama = extractLineAfterKeyword(lines, 'Nama') ||
-               extractByRegex(text, /telah\s*lahir\s*[:;]?\s*([A-Z\s]{5,})/i) ||
-               // Baris di antara tanda kutip (sering digunakan di akta lama)
-               extractByRegex(text, /"\s*([A-Z\s]{5,})\s*"/i) ||
-               extractLineAfterKeyword(lines, 'telah lahir', 'Kutipan');
+    extractByRegex(text, /telah\s*lahir\s*[:;]?\s*([A-Z\s]{5,})/i) ||
+    // Baris di antara tanda kutip (sering digunakan di akta lama)
+    extractByRegex(text, /"\s*([A-Z\s]{5,})\s*"/i) ||
+    extractLineAfterKeyword(lines, 'telah lahir', 'Kutipan');
 
   // No Akta: format 1234/U/JS/1997 atau similar
   const noAkta = extractByRegex(text, /(?:No\.?|Nomor)\s*[:;=]?\s*([\w\d/.-]{5,})/i) ||
-                 extractLineAfterKeyword(lines, 'No', 'Nomor', 'Akta');
+    extractLineAfterKeyword(lines, 'No', 'Nomor', 'Akta');
 
   const tempatLahir = extractLineAfterKeyword(lines, 'bahwa di', 'Tempat Lahir') ||
-                      extractByRegex(text, /bahwa\s*di\s*([A-Z\s]+)/i);
+    extractByRegex(text, /bahwa\s*di\s*([A-Z\s]+)/i);
 
   const tglLahir = extractLineAfterKeyword(lines, 'pada tanggal', 'Tanggal Lahir') ||
-                   extractByRegex(text, /pada\s*tanggal\s*([A-Z\d\s]{5,})/i);
+    extractByRegex(text, /pada\s*tanggal\s*([A-Z\d\s]{5,})/i);
 
   // Orang tua: biasanya "dari suami isteri : NAMA AYAH dan NAMA IBU"
   const ayah = extractByRegex(text, /suami\s*(?:isteri)?\s*[:;]?\s*([A-Z\s]{3,})\s*(?:dan|&)/i) ||
-               extractLineAfterKeyword(lines, 'suami', 'Ayah');
-               
+    extractLineAfterKeyword(lines, 'suami', 'Ayah');
+
   const ibu = extractByRegex(text, /(?:dan|&)\s*([A-Z\s]{3,})/i) ||
-              extractLineAfterKeyword(lines, 'isteri', 'Ibu');
+    extractLineAfterKeyword(lines, 'isteri', 'Ibu');
 
   const anakKe = extractByRegex(text, /anak\s*ke\s*[:;]?\s*([A-Z\d \t\-()]+)/i) ||
-                 extractLineAfterKeyword(lines, 'anak ke');
+    extractLineAfterKeyword(lines, 'anak ke');
 
   return [
     { label: 'Nama', value: nama.replace(/"/g, '').trim() },
@@ -514,6 +514,60 @@ function parseAkta(lines: string[], text: string): OcrField[] {
     { label: 'Nama Ibu', value: ibu },
     { label: 'Anak Ke', value: anakKe },
   ];
+}
+
+function parseReceipt(lines: string[], text: string): OcrField[] {
+  // Store Name: Usually the first 1-2 lines
+  const storeName = lines[0] || '';
+
+  // Total: Look for "TOTAL", "RP", "AMOUNT" followed by numbers
+  const total = extractByRegex(text.replace(/\s/g, ''), /(?:TOTAL|JUMLAH|BAYAR|RP)[:;=]*(\d{3,})/i) ||
+    extractByRegex(text, /(?:TOTAL|JUMLAH|BAYAR|RP)\s*[:;=]?\s*([\d.,]+)/i);
+
+  // Date: Pola DD/MM/YYYY or DD MMM YYYY
+  const date = extractByRegex(text, /\b(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})\b/) ||
+    extractByRegex(text, /\b(\d{1,2}\s+(?:JAN|FEB|MAR|APR|MEI|JUN|JUL|AGU|SEP|OKT|NOV|DES)[A-Za-z]*\s+\d{4})\b/i);
+
+  return [
+    { label: 'Toko/Merchant', value: storeName },
+    { label: 'Total Harga', value: total },
+    { label: 'Tanggal', value: date },
+  ];
+}
+
+// ─── Document Name Suggester ───────────────────────────────────────────────
+
+/** Memberikan saran nama file berdasarkan isi OCR */
+export function suggestDocumentName(rawText: string, category: DocCategory): string {
+  const text = rawText.toUpperCase();
+  const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 5);
+
+  // 1. KTP
+  if (category === 'ktp' || text.includes('KARTU TANDA PENDUDUK')) {
+    const nama = extractLineAfterKeyword(lines, 'Nama', 'NAMA') || lines[1] || '';
+    return `KTP - ${nama.split(' ')[0]}`.trim();
+  }
+
+  // 2. KK
+  if (category === 'kk' || text.includes('KARTU KELUARGA')) {
+    const kepala = extractLineAfterKeyword(lines, 'Kepala Keluarga', 'KEPALA KELUARGA') || '';
+    return `KK - ${kepala.split(' ')[0]}`.trim();
+  }
+
+  // 3. NPWP
+  if (category === 'npwp' || text.includes('NPWP')) {
+    const nama = lines.find(l => /^[A-Z\s]{5,}$/.test(l) && !l.includes('NPWP')) || '';
+    return `NPWP - ${nama.split(' ')[0]}`.trim();
+  }
+
+  // 4. Struk/Receipt
+  if (text.includes('TOTAL') || text.includes('RECEIPT') || text.includes('STRUK')) {
+    const merchant = lines[0] || 'Belanja';
+    const date = extractByRegex(rawText, /\b(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})\b/);
+    return `Struk ${merchant} ${date}`.trim();
+  }
+
+  return ''; // Biarkan user yang isi jika tidak yakin
 }
 
 // ─── Main Entry ────────────────────────────────────────────────────────────
@@ -527,18 +581,21 @@ export function parseOcrToFields(rawText: string, category: DocCategory): OcrFie
   let result: OcrField[] = [];
 
   switch (category) {
-    case 'ktp':    result = parseKtp(lines, text); break;
-    case 'npwp':   result = parseNpwp(lines, text); break;
-    case 'kk':     result = parseKk(lines, text); break;
+    case 'ktp': result = parseKtp(lines, text); break;
+    case 'npwp': result = parseNpwp(lines, text); break;
+    case 'kk': result = parseKk(lines, text); break;
     case 'ijazah': result = parseIjazah(lines, text); break;
     case 'transkrip': result = parseTranskrip(lines, text); break;
-    case 'sim':    result = parseSim(lines, text); break;
-    case 'nikah':  result = parseNikah(lines, text); break;
+    case 'sim': result = parseSim(lines, text); break;
+    case 'nikah': result = parseNikah(lines, text); break;
     case 'paspor': result = parsePaspor(lines, text); break;
     case 'bpjs_kes': result = parseBpjsKes(lines, text); break;
     case 'bpjs_ket': result = parseBpjsKet(lines, text); break;
-    case 'sip':    result = parseSip(lines, text); break;
-    case 'akta':   result = parseAkta(lines, text); break;
+    case 'sip': result = parseSip(lines, text); break;
+    case 'akta': result = parseAkta(lines, text); break;
+    case 'asuransi':
+    case 'sertifikat':
+      result = parseReceipt(lines, text); break;
     case 'lainnya':
       return lines.slice(0, 20).map((v, i) => ({ label: `Baris ${i + 1}`, value: v }));
     default:

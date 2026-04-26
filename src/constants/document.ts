@@ -15,6 +15,7 @@ export const CATEGORY_INFO: Record<DocCategory, { label: string; emoji: string; 
   bpjs_ket: { label: 'BPJS Ketenagakerjaan', emoji: '👷', color: 'bg-indigo-50 text-indigo-700 border-indigo-100' },
   asuransi: { label: 'Asuransi', emoji: '🛡️', color: 'bg-blue-50 text-blue-700 border-blue-100' },
   sip: { label: 'SIP / SIPA', emoji: '🩺', color: 'bg-cyan-50 text-cyan-700 border-cyan-100' },
+  struk: { label: 'Struk / Tagihan', emoji: '🧾', color: 'bg-amber-50 text-amber-700 border-amber-100' },
   lainnya: { label: 'Lainnya', emoji: '📁', color: 'bg-sage-50 text-sage-700 border-sage-100' },
 };
 
@@ -33,5 +34,6 @@ export const FIELD_TEMPLATES: Record<DocCategory, string[]> = {
   bpjs_ket: ['No. Peserta (KPJ)', 'Nama', 'NIK', 'Tgl Terdaftar'],
   asuransi: ['No. Polis', 'Nama Tertanggung', 'Nama Asuransi', 'Masa Berlaku'],
   sip: ['Nomor SIP', 'Nama', 'Profesi', 'Tempat Praktik', 'Berlaku s/d'],
+  struk: ['Toko/Merchant', 'Total Harga', 'Tanggal'],
   lainnya: [],
 };

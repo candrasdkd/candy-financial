@@ -27,7 +27,7 @@ CandyNest dibangun menggunakan teknologi mutakhir untuk memastikan kecepatan dan
 - **Backend**: [Firebase](https://firebase.google.com/) (Auth, Cloud Firestore Real-time, Storage)
 - **Background Tasks**: [Firebase Cloud Functions](https://firebase.google.com/docs/functions) (Scheduled/Cron Jobs)
 - **WhatsApp Gateway**: [Fonnte API](https://fonnte.com/)
-- **AI/OCR Engine**: [Tesseract.js](https://tesseract.projectnaptha.com/) (Client-side Document Scanning)
+- **AI/OCR Engine**: [Google Cloud Vision API](https://cloud.google.com/vision) (Premium Cloud OCR via Firebase Functions)
 - **Icons**: [Lucide React](https://lucide.dev/)
 - **Deployment**: [Vercel](https://vercel.com/) (Frontend) & [Firebase](https://firebase.google.com/) (Functions)
 
