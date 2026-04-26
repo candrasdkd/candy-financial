@@ -11,8 +11,8 @@ Aplikasi manajemen keluarga modern dan *premium* yang dirancang untuk membantu k
 - 💑 **Sinkronisasi Pasangan (Couple Sync)** — Hubungkan akun dengan pasangan menggunakan *kode undangan*. Semua data (transaksi & dokumen) sinkron otomatis secara *real-time* di kedua perangkat.
 - 📊 **Smart Budgeting** — Atur batas pengeluaran bulanan per kategori. Indikator visual dinamis akan memperingatkan jika kamu sudah mendekati atau melewati batas anggaran.
 - 📱 **Native-Feel Navigation** — Navigasi cerdas yang beradaptasi: **Dark Sidebar** yang profesional untuk desktop, dan **Premium Bottom Bar** yang ergonomis untuk pengalaman mobile terbaik.
-- ⚡ **Instalasi PWA** — Dapat di-install langsung ke layar utama (Home Screen) Android maupun iOS seperti aplikasi native dari App Store.
-- 💬 **WhatsApp Smart Reminder** — Pengingat otomatis via WhatsApp yang dikirimkan ke Anda dan pasangan setiap jam 12:00 & 19:00 WIB jika belum ada catatan transaksi hari ini.
+-⚡ **Instalasi PWA & Push Notifications** — Dapat di-install langsung ke layar utama Android/iOS. Dilengkapi dengan **Web Push Notifications** yang tetap jalan di background meskipun aplikasi ditutup.
+- 💬 **WhatsApp & Web Push Reminder** — Pengingat otomatis ganda (WA & Notifikasi HP) yang dikirimkan ke Anda dan pasangan setiap jam **12:00 (Opsi Siang)** & **19:00 (Opsi Malam)** jika belum ada catatan transaksi hari ini.
 
 ---
 
@@ -44,6 +44,7 @@ VITE_FIREBASE_PROJECT_ID=your_id
 VITE_FIREBASE_STORAGE_BUCKET=your_bucket
 VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 VITE_FIREBASE_APP_ID=your_app_id
+VITE_FIREBASE_VAPID_KEY=your_vapid_key_from_console
 ```
 
 ### 2. Persiapan WhatsApp Reminder (Backend)
@@ -82,7 +83,8 @@ Aplikasi akan berjalan di [http://localhost:5173](http://localhost:5173).
 │   ├── pages/          # Halaman Aplikasi (Dashboard, Transactions, Docs, Pots)
 │   ├── types/          # Type Definitions (TypeScript interfaces)
 │   ├── utils/          # Helper (OCR Engine, Formatter, Image Compression)
-│   └── firebase.ts      # Inisialisasi & Konfigurasi Firebase SDK
+│   ├── firebase.ts     # Inisialisasi & Konfigurasi Firebase SDK
+│   └── sw.ts           # Service Worker Source (PWA & Push Notifications)
 ├── functions/          # Backend (Firebase Cloud Functions + Fonnte API)
 ├── firebase.json       # Konfigurasi Firebase Functions
 ├── vercel.json         # Konfigurasi Deployment Vercel (Frontend)
