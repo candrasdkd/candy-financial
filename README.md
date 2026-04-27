@@ -1,115 +1,130 @@
 # 🍬 CandyNest — Premium Family Hub
 
-Aplikasi manajemen keluarga modern dan *premium* yang dirancang untuk membantu keluarga mengelola **keuangan, dokumen penting (OCR), dan anggaran** dalam satu tempat yang aman dan sinkron secara *real-time*.
+Aplikasi manajemen keluarga modern dan *premium* yang dirancang untuk membantu pasangan mengelola **keuangan, catatan penting, dokumen (OCR), dan masa depan finansial** dalam satu ekosistem yang aman dan sinkron secara *real-time*.
 
-![CandyNest Logo](/public/logo.png)
+![CandyNest Banner](/public/screenshot1.png)
 
 ## ✨ Fitur Unggulan (Premium Experience)
 
-- 💰 **Dashboard Keuangan Visioner** — Tampilan kartu saldo dengan gaya *Glassmorphism* yang elegan, grafik tren 7-hari yang interaktif, dan kalkulasi akumulasi tabungan seluruh waktu.
-- 📂 **Brankas Dokumen (Smart OCR)** — Simpan KTP, KK, Akta, dan dokumen penting lainnya. Dilengkapi teknologi **OCR (Optical Character Recognition)** untuk ekstrak data teks secara otomatis dari foto.
-- 💑 **Sinkronisasi Pasangan (Couple Sync)** — Hubungkan akun dengan pasangan menggunakan *kode undangan*. Semua data (transaksi & dokumen) sinkron otomatis secara *real-time* di kedua perangkat.
-- 📊 **Smart Budgeting** — Atur batas pengeluaran bulanan per kategori. Indikator visual dinamis akan memperingatkan jika kamu sudah mendekati atau melewati batas anggaran.
-- 📱 **Native-Feel Navigation** — Navigasi cerdas yang beradaptasi: **Dark Sidebar** yang profesional untuk desktop, dan **Premium Bottom Bar** yang ergonomis untuk pengalaman mobile terbaik.
--⚡ **Instalasi PWA & Push Notifications** — Dapat di-install langsung ke layar utama Android/iOS. Dilengkapi dengan **Web Push Notifications** yang tetap jalan di background meskipun aplikasi ditutup.
-- 💬 **WhatsApp & Web Push Reminder** — Pengingat otomatis ganda (WA & Notifikasi HP) yang dikirimkan ke Anda dan pasangan setiap jam **12:00 (Opsi Siang)** & **19:00 (Opsi Malam)** jika belum ada catatan transaksi hari ini.
+### 💰 Dashboard Keuangan Visioner
+Tampilan kartu saldo dengan gaya *Glassmorphism* yang elegan. Dilengkapi dengan grafik tren 7-hari yang interaktif dan kalkulasi akumulasi tabungan seluruh waktu secara otomatis.
+
+### 📝 Catatan Pintar (Smart Notes) — *New!*
+Bukan sekadar catatan biasa. Sistem cerdas kami mengenali apa yang Anda tulis:
+- 🔒 **Auto-Sensor**: Otomatis menyensor kata sandi/PIN jika Anda menggunakan format `Label: Nilai`.
+- ✅ **Checklist Interaktif**: Buat daftar belanja atau tugas dengan tanda `> ` yang bisa langsung dicentang.
+- 📸 **Multi-Image Attachment**: Lampirkan hingga 4 foto per catatan dengan teknologi kompresi cerdas (Hemat, Standar, Tajam).
+- 📲 **Export to WhatsApp**: Kirim isi catatan langsung ke WhatsApp pasangan dengan satu klik.
+
+### 🏺 Pos Tabungan (Envelope Budgeting)
+Kelola target masa depan dengan sistem pos (envelopes):
+- **Alokasi Gaji**: Wizard cerdas untuk membagi pendapatan ke berbagai pos sekaligus.
+- **Target Progress**: Pantau persentase pencapaian target tabungan dengan indikator visual yang cantik.
+- **Riwayat Mutasi**: Setiap uang masuk dan keluar dicatat dengan detail siapa yang melakukan perubahan.
+
+### 📂 Brankas Dokumen (Smart OCR)
+Simpan KTP, KK, Akta, dan dokumen penting lainnya di satu tempat aman. Dilengkapi teknologi **OCR (Optical Character Recognition)** untuk ekstrak data teks secara otomatis dari foto dokumen Anda.
+
+### 💑 Sinkronisasi Pasangan (Couple Sync)
+Hubungkan akun dengan pasangan menggunakan *kode undangan unik*. Semua data (transaksi, catatan, & dokumen) akan tersinkronisasi secara otomatis di kedua perangkat tanpa jeda.
+
+### 📊 Smart Budgeting
+Atur batas pengeluaran bulanan per kategori. Indikator visual dinamis akan memberikan peringatan jika pengeluaran Anda sudah mendekati atau melewati batas anggaran yang ditentukan.
+
+### 📢 Laporan Kolaboratif
+Bagikan ringkasan keuangan bulanan langsung ke WhatsApp pasangan atau simpan sebagai laporan dengan fitur *Native Share* yang rapi dan informatif.
+
+### 🔔 Reminder Ganda (WA & Web Push)
+Pengingat otomatis yang dikirimkan setiap jam **12:00 & 19:00** jika belum ada catatan transaksi hari ini. Notifikasi dikirim melalui WhatsApp (Fonnte API) dan Web Push secara bersamaan.
 
 ---
 
-## 🛠️ Tech Stack & Arsitektur Modern
+## 🎨 Estetika & User Experience
+CandyNest dirancang dengan standar desain tinggi:
+- **High-End Animations**: Menggunakan *spring-based animations* dari Framer Motion untuk transisi yang halus dan organik.
+- **SaaS-Style UI**: Background dinamis, grid berpola modern, dan elemen transparan yang memberikan kesan eksklusif.
+- **Mobile First & PWA**: Navigasi *Bottom Bar* yang ergonomis untuk mobile dan *Dark Sidebar* profesional untuk desktop.
 
-CandyNest dibangun menggunakan teknologi mutakhir untuk memastikan kecepatan dan keamanan data:
+---
 
-- **Core**: [React 18](https://reactjs.org/) + [TypeScript](https://www.typescriptlang.org/) + [Vite](https://vitejs.dev/)
-- **State Management**: [Zustand](https://zustand-demo.pmnd.rs/) (High-performance global state)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/) (Custom Design System, Glassmorphism, Responsive)
-- **Animations**: [Framer Motion](https://www.framer.com/motion/) (Smooth springs & transitions)
-- **Backend**: [Firebase](https://firebase.google.com/) (Auth, Cloud Firestore Real-time, Storage)
-- **Background Tasks**: [Firebase Cloud Functions](https://firebase.google.com/docs/functions) (Scheduled/Cron Jobs)
+## 🛠️ Tech Stack & Arsitektur
+
+- **Frontend**: [React 18](https://reactjs.org/) + [TypeScript](https://www.typescriptlang.org/) + [Vite](https://vitejs.dev/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) (Custom Design Tokens)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **State Management**: [Zustand](https://zustand-demo.pmnd.rs/)
+- **Backend**: [Firebase](https://firebase.google.com/) (Firestore Real-time, Auth, Storage, Cloud Functions)
+- **OCR Engine**: [Google Cloud Vision API](https://cloud.google.com/vision)
 - **WhatsApp Gateway**: [Fonnte API](https://fonnte.com/)
-- **AI/OCR Engine**: [Google Cloud Vision API](https://cloud.google.com/vision) (Premium Cloud OCR via Firebase Functions)
-- **Icons**: [Lucide React](https://lucide.dev/)
-- **Deployment**: [Vercel](https://vercel.com/) (Frontend) & [Firebase](https://firebase.google.com/) (Functions)
+- **Deployment**: [Vercel](https://vercel.com/)
 
 ---
 
 ## 🚀 Memulai (Local Development)
 
-### 1. Persiapan Environment
-Duplikat file `.env.example` menjadi `.env` dan isi dengan kredensial Firebase Anda:
+### 1. Konfigurasi Environment
+Salin `.env.example` menjadi `.env` dan isi dengan kredensial Firebase Anda:
 ```env
-VITE_FIREBASE_API_KEY=your_key
-VITE_FIREBASE_AUTH_DOMAIN=your_domain
-VITE_FIREBASE_PROJECT_ID=your_id
-VITE_FIREBASE_STORAGE_BUCKET=your_bucket
-VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-VITE_FIREBASE_APP_ID=your_app_id
-VITE_FIREBASE_VAPID_KEY=your_vapid_key_from_console
+VITE_FIREBASE_API_KEY=...
+VITE_FIREBASE_AUTH_DOMAIN=...
+VITE_FIREBASE_PROJECT_ID=...
+VITE_FIREBASE_STORAGE_BUCKET=...
+VITE_FIREBASE_MESSAGING_SENDER_ID=...
+VITE_FIREBASE_APP_ID=...
+VITE_FIREBASE_VAPID_KEY=...
 ```
 
-### 2. Persiapan WhatsApp Reminder (Backend)
-Masuk ke folder `functions`, buat file `.env` dan isi dengan token Fonnte:
-```env
-FONNTE_TOKEN=your_fonnte_token
-TARGET_NUMBERS=number1,number2
-```
-
-### 3. Instalasi & Menjalankan Proyek
-Proyek ini menggunakan **npm** (atau yarn/pnpm).
+### 2. Instalasi
 ```bash
-# Install frontend dependencies
+# Install dependencies
 npm install
 
-# Install functions dependencies
-cd functions && npm install && cd ..
-
-# Jalankan server development
+# Jalankan development server
 npm run dev
-
-# Deploy Cloud Functions
-firebase deploy --only functions
 ```
-Aplikasi akan berjalan di [http://localhost:5173](http://localhost:5173).
+
+### 3. Backend (Functions)
+```bash
+cd functions
+npm install
+# Konfigurasi FONNTE_TOKEN di environment Firebase
+firebase functions:config:set fonnte.token="YOUR_TOKEN"
+```
 
 ---
 
-## 📁 Struktur Folder Utama
+## 📁 Struktur Folder
 
 ```text
 ├── src/
-│   ├── components/     # Komponen UI Reusable (Modal, Layout, Navigasi)
-│   ├── store/          # Zustand Stores (Auth, Transactions, Savings, Budget)
-│   ├── hooks/          # Custom Hooks (Logic Bisnis & integrasi Store)
-│   ├── pages/          # Halaman Aplikasi (Dashboard, Transactions, Docs, Pots)
-│   ├── types/          # Type Definitions (TypeScript interfaces)
-│   ├── utils/          # Helper (OCR Engine, Formatter, Image Compression)
-│   ├── firebase.ts     # Inisialisasi & Konfigurasi Firebase SDK
-│   └── sw.ts           # Service Worker Source (PWA & Push Notifications)
-├── functions/          # Backend (Firebase Cloud Functions + Fonnte API)
-├── firebase.json       # Konfigurasi Firebase Functions
-├── vercel.json         # Konfigurasi Deployment Vercel (Frontend)
-└── README.md
+│   ├── components/     # UI Components (Modals, Cards, Layouts)
+│   ├── store/          # Zustand State (Auth, Trans, Savings, Notes)
+│   ├── hooks/          # Business Logic & Data Fetching
+│   ├── pages/          # Full Page Views (Dashboard, Notes, Pots, etc.)
+│   ├── types/          # TypeScript Interfaces & Constants
+│   ├── utils/          # Helpers (OCR, Formatting, Image Comp)
+│   └── sw.ts           # PWA & Push Notification Logic
+├── functions/          # Scheduled Tasks & WhatsApp Reminder
+└── public/             # Static Assets & PWA Icons
 ```
 
 ---
 
 ## 🔒 Keamanan Data & Privasi
-
-CandyNest menerapkan aturan keamanan **Firestore Security Rules** yang ketat:
-- Data transaksi dan dokumen hanya bisa diakses oleh user yang terverifikasi dan terhubung dalam satu `coupleId`.
-- Proses pengunggahan dokumen ke **Firebase Storage** diproteksi dengan path folder unik per pasangan.
-- Teknologi OCR berjalan sepenuhnya di sisi *client* (browser user) untuk menjaga privasi data sensitif sebelum disimpan.
+Keamanan data keluarga Anda adalah prioritas utama kami:
+- **Firestore Security Rules**: Data hanya dapat diakses oleh user yang terverifikasi dan memiliki `coupleId` yang sama.
+- **Private Storage**: Dokumen diunggah ke Firebase Storage dengan path folder unik dan terproteksi per pasangan.
+- **Client-Side Processing**: Teknologi OCR dan kompresi gambar berjalan sepenuhnya di perangkat Anda untuk menjaga privasi sebelum data disimpan.
 
 ---
 
 ## 📱 Alur Menghubungkan Pasangan
-
 1. **Daftar**: Suami dan Istri membuat akun masing-masing.
-2. **Kirim Kode**: Salah satu pihak pergi ke menu **Pengaturan**, lalu salin **Kode Undangan**.
-3. **Konfirmasi**: Pihak lain memasukkan kode tersebut di menu Pengaturan HP-nya, lalu klik **Hubungkan**.
-4. **Selesai**: Data finansial dan brankas dokumen akan langsung tersinkronisasi di kedua HP secara ajaib. ✨
+2. **Kirim Kode**: Salah satu pihak membuka menu **Pengaturan** dan menyalin **Kode Undangan**.
+3. **Hubungkan**: Pihak lain memasukkan kode tersebut di menu Pengaturan akunnya, lalu klik **Hubungkan**.
+4. **Selesai**: Data finansial, catatan, dan brankas dokumen akan langsung tersinkronisasi secara ajaib. ✨
 
 ---
 
-Dibuat dengan ❤️ oleh Keluarga untuk Keluarga.
+Dibuat dengan ❤️ untuk membantu keluarga Indonesia lebih melek finansial.
 **CandyNest — Sweetening Your Family's Financial Future.**
