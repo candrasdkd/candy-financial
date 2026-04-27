@@ -178,7 +178,7 @@ export function useDocuments() {
     ];
   }, []);
 
-  const filtered = documents.filter(d => {
+  const filtered = useMemo(() => documents.filter(d => {
     const catOk = activeCat === 'all' || d.category === activeCat;
     
     let partnerOk = activePartnerId === 'all';
@@ -189,7 +189,7 @@ export function useDocuments() {
     }
     
     return catOk && partnerOk;
-  });
+  }), [documents, activeCat, activePartnerId, userProfile?.uid, userProfile?.displayName]);
   const activeLabel = activeCat === 'all' ? 'Semua Dokumen' : CATEGORY_INFO[activeCat].label;
 
   // Actions

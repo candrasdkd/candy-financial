@@ -11,6 +11,9 @@ export function formatFileSize(bytes: number): string {
 /** Kompresi gambar menggunakan Canvas */
 export async function compressImage(file: File, maxSizeKB: number = 500): Promise<File> {
   return new Promise((resolve, reject) => {
+    if (!file.type.startsWith('image/')) {
+      return reject(new Error('Format file tidak didukung. Harap unggah gambar.'));
+    }
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = (event) => {

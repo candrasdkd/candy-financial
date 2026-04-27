@@ -17,13 +17,14 @@ exports.dailyReminderWA = functions.pubsub
 
       const txSnapshot = await db.collection("transactions")
           .where("date", "==", today)
-          .limit(1)
           .get();
 
-      if (!txSnapshot.empty) {
-        console.log("Sudah ada catatan transaksi hari ini. Reminder dibatalkan.");
-        return null;
-      }
+      const activeCoupleIds = new Set();
+      txSnapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data.coupleId) activeCoupleIds.add(data.coupleId);
+        if (data.userId) activeCoupleIds.add(data.userId); // Fallback
+      });
 
       const jakartaHour = parseInt(new Date().toLocaleString("en-US", {
         timeZone: "Asia/Jakarta",
@@ -42,22 +43,24 @@ exports.dailyReminderWA = functions.pubsub
         pushTitle = "Rekap Hari Ini 🍭";
       }
 
-      try {
-        await axios.post(
-            "https://api.fonnte.com/send",
-            {
-              target: TARGET_NUMBERS,
-              message: message,
-              countryCode: "62",
-            },
-            {
-              headers: {
-                Authorization: FONNTE_TOKEN,
+      if (txSnapshot.empty && TARGET_NUMBERS) {
+        try {
+          await axios.post(
+              "https://api.fonnte.com/send",
+              {
+                target: TARGET_NUMBERS,
+                message: message,
+                countryCode: "62",
               },
-            },
-        );
-      } catch (error) {
-        console.error("[GAGAL] Tidak bisa mengirim WA via Fonnte:", error.message);
+              {
+                headers: {
+                  Authorization: FONNTE_TOKEN,
+                },
+              },
+          );
+        } catch (error) {
+          console.error("[GAGAL] Tidak bisa mengirim WA via Fonnte:", error.message);
+        }
       }
 
       try {
@@ -66,7 +69,8 @@ exports.dailyReminderWA = functions.pubsub
 
         usersSnapshot.forEach((doc) => {
           const userData = doc.data();
-          if (userData.fcmTokens && Array.isArray(userData.fcmTokens)) {
+          const hasTransaction = activeCoupleIds.has(userData.coupleId) || activeCoupleIds.has(doc.id);
+          if (!hasTransaction && userData.fcmTokens && Array.isArray(userData.fcmTokens)) {
             allTokens.push(...userData.fcmTokens);
           }
         });

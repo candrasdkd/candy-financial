@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, X, ImageIcon, Loader2, ScanLine, Check, Copy, AlertCircle, Sparkles } from 'lucide-react';
 import { useDocuments, CATEGORY_INFO, FIELD_TEMPLATES, OcrField, DocCategory } from '../hooks/useDocuments';
@@ -21,6 +21,14 @@ export default function DocumentUploadModal({ onClose }: { onClose: () => void }
   const [isCompressing, setIsCompressing] = useState(false);
   const [done, setDone] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const previewUrlsRef = useRef<string[]>([]);
+
+  // Cleanup semua blob URL saat modal ditutup/unmount
+  useEffect(() => {
+    return () => {
+      previewUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
+    };
+  }, []);
 
   const handleFile = async (f: File) => {
     setLocalError(null);
@@ -41,8 +49,10 @@ export default function DocumentUploadModal({ onClose }: { onClose: () => void }
       }
     }
 
+    const newUrl = URL.createObjectURL(processedFile);
+    previewUrlsRef.current.push(newUrl);
     setFiles(prev => [...prev, processedFile]);
-    setPreviews(prev => [...prev, URL.createObjectURL(processedFile)]);
+    setPreviews(prev => [...prev, newUrl]);
   };
 
   const handleContinue = async () => {
@@ -150,7 +160,13 @@ export default function DocumentUploadModal({ onClose }: { onClose: () => void }
                     {previews.map((url, i) => (
                       <div key={i} className="relative group aspect-[4/3] rounded-2xl overflow-hidden border border-sage-100 bg-sage-50">
                         <img src={url} className="w-full h-full object-cover" />
-                        <button onClick={() => { setFiles(f => f.filter((_, idx) => idx !== i)); setPreviews(p => p.filter((_, idx) => idx !== i)); }}
+                        <button onClick={() => {
+                          // Revoke URL saat foto dihapus
+                          URL.revokeObjectURL(previews[i]);
+                          previewUrlsRef.current = previewUrlsRef.current.filter(u => u !== previews[i]);
+                          setFiles(f => f.filter((_, idx) => idx !== i));
+                          setPreviews(p => p.filter((_, idx) => idx !== i));
+                        }}
                           className="absolute top-2 right-2 p-1.5 bg-rose-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
                           <X className="w-3.5 h-3.5" />
                         </button>

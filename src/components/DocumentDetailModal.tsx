@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Trash2, Copy, Check, X, ScanLine, Shield, Download, Share2, Loader2, Pencil, Save, ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
-import { FamilyDocument, CATEGORY_INFO, useDocuments } from '../hooks/useDocuments';
+import { FamilyDocument, CATEGORY_INFO } from '../hooks/useDocuments';
 import { useConfirmStore } from '../store/useConfirmStore';
 
 interface DetailModalProps {
@@ -32,7 +32,6 @@ function CopyBtn({ text, label }: { text: string; label?: string }) {
 export default function DocumentDetailModal({ doc, onClose, onDelete, onUpdate }: DetailModalProps) {
   const info = CATEGORY_INFO[doc.category];
   const hasFields = doc.fields && doc.fields.length > 0;
-  const { updateDocument } = useDocuments(); // Assuming updateDocument is needed, or just useDocuments()
   const { confirm } = useConfirmStore();
   
   const [isEditing, setIsEditing] = useState(false);
@@ -124,6 +123,8 @@ export default function DocumentDetailModal({ doc, onClose, onDelete, onUpdate }
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        // Revoke immediately after use to prevent memory leak
+        window.URL.revokeObjectURL(blobUrl);
       }
     } catch (err) {
       (doc.imageUrls || [doc.imageUrl!]).forEach(url => window.open(url, '_blank'));

@@ -1,5 +1,5 @@
 // src/components/UpdatePrompt.tsx
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, X, Sparkles } from 'lucide-react';
@@ -9,6 +9,18 @@ const UPDATE_COOLDOWN_KEY = 'pwa_last_updated';
 export default function UpdatePrompt() {
   const [isUpdating, setIsUpdating] = useState(false);
   const hasReloaded = useRef(false);
+  const swRegistrationRef = useRef<ServiceWorkerRegistration | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    // Naikan interval — 5 menit cukup, tidak perlu 60 detik
+    intervalRef.current = setInterval(() => {
+      swRegistrationRef.current?.update();
+    }, 5 * 60 * 1000);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, []);
 
   const {
     offlineReady: [offlineReady, setOfflineReady],
@@ -20,8 +32,7 @@ export default function UpdatePrompt() {
     },
     onRegistered(r) {
       if (r) {
-        // Naikan interval — 5 menit cukup, tidak perlu 60 detik
-        setInterval(() => r.update(), 5 * 60 * 1000);
+        swRegistrationRef.current = r;
       }
     },
   });

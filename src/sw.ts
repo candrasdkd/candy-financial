@@ -55,7 +55,7 @@ registerRoute(
 // 4. Firebase Storage
 registerRoute(
   /^https:\/\/firebasestorage\.googleapis\.com\/.*/i,
-  new CacheFirst({
+  new StaleWhileRevalidate({
     cacheName: 'firebase-storage-cache',
     plugins: [
       new CacheableResponsePlugin({ statuses: [0, 200] }),
