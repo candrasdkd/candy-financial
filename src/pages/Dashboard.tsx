@@ -92,17 +92,12 @@ export default function Dashboard() {
     recentTx,
   } = useDashboardStats(transactions, now);
 
-  // 1. Badging API: Tampilkan jumlah transaksi bulan ini di icon app
+  // Hapus badge notifikasi saat user membuka Dashboard
   useEffect(() => {
-    if ('setAppBadge' in navigator) {
-      const count = transactions.length;
-      if (count > 0) {
-        (navigator as any).setAppBadge(count).catch(() => {});
-      } else {
-        (navigator as any).clearAppBadge().catch(() => {});
-      }
+    if ('clearAppBadge' in navigator) {
+      (navigator as any).clearAppBadge().catch(() => {});
     }
-  }, [transactions]);
+  }, []);
 
   const handleShareStats = async () => {
     const text = `📊 Laporan Keuangan CandyNest (${format(now, 'MMMM yyyy', { locale: id })})\n\n` +
