@@ -75,6 +75,7 @@ export function useDocuments() {
     try {
       for (const file of params.files) {
         if (!ALLOWED_TYPES.includes(file.type)) throw new Error(`Format file "${file.name}" tidak didukung.`);
+        if (file.size > 5 * 1024 * 1024) throw new Error(`File "${file.name}" terlalu besar (Max 5MB).`);
       }
 
       const imageUrls: string[] = [];

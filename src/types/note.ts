@@ -12,6 +12,8 @@ export interface FamilyNote {
   color?: string;
   isPinned?: boolean;
   isArchived?: boolean;
-  imageUrl?: string;
-  imagePath?: string;
+  imageUrl?: string | null;
+  imagePath?: string | null;
+  imageUrls?: string[] | null;
+  imagePaths?: string[] | null;
 }

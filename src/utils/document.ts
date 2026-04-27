@@ -9,7 +9,7 @@ export function formatFileSize(bytes: number): string {
 }
 
 /** Kompresi gambar menggunakan Canvas */
-export async function compressImage(file: File, maxSizeKB: number = 500): Promise<File> {
+export async function compressImage(file: File, maxSizeKB: number = 300): Promise<File> {
   return new Promise((resolve, reject) => {
     if (!file.type.startsWith('image/')) {
       return reject(new Error('Format file tidak didukung. Harap unggah gambar.'));
@@ -24,14 +24,21 @@ export async function compressImage(file: File, maxSizeKB: number = 500): Promis
         let width = img.width;
         let height = img.height;
 
-        const MAX_SIDE = 1600;
-        if (width > MAX_SIDE || height > MAX_SIDE) {
+        // Tentukan resolusi maksimal berdasarkan target ukuran
+        // Hemat (<=200KB) -> 1024px
+        // Standar (<=400KB) -> 1600px
+        // Tajam (>400KB) -> 2000px
+        let maxSide = 1600;
+        if (maxSizeKB <= 200) maxSide = 1024;
+        else if (maxSizeKB > 400) maxSide = 2000;
+
+        if (width > maxSide || height > maxSide) {
           if (width > height) {
-            height = (height / width) * MAX_SIDE;
-            width = MAX_SIDE;
+            height = (height / width) * maxSide;
+            width = maxSide;
           } else {
-            width = (width / height) * MAX_SIDE;
-            height = MAX_SIDE;
+            width = (width / height) * maxSide;
+            height = maxSide;
           }
         }
 
@@ -44,19 +51,33 @@ export async function compressImage(file: File, maxSizeKB: number = 500): Promis
           ctx.drawImage(img, 0, 0, width, height);
         }
 
-        let quality = 0.8;
+        // Mulai dari kualitas lebih tinggi agar "Tajam" benar-benar tajam
+        let quality = maxSizeKB > 400 ? 0.95 : 0.85;
+        
         const attemptCompress = (q: number) => {
           canvas.toBlob((blob) => {
             if (!blob) return reject(new Error('Gagal memproses gambar'));
-            if (blob.size / 1024 > maxSizeKB && q > 0.2) {
-              attemptCompress(q - 0.1);
+            
+            // Jika masih kegedean, turunkan kualitas (sampai batas minimal 0.1)
+            if (blob.size / 1024 > maxSizeKB && q > 0.1) {
+              attemptCompress(q - 0.05); // Turun perlahan biar akurat
             } else {
-              resolve(new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", { type: 'image/jpeg' }));
+              // Jika ukuran gambar di bawah 100KB, kita perlu menambahkannya (padding)
+              // agar Firebase Storage rule (min 100KB) tidak menolak upload ini.
+              if (blob.size < 100 * 1024) {
+                const paddingSize = (102 * 1024) - blob.size; // Pad to 102KB
+                const padding = new Uint8Array(paddingSize);
+                const paddedBlob = new Blob([blob, padding], { type: 'image/jpeg' });
+                resolve(new File([paddedBlob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", { type: 'image/jpeg' }));
+              } else {
+                resolve(new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", { type: 'image/jpeg' }));
+              }
             }
           }, 'image/jpeg', q);
         };
         attemptCompress(quality);
       };
+
     };
     reader.onerror = reject;
   });

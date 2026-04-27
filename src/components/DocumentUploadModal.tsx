@@ -18,8 +18,13 @@ export default function DocumentUploadModal({ onClose }: { onClose: () => void }
   const [fields, setFields] = useState<OcrField[]>([]);
   const [saving, setSaving] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+  const [isInvalid, setIsInvalid] = useState(false);
+  const [fileStats, setFileStats] = useState<{ original: number; compressed: number }[]>([]);
   const [isCompressing, setIsCompressing] = useState(false);
   const [done, setDone] = useState(false);
+  const [compressionTarget, setCompressionTarget] = useState(300);
+  const [originalFiles, setOriginalFiles] = useState<File[]>([]);
+  const [fullScreenUrl, setFullScreenUrl] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const previewUrlsRef = useRef<string[]>([]);
 
@@ -30,34 +35,67 @@ export default function DocumentUploadModal({ onClose }: { onClose: () => void }
     };
   }, []);
 
+  const recompressFiles = async (targetKB: number, existingOriginals: File[]) => {
+    setIsCompressing(true);
+    try {
+      const newFiles: File[] = [];
+      const newPreviews: string[] = [];
+      const newStats: { original: number; compressed: number }[] = [];
+      
+      // Cleanup old previews
+      previewUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
+      previewUrlsRef.current = [];
+
+      for (const f of existingOriginals) {
+        const processedFile = await compress(f, targetKB);
+        
+        const newUrl = URL.createObjectURL(processedFile);
+        previewUrlsRef.current.push(newUrl);
+        newFiles.push(processedFile);
+        newPreviews.push(newUrl);
+        newStats.push({ original: f.size, compressed: processedFile.size });
+      }
+
+      setFiles(newFiles);
+      setPreviews(newPreviews);
+      setFileStats(newStats);
+    } catch (err) {
+      setLocalError('Gagal mengompres ulang file.');
+    } finally {
+      setIsCompressing(false);
+    }
+  };
+
   const handleFile = async (f: File) => {
     setLocalError(null);
+    setIsInvalid(false);
+
     if (f.size < 100 * 1024) {
-      setLocalError('Catatan: Ukuran foto di bawah 100KB, hasil scan teks mungkin kurang jelas.');
-    }
-    
-    let processedFile = f;
-    if (f.size > 500 * 1024) {
-      setIsCompressing(true);
-      try {
-        processedFile = await compress(f);
-      } catch (err) {
-        setLocalError('Gagal mengompres file.');
-        return;
-      } finally {
-        setIsCompressing(false);
-      }
+      setLocalError('Ukuran foto terlalu kecil (di bawah 100KB). Harap ambil foto ulang yang lebih jelas agar data bisa terbaca.');
+      setIsInvalid(true);
     }
 
-    const newUrl = URL.createObjectURL(processedFile);
-    previewUrlsRef.current.push(newUrl);
-    setFiles(prev => [...prev, processedFile]);
-    setPreviews(prev => [...prev, newUrl]);
+    setOriginalFiles(prev => [...prev, f]);
+    
+    setIsCompressing(true);
+    try {
+      const processedFile = await compress(f, compressionTarget);
+
+      const newUrl = URL.createObjectURL(processedFile);
+      previewUrlsRef.current.push(newUrl);
+      setFiles(prev => [...prev, processedFile]);
+      setPreviews(prev => [...prev, newUrl]);
+      setFileStats(prev => [...prev, { original: f.size, compressed: processedFile.size }]);
+    } catch (err) {
+      setLocalError('Gagal mengompres file.');
+    } finally {
+      setIsCompressing(false);
+    }
   };
 
   const handleContinue = async () => {
     if (files.length === 0) return;
-    
+
     const templates = FIELD_TEMPLATES[category];
     setFields(templates.map(label => ({ label, value: '' })));
     setStep('review');
@@ -98,9 +136,8 @@ export default function DocumentUploadModal({ onClose }: { onClose: () => void }
         exit={{ y: '100%', opacity: 0 }}
         transition={{ type: 'tween', duration: 0.2, ease: 'easeOut' }}
         style={{ willChange: 'transform, opacity' }}
-        className={`relative bg-white w-full sm:rounded-[2.5rem] rounded-t-[2.5rem] sm:shadow-2xl flex flex-col max-h-[85vh] sm:max-h-[90vh] overflow-hidden border border-white/20 mt-auto sm:my-auto transition-all duration-500 ${
-          step === 'review' ? 'sm:max-w-4xl' : 'sm:max-w-lg'
-        }`}
+        className={`relative bg-white w-full sm:rounded-[2.5rem] rounded-t-[2.5rem] sm:shadow-2xl flex flex-col max-h-[85vh] sm:max-h-[90vh] overflow-hidden border border-white/20 mt-auto sm:my-auto transition-all duration-500 ${step === 'review' ? 'sm:max-w-4xl' : 'sm:max-w-lg'
+          }`}
       >
         {/* Header (Sticky) */}
         <div className="flex-shrink-0 px-6 pt-6 pb-4 border-b border-sage-50 bg-white">
@@ -120,7 +157,7 @@ export default function DocumentUploadModal({ onClose }: { onClose: () => void }
               <X className="w-5 h-5" />
             </button>
           </div>
-          
+
           <div className="flex gap-1 mt-4">
             {(['select', 'review'] as Step[]).map((s, i) => (
               <div key={s} className={`h-1 rounded-full transition-all duration-500 ${step === s ? 'w-8 bg-sage-700' : 'w-4 bg-sage-100'}`} />
@@ -155,19 +192,72 @@ export default function DocumentUploadModal({ onClose }: { onClose: () => void }
                 </div>
 
                 <div className="space-y-4">
+                  <label className="text-[9px] font-bold text-sage-400 uppercase tracking-widest block px-1">Kualitas Kompresi</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { label: 'Hemat', kb: 150, icon: '📉' },
+                      { label: 'Standar', kb: 300, icon: '⚖️' },
+                      { label: 'Tajam', kb: 500, icon: '✨' }
+                    ].map((opt) => (
+                      <button
+                        key={opt.kb}
+                        onClick={() => {
+                          setCompressionTarget(opt.kb);
+                          if (originalFiles.length > 0) {
+                            recompressFiles(opt.kb, originalFiles);
+                          }
+                        }}
+                        className={`flex flex-col items-center gap-1 p-3 rounded-2xl border transition-all ${compressionTarget === opt.kb
+                          ? 'bg-sage-900 border-sage-900 text-white shadow-lg scale-[1.02]'
+                          : 'bg-white border-sage-100 text-sage-500 hover:bg-sage-50 hover:border-sage-200'
+                          }`}
+                      >
+                        <span className="text-sm">{opt.icon}</span>
+                        <span className="text-[9px] font-bold uppercase tracking-wider">{opt.label}</span>
+                        <span className="text-[8px] opacity-60">~{opt.kb}KB</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-4">
                   <label className="text-[9px] font-bold text-sage-400 uppercase tracking-widest mb-3 block px-1">Foto Dokumen</label>
                   <div className="grid grid-cols-2 gap-3">
                     {previews.map((url, i) => (
                       <div key={i} className="relative group aspect-[4/3] rounded-2xl overflow-hidden border border-sage-100 bg-sage-50">
                         <img src={url} className="w-full h-full object-cover" />
-                        <button onClick={() => {
+                        <button 
+                          onClick={() => setFullScreenUrl(url)}
+                          className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors flex items-center justify-center group/btn"
+                        >
+                          <ScanLine className="w-8 h-8 text-white opacity-0 group-hover/btn:opacity-100 transition-all scale-75 group-hover/btn:scale-100" />
+                        </button>
+                        {fileStats[i]?.original > 0 && (
+                          <div className={`absolute inset-x-0 bottom-0 p-2 flex flex-col gap-0.5 pointer-events-none transition-colors ${fileStats[i].compressed > compressionTarget * 1024 ? 'bg-amber-600/80' : 'bg-black/60'} backdrop-blur-sm`}>
+                            <p className="text-[7px] text-white/70 uppercase font-black tracking-[0.15em]">
+                              {fileStats[i].compressed > fileStats[i].original ? 'Ukuran Asli' : 'Optimasi Selesai'}
+                            </p>
+                            <p className="text-[10px] text-white font-mono font-bold flex items-center gap-1">
+                              {formatFileSize(fileStats[i].compressed)}
+                              {fileStats[i].compressed < fileStats[i].original && (
+                                <span className="text-[8px] text-sage-300 font-normal opacity-80">
+                                  (Hemat {Math.round((1 - fileStats[i].compressed / fileStats[i].original) * 100)}%)
+                                </span>
+                              )}
+                            </p>
+                          </div>
+                        )}
+                        <button onClick={(e) => {
+                          e.stopPropagation();
                           // Revoke URL saat foto dihapus
                           URL.revokeObjectURL(previews[i]);
                           previewUrlsRef.current = previewUrlsRef.current.filter(u => u !== previews[i]);
+                          setOriginalFiles(f => f.filter((_, idx) => idx !== i));
                           setFiles(f => f.filter((_, idx) => idx !== i));
                           setPreviews(p => p.filter((_, idx) => idx !== i));
+                          setFileStats(p => p.filter((_, idx) => idx !== i));
                         }}
-                          className="absolute top-2 right-2 p-1.5 bg-rose-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                          className="absolute top-2 right-2 p-1.5 bg-rose-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
                           <X className="w-3.5 h-3.5" />
                         </button>
                       </div>
@@ -214,14 +304,14 @@ export default function DocumentUploadModal({ onClose }: { onClose: () => void }
                       {fields.map((f, i) => (
                         <div key={i} className="space-y-1.5 group">
                           <label className="text-[9px] font-bold text-sage-400 uppercase tracking-wider px-1 ml-1 transition-colors group-focus-within:text-sage-900">{f.label}</label>
-                          <input 
-                            type="text" 
-                            value={f.value} 
+                          <input
+                            type="text"
+                            value={f.value}
                             placeholder={`Masukkan ${f.label}...`}
                             onChange={e => {
                               const n = [...fields]; n[i].value = e.target.value; setFields(n);
-                            }} 
-                            className="w-full px-5 py-4 bg-sage-50 border border-sage-100 rounded-2xl text-sage-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-sage-900/5 focus:bg-white focus:border-sage-300 transition-all" 
+                            }}
+                            className="w-full px-5 py-4 bg-sage-50 border border-sage-100 rounded-2xl text-sage-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-sage-900/5 focus:bg-white focus:border-sage-300 transition-all"
                           />
                         </div>
                       ))}
@@ -243,10 +333,11 @@ export default function DocumentUploadModal({ onClose }: { onClose: () => void }
         {/* Footer (Sticky) */}
         <div className="flex-shrink-0 p-6 pb-12 sm:pb-6 border-t border-sage-50 bg-white">
           {step === 'select' ? (
-            <button disabled={files.length === 0 || isCompressing} onClick={handleContinue}
-              className="w-full py-4 bg-sage-900 text-white rounded-2xl font-bold shadow-xl shadow-sage-900/20 hover:bg-black transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3"
+            <button disabled={files.length === 0 || isCompressing || isInvalid} onClick={handleContinue}
+              className="w-full py-4 bg-sage-900 text-white rounded-2xl font-bold shadow-xl shadow-sage-900/20 hover:bg-black transition-all active:scale-95 disabled:opacity-50 disabled:grayscale flex items-center justify-center gap-3"
             >
-              <ImageIcon className="w-4 h-4" /> Lanjut Isi Data
+              <ImageIcon className="w-4 h-4" />
+              {isInvalid ? 'Foto Tidak Layak' : 'Lanjut Isi Data'}
             </button>
           ) : step === 'review' ? (
             <button disabled={saving} onClick={handleSave}
@@ -257,9 +348,42 @@ export default function DocumentUploadModal({ onClose }: { onClose: () => void }
             </button>
           ) : null}
         </div>
-        
+
         <input type="file" ref={inputRef} hidden accept="image/*" onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
       </motion.div>
+
+      {/* Full Screen Preview Overlay */}
+      <AnimatePresence>
+        {fullScreenUrl && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] bg-black/95 flex flex-col p-4 sm:p-8"
+          >
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex flex-col">
+                <div className="text-white text-xs font-bold uppercase tracking-[0.2em]">Pratinjau Hasil Kompresi</div>
+                <div className="text-white/40 text-[9px] uppercase tracking-widest mt-1">Pastikan teks pada dokumen tetap terbaca dengan jelas</div>
+              </div>
+              <button onClick={() => setFullScreenUrl(null)} className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-all">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 relative flex items-center justify-center overflow-hidden rounded-3xl border border-white/10 bg-sage-900/50">
+              <img src={fullScreenUrl} className="max-w-full max-h-full object-contain" alt="Preview" />
+            </div>
+            <div className="mt-4 flex justify-center">
+              <button 
+                onClick={() => setFullScreenUrl(null)}
+                className="px-8 py-3 bg-white text-black rounded-full font-bold text-xs uppercase tracking-widest hover:bg-sage-100 transition-all"
+              >
+                Kembali
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

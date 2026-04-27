@@ -5,6 +5,7 @@ import { db, storage } from '../firebase';
 import { useAuthStore } from '../store/useAuthStore';
 import { FamilyNote } from '../types/note';
 import { useConfirmStore } from '../store/useConfirmStore';
+import { compressImage } from '../utils/document';
 
 export function useNotes() {
   const { userProfile } = useAuthStore();
@@ -41,16 +42,20 @@ export function useNotes() {
     });
   }, [userProfile?.coupleId]);
 
-  const uploadNoteImage = async (file: File): Promise<{ url: string, path: string }> => {
+  const uploadNoteImage = async (file: File, maxSizeKB: number = 500): Promise<{ url: string, path: string }> => {
     if (!userProfile?.coupleId) throw new Error('Couple ID not found');
-    const path = `notes/${userProfile.coupleId}/${Date.now()}_${file.name}`;
+    
+    // Kompresi sebelum upload
+    const processedFile = await compressImage(file, maxSizeKB).catch(() => file);
+    
+    const path = `notes/${userProfile.coupleId}/${Date.now()}_${processedFile.name}`;
     const storageRef = ref(storage, path);
-    await uploadBytes(storageRef, file);
+    await uploadBytes(storageRef, processedFile);
     const url = await getDownloadURL(storageRef);
     return { url, path };
   };
 
-  const addNote = useCallback(async (title: string, content: string, color?: string, image?: { url: string, path: string }) => {
+  const addNote = useCallback(async (title: string, content: string, color?: string, images?: { url: string, path: string }[]) => {
     if (!userProfile?.coupleId || !userProfile?.uid) return;
     
     try {
@@ -58,8 +63,10 @@ export function useNotes() {
         title,
         content,
         color: color || '#ffffff',
-        imageUrl: image?.url || null,
-        imagePath: image?.path || null,
+        imageUrl: images && images.length > 0 ? images[0].url : null,
+        imagePath: images && images.length > 0 ? images[0].path : null,
+        imageUrls: images ? images.map(img => img.url) : [],
+        imagePaths: images ? images.map(img => img.path) : [],
         userId: userProfile.uid,
         coupleId: userProfile.coupleId,
         authorName: userProfile.displayName || 'User',
@@ -90,10 +97,14 @@ export function useNotes() {
 
   const deleteNote = useCallback(async (note: FamilyNote) => {
     try {
-      if (note.imagePath) {
-        const imageRef = ref(storage, note.imagePath);
-        await deleteObject(imageRef).catch(console.error);
-      }
+      const pathsToDelete = new Set(note.imagePaths || []);
+      if (note.imagePath) pathsToDelete.add(note.imagePath);
+
+      const deletePromises = Array.from(pathsToDelete).map(path => {
+        const imageRef = ref(storage, path);
+        return deleteObject(imageRef).catch(console.error);
+      });
+      await Promise.all(deletePromises);
       await deleteDoc(doc(db, 'family_notes', note.id));
     } catch (err: any) {
       console.error('Error deleting note:', err);
@@ -135,6 +146,7 @@ export function useNotes() {
     deleteNote,
     archiveNote,
     uploadNoteImage,
-    handleDelete
+    handleDelete,
+    compressImage
   };
 }

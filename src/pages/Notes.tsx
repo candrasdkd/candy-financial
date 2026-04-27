@@ -1,165 +1,46 @@
-import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { StickyNote, Plus, Search, Copy, Trash2, Edit3, Pin, Check, X, Loader2, Calendar, User, HelpCircle, Info, Archive, Inbox, MessageCircle, Image as ImageIcon, Camera, Trash } from 'lucide-react';
-import { useNotes } from '../hooks/useNotes';
-import { useConfirmStore } from '../store/useConfirmStore';
-import { FamilyNote } from '../types/note';
-import { format } from 'date-fns';
-import { id } from 'date-fns/locale';
+import { StickyNote, Plus, Search, Pin, X, Loader2, Archive, Inbox, Camera, ScanLine, HelpCircle, Info, Globe, Check } from 'lucide-react';
+import { useNotesLogic } from '../hooks/useNotesLogic';
+import { NoteCard } from '../components/NoteCard';
 
 export default function Notes() {
-  const { notes, loading, addNote, updateNote, deleteNote, archiveNote, uploadNoteImage, handleDelete } = useNotes();
-  const { confirm, close } = useConfirmStore();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isAdding, setIsAdding] = useState(false);
-  const [showHelp, setShowHelp] = useState(false);
-  const [activeTab, setActiveTab] = useState<'active' | 'archived'>('active');
-  const [editingNote, setEditingNote] = useState<FamilyNote | null>(null);
-  const [copyingId, setCopyingId] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-
-  const [formData, setFormData] = useState({ 
-    title: '', 
-    content: '', 
-    color: '#ffffff',
-    imageUrl: '',
-    imagePath: ''
-  });
-  const [tempFile, setTempFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-
-  const NOTE_COLORS = [
-    { name: 'Default', value: '#ffffff' },
-    { name: 'Rose', value: '#fff1f2' },
-    { name: 'Blue', value: '#eff6ff' },
-    { name: 'Green', value: '#f0fdf4' },
-    { name: 'Amber', value: '#fffbeb' },
-    { name: 'Purple', value: '#faf5ff' },
-  ];
-
-  const filteredNotes = useMemo(() => {
-    return notes.filter(note => {
-      const matchesSearch = note.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                           note.content.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesTab = activeTab === 'active' ? !note.isArchived : note.isArchived;
-      return matchesSearch && matchesTab;
-    });
-  }, [notes, searchQuery, activeTab]);
-
-  const pinnedNotes = useMemo(() => filteredNotes.filter(n => n.isPinned), [filteredNotes]);
-  const otherNotes = useMemo(() => filteredNotes.filter(n => !n.isPinned), [filteredNotes]);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!formData.content.trim()) return;
-
-    if (editingNote) {
-      confirm({
-        title: 'Simpan Perubahan?',
-        message: 'Apakah Anda yakin ingin menyimpan perubahan pada catatan ini?',
-        confirmText: 'Simpan',
-        onConfirm: async () => {
-          try {
-            setIsUploading(true);
-            let imageData = { url: formData.imageUrl, path: formData.imagePath };
-            if (tempFile) {
-              imageData = await uploadNoteImage(tempFile);
-            }
-            await updateNote(editingNote.id, {
-              ...formData,
-              imageUrl: imageData.url,
-              imagePath: imageData.path
-            });
-            closeForm();
-          } catch (err) {
-            console.error(err);
-          } finally {
-            setIsUploading(false);
-            close();
-          }
-        }
-      });
-    } else {
-      try {
-        setIsUploading(true);
-        let imageData = { url: '', path: '' };
-        if (tempFile) {
-          imageData = await uploadNoteImage(tempFile);
-        }
-        await addNote(formData.title, formData.content, formData.color, imageData);
-        closeForm();
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setIsUploading(false);
-      }
-    }
-  }
-
-  function handleWhatsAppExport(note: FamilyNote) {
-    let text = `*${note.title || 'Catatan Keluarga'}*\n\n`;
-    
-    // Process content for WhatsApp (simplified)
-    const lines = note.content.split('\n');
-    lines.forEach(line => {
-      if (line.trim().startsWith('>x')) {
-        text += `✅ ~${line.replace('>x', '').trim()}~\n`;
-      } else if (line.trim().startsWith('>')) {
-        text += `▫️ ${line.replace('>', '').trim()}\n`;
-      } else if (line.trim().startsWith('-') || line.trim().startsWith('*')) {
-        text += `• ${line.substring(1).trim()}\n`;
-      } else {
-        text += `${line}\n`;
-      }
-    });
-
-    text += `\n_Dikirim dari CandyNest_`;
-    
-    const encodedText = encodeURIComponent(text);
-    window.open(`https://wa.me/?text=${encodedText}`, '_blank');
-  }
-
-  function handleCopy(note: FamilyNote) {
-    const text = `${note.title ? note.title + '\n' : ''}${note.content}`;
-    navigator.clipboard.writeText(text);
-    setCopyingId(note.id);
-    setTimeout(() => setCopyingId(null), 2000);
-  }
-
-  function startEdit(note: FamilyNote) {
-    setEditingNote(note);
-    setFormData({ 
-      title: note.title, 
-      content: note.content, 
-      color: note.color || '#ffffff',
-      imageUrl: note.imageUrl || '',
-      imagePath: note.imagePath || ''
-    });
-    setPreviewUrl(note.imageUrl || null);
-    setIsAdding(true);
-  }
-
-  function closeForm() {
-    setIsAdding(false);
-    setEditingNote(null);
-    setFormData({ 
-      title: '', 
-      content: '', 
-      color: '#ffffff',
-      imageUrl: '',
-      imagePath: ''
-    });
-    setTempFile(null);
-    setPreviewUrl(null);
-  }
-
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (file) {
-      setTempFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
-    }
-  }
+  const {
+    notes,
+    loading,
+    searchQuery,
+    setSearchQuery,
+    isAdding,
+    setIsAdding,
+    showHelp,
+    setShowHelp,
+    activeTab,
+    setActiveTab,
+    editingNote,
+    isUploading,
+    isCompressing,
+    compressionTarget,
+    formData,
+    setFormData,
+    tempFiles,
+    setTempFiles,
+    previewUrls,
+    setPreviewUrls,
+    fullScreenUrl,
+    setFullScreenUrl,
+    NOTE_COLORS,
+    pinnedNotes,
+    otherNotes,
+    filteredNotes,
+    handleSubmit,
+    handleWhatsAppExport,
+    startEdit,
+    closeForm,
+    handleFileChange,
+    handleTargetChange,
+    updateNote,
+    archiveNote,
+    handleDelete
+  } = useNotesLogic();
 
   if (loading) {
     return (
@@ -180,7 +61,7 @@ export default function Notes() {
             </h1>
             <p className="text-sage-400 font-medium text-sm md:text-base">Tulis hal-hal penting agar tidak lupa.</p>
           </div>
-          
+
           <div className="flex items-center justify-center md:justify-end gap-3">
             <button
               onClick={() => setShowHelp(true)}
@@ -243,16 +124,16 @@ export default function Notes() {
                   <div className="space-y-4">
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 rounded-lg bg-rose-100 flex items-center justify-center text-rose-600">
-                        <Copy className="w-3.5 h-3.5" />
+                        <Info className="w-3.5 h-3.5" />
                       </div>
-                      <h3 className="text-sm font-bold text-sage-900">Tombol Salin & Keamanan</h3>
+                      <h3 className="text-sm font-bold text-sage-900">Keamanan Data Otomatis</h3>
                     </div>
                     <div className="bg-sage-50 p-4 rounded-2xl space-y-3 border border-sage-100">
                       <div>
                         <p className="text-[10px] font-bold text-sage-400 uppercase tracking-widest mb-1">Cara Tulis:</p>
-                        <p className="text-xs font-mono bg-white p-2 rounded-lg border border-sage-100">Email: candy@gmail.com</p>
+                        <p className="text-xs font-mono bg-white p-2 rounded-lg border border-sage-100">Sandi: 123456</p>
                       </div>
-                      <p className="text-xs text-sage-500 leading-relaxed">Gunakan tanda <span className="font-bold">titik dua (:)</span>. Muncul tombol copy khusus di baris tersebut. Jika ada kata <span className="font-bold italic">Sandi/Password</span>, otomatis akan disensor.</p>
+                      <p className="text-xs text-sage-500 leading-relaxed">Gunakan tanda <span className="font-bold">titik dua (:)</span>. Jika baris tersebut mengandung kata <span className="font-bold italic">Sandi/Password/PIN</span>, sistem akan otomatis menyensor nilainya untuk keamanan.</p>
                     </div>
                   </div>
 
@@ -287,6 +168,22 @@ export default function Notes() {
                       <p className="text-xs text-sage-500 leading-relaxed">Gunakan tanda <span className="font-bold">minus (-)</span> untuk list poin. Kamu juga bisa menulis bebas seperti biasa tanpa format apapun.</p>
                     </div>
                   </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
+                        <Globe className="w-3.5 h-3.5" />
+                      </div>
+                      <h3 className="text-sm font-bold text-sage-900">Tautan & Link Aktif</h3>
+                    </div>
+                    <div className="bg-sage-50 p-4 rounded-2xl space-y-3 border border-sage-100">
+                      <div>
+                        <p className="text-[10px] font-bold text-sage-400 uppercase tracking-widest mb-1">Cara Tulis:</p>
+                        <p className="text-xs font-mono bg-white p-2 rounded-lg border border-sage-100">https://google.com</p>
+                      </div>
+                      <p className="text-xs text-sage-500 leading-relaxed">Tempelkan <span className="font-bold">URL lengkap</span>. Otomatis menjadi link yang bisa diklik. Bisa juga ditaruh setelah titik dua (:) pada label.</p>
+                    </div>
+                  </div>
                 </div>
 
                 <button
@@ -308,18 +205,16 @@ export default function Notes() {
           <div className="flex-1 bg-white p-1 rounded-2xl border border-sage-100 shadow-sm flex items-center">
             <button
               onClick={() => setActiveTab('active')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-[10px] font-bold transition-all ${
-                activeTab === 'active' ? 'bg-sage-900 text-white shadow-md' : 'text-sage-400'
-              }`}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-[10px] font-bold transition-all ${activeTab === 'active' ? 'bg-sage-900 text-white shadow-md' : 'text-sage-400'
+                }`}
             >
               <Inbox className="w-3.5 h-3.5" />
               Aktif
             </button>
             <button
               onClick={() => setActiveTab('archived')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-[10px] font-bold transition-all ${
-                activeTab === 'archived' ? 'bg-sage-900 text-white shadow-md' : 'text-sage-400'
-              }`}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-[10px] font-bold transition-all ${activeTab === 'archived' ? 'bg-sage-900 text-white shadow-md' : 'text-sage-400'
+                }`}
             >
               <Archive className="w-3.5 h-3.5" />
               Arsip
@@ -343,8 +238,8 @@ export default function Notes() {
 
       {/* Notes Content */}
       {notes.length === 0 ? (
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }} 
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-white border-2 border-dashed border-sage-100 rounded-[3rem] py-20 px-10 text-center space-y-6"
         >
@@ -356,14 +251,14 @@ export default function Notes() {
               {activeTab === 'active' ? 'Belum ada catatan' : 'Arsip kosong'}
             </h3>
             <p className="text-sage-400 max-w-xs mx-auto text-sm leading-relaxed">
-              {activeTab === 'active' 
-                ? 'Gunakan fitur ini untuk menyimpan informasi penting keluarga.' 
+              {activeTab === 'active'
+                ? 'Gunakan fitur ini untuk menyimpan informasi penting keluarga.'
                 : 'Catatan yang kamu arsipkan akan muncul di sini.'}
             </p>
           </div>
           {activeTab === 'active' && (
-            <button 
-              onClick={() => setIsAdding(true)} 
+            <button
+              onClick={() => setIsAdding(true)}
               className="px-8 py-3 bg-sage-50 text-sage-600 rounded-2xl font-bold hover:bg-sage-100 transition-colors inline-flex items-center gap-2"
             >
               <Plus className="w-4 h-4" /> Tambah Catatan
@@ -377,19 +272,17 @@ export default function Notes() {
               <h2 className="text-[10px] font-bold text-sage-400 uppercase tracking-[0.2em] flex items-center gap-2 px-2">
                 <Pin className="w-3 h-3 rotate-45" /> Disematkan
               </h2>
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 {pinnedNotes.map(note => (
-                  <NoteCard 
-                    key={note.id} 
-                    note={note} 
-                    onEdit={startEdit} 
+                  <NoteCard
+                    key={note.id}
+                    note={note}
+                    onEdit={startEdit}
                     onDelete={handleDelete}
-                    onCopy={handleCopy}
                     onPin={() => updateNote(note.id, { isPinned: !note.isPinned })}
                     onArchive={() => archiveNote(note.id, !note.isArchived)}
                     onWhatsApp={handleWhatsAppExport}
                     onUpdate={updateNote}
-                    isCopying={copyingId === note.id}
                   />
                 ))}
               </div>
@@ -401,19 +294,17 @@ export default function Notes() {
               {pinnedNotes.length > 0 && (
                 <h2 className="text-[10px] font-bold text-sage-400 uppercase tracking-[0.2em] px-2">Lainnya</h2>
               )}
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 {otherNotes.map(note => (
-                  <NoteCard 
-                    key={note.id} 
-                    note={note} 
-                    onEdit={startEdit} 
+                  <NoteCard
+                    key={note.id}
+                    note={note}
+                    onEdit={startEdit}
                     onDelete={handleDelete}
-                    onCopy={handleCopy}
                     onPin={() => updateNote(note.id, { isPinned: !note.isPinned })}
                     onArchive={() => archiveNote(note.id, !note.isArchived)}
                     onWhatsApp={handleWhatsAppExport}
                     onUpdate={updateNote}
-                    isCopying={copyingId === note.id}
                   />
                 ))}
               </div>
@@ -443,23 +334,25 @@ export default function Notes() {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-2xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden"
+              className="relative w-full max-w-2xl bg-white rounded-[2.5rem] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
             >
-              <form onSubmit={handleSubmit} className="p-8 space-y-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-2xl font-display text-sage-900">
-                    {editingNote ? 'Edit Catatan' : 'Buat Catatan Baru'}
-                  </h2>
-                  <button
-                    type="button"
-                    onClick={closeForm}
-                    className="w-10 h-10 rounded-full bg-sage-50 flex items-center justify-center text-sage-400 hover:text-rose-500 transition-colors"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
+              <form onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden">
+                <div className="flex-shrink-0 p-6 sm:p-8 pb-4 border-b border-sage-50">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-display text-sage-900">
+                      {editingNote ? 'Edit Catatan' : 'Buat Catatan Baru'}
+                    </h2>
+                    <button
+                      type="button"
+                      onClick={closeForm}
+                      className="w-10 h-10 rounded-full bg-sage-50 flex items-center justify-center text-sage-400 hover:text-rose-500 transition-colors"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6 scrollbar-hide">
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-sage-400 uppercase tracking-widest ml-1">Judul (Opsional)</label>
                     <input
@@ -486,30 +379,99 @@ export default function Notes() {
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-sage-400 uppercase tracking-widest ml-1">Lampiran Foto (Opsional)</label>
                     <div className="flex flex-wrap gap-4">
-                      {previewUrl ? (
-                        <div className="relative w-24 h-24 rounded-2xl overflow-hidden border border-sage-100 shadow-sm">
-                          <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                      {formData.existingImages.map((img, index) => (
+                        <div key={`existing-${index}`} className="relative w-24 h-24 rounded-2xl overflow-hidden border border-sage-100 shadow-sm group/prev">
+                          <img src={img.url} alt={`Existing ${index}`} className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => setFullScreenUrl(img.url)}
+                            className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors flex items-center justify-center group/scan"
+                          >
+                            <ScanLine className="w-5 h-5 text-white opacity-0 group-hover/scan:opacity-100 transition-all scale-75 group-hover/scan:scale-100" />
+                          </button>
                           <button
                             type="button"
                             onClick={() => {
-                              setTempFile(null);
-                              setPreviewUrl(null);
-                              setFormData({ ...formData, imageUrl: '', imagePath: '' });
+                              const newExisting = [...formData.existingImages];
+                              newExisting.splice(index, 1);
+                              setFormData({ ...formData, existingImages: newExisting });
                             }}
-                            className="absolute top-1 right-1 w-6 h-6 bg-rose-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-rose-600 transition-colors"
+                            className="absolute top-1 right-1 w-5 h-5 bg-rose-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-rose-600 transition-colors z-10"
                           >
-                            <X className="w-3.5 h-3.5" />
+                            <X className="w-3 h-3" />
                           </button>
                         </div>
-                      ) : (
+                      ))}
+
+                      {previewUrls.map((url, index) => (
+                        <div key={`new-${index}`} className="relative w-24 h-24 rounded-2xl overflow-hidden border border-sage-100 shadow-sm group/prev">
+                          <img src={url} alt={`New ${index}`} className="w-full h-full object-cover" />
+                          {isCompressing && (
+                            <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] flex items-center justify-center">
+                              <Loader2 className="w-5 h-5 animate-spin text-sage-900" />
+                            </div>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => setFullScreenUrl(url)}
+                            className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors flex items-center justify-center group/scan"
+                          >
+                            <ScanLine className="w-5 h-5 text-white opacity-0 group-hover/scan:opacity-100 transition-all scale-75 group-hover/scan:scale-100" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newTempFiles = [...tempFiles];
+                              const newPreviewUrls = [...previewUrls];
+                              newTempFiles.splice(index, 1);
+                              newPreviewUrls.splice(index, 1);
+                              setTempFiles(newTempFiles);
+                              setPreviewUrls(newPreviewUrls);
+                              URL.revokeObjectURL(url);
+                            }}
+                            className="absolute top-1 right-1 w-5 h-5 bg-rose-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-rose-600 transition-colors z-10"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+
+                      {(formData.existingImages.length + tempFiles.length) < 4 && (
                         <label className="w-24 h-24 rounded-2xl border-2 border-dashed border-sage-100 bg-sage-50 flex flex-col items-center justify-center gap-1 cursor-pointer hover:bg-sage-100 hover:border-sage-200 transition-all text-sage-400 hover:text-sage-600">
                           <Camera className="w-6 h-6" />
                           <span className="text-[10px] font-bold uppercase tracking-tighter">Tambah</span>
-                          <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+                          <input type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange} />
                         </label>
                       )}
                     </div>
                   </div>
+
+                  {tempFiles.length > 0 && (
+                    <div className="space-y-3 bg-sage-50 p-4 rounded-2xl border border-sage-100">
+                      <label className="text-[10px] font-bold text-sage-400 uppercase tracking-widest block">Kualitas Foto</label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { label: 'Hemat', kb: 150, icon: '📉' },
+                          { label: 'Standar', kb: 300, icon: '⚖️' },
+                          { label: 'Tajam', kb: 500, icon: '✨' }
+                        ].map((opt) => (
+                          <button
+                            key={opt.kb}
+                            type="button"
+                            disabled={isCompressing}
+                            onClick={() => handleTargetChange(opt.kb)}
+                            className={`flex flex-col items-center gap-1 p-2 rounded-xl border transition-all ${compressionTarget === opt.kb
+                              ? 'bg-sage-900 border-sage-900 text-white shadow-md'
+                              : 'bg-white border-sage-100 text-sage-400 hover:bg-white hover:border-sage-200'
+                              } ${isCompressing ? 'opacity-50 grayscale' : ''}`}
+                          >
+                            <span className="text-xs">{opt.icon}</span>
+                            <span className="text-[8px] font-bold uppercase">{opt.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   <div className="space-y-3">
                     <label className="text-[10px] font-bold text-sage-400 uppercase tracking-widest ml-1">Pilih Warna</label>
@@ -519,9 +481,8 @@ export default function Notes() {
                           key={c.value}
                           type="button"
                           onClick={() => setFormData({ ...formData, color: c.value })}
-                          className={`w-10 h-10 rounded-full border-2 transition-all ${
-                            formData.color === c.value ? 'border-sage-900 scale-110 shadow-lg' : 'border-white'
-                          }`}
+                          className={`w-10 h-10 rounded-full border-2 transition-all ${formData.color === c.value ? 'border-sage-900 scale-110 shadow-lg' : 'border-white'
+                            }`}
                           style={{ backgroundColor: c.value }}
                           title={c.name}
                         />
@@ -530,244 +491,66 @@ export default function Notes() {
                   </div>
                 </div>
 
-                <div className="flex gap-4 pt-4">
-                  <button
-                    type="button"
-                    onClick={closeForm}
-                    className="flex-1 py-4 rounded-2xl font-bold text-sage-500 hover:bg-sage-50 transition-colors"
-                    disabled={isUploading}
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isUploading}
-                    className="flex-[2] py-4 bg-sage-900 text-white rounded-2xl font-bold shadow-xl shadow-sage-900/20 hover:bg-black transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {isUploading && <Loader2 className="w-4 h-4 animate-spin" />}
-                    {editingNote ? 'Simpan Perubahan' : 'Simpan Catatan'}
-                  </button>
+                <div className="flex-shrink-0 p-6 sm:p-8 pt-4 border-t border-sage-50 bg-white">
+                  <div className="flex gap-4">
+                    <button
+                      type="button"
+                      onClick={closeForm}
+                      className="flex-1 py-4 rounded-2xl font-bold text-sage-500 hover:bg-sage-50 transition-colors"
+                      disabled={isUploading}
+                    >
+                      Batal
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isUploading}
+                      className="flex-[2] py-4 bg-sage-900 text-white rounded-2xl font-bold shadow-xl shadow-sage-900/20 hover:bg-black transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {isUploading && <Loader2 className="w-4 h-4 animate-spin" />}
+                      {editingNote ? 'Simpan Perubahan' : 'Simpan Catatan'}
+                    </button>
+                  </div>
                 </div>
               </form>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
+
+      {/* Full Screen Preview Overlay */}
+      <AnimatePresence>
+        {fullScreenUrl && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[250] bg-black/95 flex flex-col p-4 sm:p-8"
+          >
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex flex-col">
+                <div className="text-white text-xs font-bold uppercase tracking-[0.2em]">Pratinjau Foto Catatan</div>
+                <div className="text-white/40 text-[9px] uppercase tracking-widest mt-1">Pastikan foto lampiran tetap terlihat jelas</div>
+              </div>
+              <button onClick={() => setFullScreenUrl(null)} className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-all">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 relative flex items-center justify-center overflow-hidden rounded-3xl border border-white/10 bg-sage-900/50">
+              <img src={fullScreenUrl} className="max-w-full max-h-full object-contain" alt="Preview" />
+            </div>
+            <div className="mt-4 flex justify-center">
+              <button
+                onClick={() => setFullScreenUrl(null)}
+                className="px-8 py-3 bg-white text-black rounded-full font-bold text-xs uppercase tracking-widest hover:bg-sage-100 transition-all"
+              >
+                Kembali
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
-function NoteCard({ note, onEdit, onDelete, onCopy, onPin, onArchive, onWhatsApp, onUpdate, isCopying }: { 
-  note: FamilyNote; 
-  onEdit: (n: FamilyNote) => void;
-  onDelete: (n: FamilyNote) => void;
-  onCopy: (n: FamilyNote) => void;
-  onPin: () => void;
-  onArchive: () => void;
-  onWhatsApp: (n: FamilyNote) => void;
-  onUpdate: (id: string, updates: Partial<FamilyNote>) => Promise<void>;
-  isCopying: boolean;
-}) {
-  const [showPasswords, setShowPasswords] = useState<Record<number, boolean>>({});
 
-  const toggleCheckbox = async (idx: number) => {
-    const lines = note.content.split('\n');
-    const line = lines[idx];
-    
-    let newLine = line;
-    const trimmed = line.trim();
-    if (trimmed.startsWith('>x')) {
-      // Toggle to unchecked
-      newLine = line.replace(/>x\s?/, '> ');
-    } else if (trimmed.startsWith('>')) {
-      // Toggle to checked
-      newLine = line.replace(/>\s?/, '>x ');
-    }
-    
-    if (newLine !== line) {
-      lines[idx] = newLine;
-      await onUpdate(note.id, { content: lines.join('\n') });
-    }
-  };
-
-  const renderContent = () => {
-    const lines = note.content.split('\n');
-    return (
-      <div className="space-y-2.5">
-        {lines.map((line, idx) => {
-          const trimmed = line.trim();
-          // Check for Checkbox: > or >x (with or without space)
-          const isCheckbox = trimmed.startsWith('>') && !trimmed.startsWith('>>');
-          
-          if (isCheckbox) {
-            const isChecked = trimmed.startsWith('>x');
-            // Remove the trigger to get the text
-            const text = trimmed.replace(/^>x?\s?/, '').trim();
-            return (
-              <div 
-                key={idx} 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleCheckbox(idx);
-                }}
-                className="flex items-start gap-3 group/check cursor-pointer"
-              >
-                <div className={`mt-0.5 w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all ${
-                  isChecked ? 'bg-sage-900 border-sage-900 text-white' : 'bg-white border-sage-200 group-hover/check:border-sage-400'
-                }`}>
-                  {isChecked && <Check className="w-3.5 h-3.5" />}
-                </div>
-                <span className={`text-sm transition-all ${isChecked ? 'text-sage-400 line-through' : 'text-sage-700 font-medium'}`}>
-                  {text}
-                </span>
-              </div>
-            );
-          }
-
-          // Check for Bullet points: - or * or •
-          const isBullet = line.trim().startsWith('- ') || line.trim().startsWith('* ') || line.trim().startsWith('• ');
-          if (isBullet) {
-            const text = line.trim().substring(2).trim();
-            return (
-              <div key={idx} className="flex items-start gap-3 pl-1">
-                <div className="mt-2 w-1.5 h-1.5 rounded-full bg-sage-300" />
-                <span className="text-sm text-sage-700 font-medium">{text}</span>
-              </div>
-            );
-          }
-
-          // Check for Label: Value
-          const colonIndex = line.indexOf(':');
-          if (colonIndex !== -1) {
-            const label = line.substring(0, colonIndex).trim();
-            const value = line.substring(colonIndex + 1).trim();
-            const isPassword = /pass|pwd|sandi|pin/i.test(label);
-            const isVisible = showPasswords[idx];
-
-            return (
-              <div key={idx} className="group/field flex flex-col gap-1 bg-white/50 p-3 rounded-xl border border-sage-100/50 hover:border-sage-200 transition-colors">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-sage-400 uppercase tracking-widest">{label}</span>
-                  <div className="flex items-center gap-1 opacity-0 group-hover/field:opacity-100 transition-opacity">
-                    {isPassword && (
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowPasswords(prev => ({ ...prev, [idx]: !prev[idx] }));
-                        }}
-                        className="p-1 text-sage-400 hover:text-sage-900"
-                      >
-                        {isVisible ? <X className="w-3 h-3" /> : <div className="text-[10px] font-bold underline">Lihat</div>}
-                      </button>
-                    )}
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigator.clipboard.writeText(value);
-                      }}
-                      className="p-1 text-sage-400 hover:text-sage-900"
-                      title="Salin nilai"
-                    >
-                      <Copy className="w-3 h-3" />
-                    </button>
-                  </div>
-                </div>
-                <div className="text-sm font-medium text-sage-900 break-words flex items-center gap-2">
-                  {isPassword && !isVisible ? (
-                    <span className="tracking-widest font-black text-sage-300">••••••••</span>
-                  ) : (
-                    value
-                  )}
-                </div>
-              </div>
-            );
-          }
-          
-          return (
-            <p key={idx} className={`text-sage-600 text-sm leading-relaxed break-words ${line.trim() === '' ? 'h-2' : ''}`}>
-              {line}
-            </p>
-          );
-        })}
-      </div>
-    );
-  };
-
-  return (
-    <motion.div
-      layout
-      style={{ backgroundColor: note.color || '#ffffff' }}
-      className={`group rounded-[1.5rem] md:rounded-[2rem] p-4 md:p-6 border transition-all duration-300 relative flex flex-col gap-3 md:gap-4 ${
-        note.color && note.color !== '#ffffff' ? 'border-black/5 shadow-md' : 'border-sage-100 shadow-sm'
-      } hover:shadow-xl hover:border-sage-200 overflow-hidden`}
-    >
-      <div className="flex items-start justify-between gap-2 md:gap-4 relative z-10">
-        <div className="space-y-3 md:space-y-4 flex-1">
-          {note.title && (
-            <h3 className="font-bold text-sage-900 text-sm md:text-lg leading-tight line-clamp-2">{note.title}</h3>
-          )}
-
-          {note.imageUrl && (
-            <div className="rounded-xl md:rounded-2xl overflow-hidden border border-sage-100/50 shadow-sm">
-              <img src={note.imageUrl} alt="Lampiran" className="w-full h-auto max-h-32 md:max-h-48 object-cover" />
-            </div>
-          )}
-
-          {renderContent()}
-        </div>
-        <button
-          onClick={onPin}
-          className={`p-2 rounded-xl transition-colors ${note.isPinned ? 'text-rose-500 bg-rose-50' : 'text-sage-300 hover:bg-sage-50 opacity-0 group-hover:opacity-100'}`}
-        >
-          <Pin className={`w-4 h-4 ${note.isPinned ? '' : 'rotate-45'}`} />
-        </button>
-      </div>
-
-      <div className="flex flex-col gap-3 pt-3 mt-auto border-t border-sage-50 relative z-10">
-        <div className="flex items-center justify-between">
-          <div className="flex flex-col">
-            <span className="text-[8px] font-black text-sage-900 uppercase tracking-tighter truncate max-w-[60px] md:max-w-none">
-              {note.authorName}
-            </span>
-            <span className="text-[7px] font-bold text-sage-400 uppercase tracking-widest">
-              {format(note.createdAt as Date, 'd MMM yy', { locale: id })}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-0.5">
-            <button
-              onClick={() => onWhatsApp(note)}
-              className="w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl flex items-center justify-center text-green-500 hover:bg-green-50"
-            >
-              <MessageCircle className="w-3.5 h-3.5 md:w-4 md:h-4" />
-            </button>
-            <button
-              onClick={() => onCopy(note)}
-              className={`w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl flex items-center justify-center ${isCopying ? 'bg-green-50 text-green-600' : 'text-sage-400 hover:bg-sage-50'}`}
-            >
-              {isCopying ? <Check className="w-3.5 h-3.5 md:w-4 md:h-4" /> : <Copy className="w-3.5 h-3.5 md:w-4 md:h-4" />}
-            </button>
-            <button
-              onClick={onArchive}
-              className="w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl flex items-center justify-center text-sage-400 hover:bg-sage-50"
-            >
-              {note.isArchived ? <Inbox className="w-3.5 h-3.5 md:w-4 md:h-4" /> : <Archive className="w-3.5 h-3.5 md:w-4 md:h-4" />}
-            </button>
-            <button
-              onClick={() => onEdit(note)}
-              className="w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl flex items-center justify-center text-sage-400 hover:bg-sage-50"
-            >
-              <Edit3 className="w-3.5 h-3.5 md:w-4 md:h-4" />
-            </button>
-            <button
-              onClick={() => onDelete(note)}
-              className="w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl flex items-center justify-center text-sage-400 hover:bg-rose-50 hover:text-rose-500"
-            >
-              <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
-            </button>
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
